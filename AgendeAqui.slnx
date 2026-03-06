@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/Solution Items/" />
+  <Folder Name="/Solution Items/docs/">
+    <File Path="docs/AgendeAqui-Business-Intelligence_V1.pdf" />
+    <File Path="docs/AgendeaquiArquitetura.pdf" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/AgendeAqui.Api/AgendeAqui.Api.csproj" />
+    <Project Path="src/AgendeAqui.Application/AgendeAqui.Application.csproj" />
+    <Project Path="src/AgendeAqui.Domain/AgendeAqui.Domain.csproj" />
+    <Project Path="src/AgendeAqui.Infrastructure/AgendeAqui.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AgendeAqui.Domain.UnitTests/AgendeAqui.Domain.UnitTests.csproj" />
+    <Project Path="tests/AgendeAqui.Application.UnitTests/AgendeAqui.Application.UnitTests.csproj" />
+    <Project Path="tests/AgendeAqui.ArchTests/AgendeAqui.ArchTests.csproj" />
+  </Folder>
+</Solution>

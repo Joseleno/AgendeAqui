@@ -1,0 +1,48 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.swp
+.vs/
+publish/
+*.nupkg
+*.snupkg
+*.dll
+*.exe
+*.pdb
+*.cache
+
+## Environment / secrets
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+appsettings.Local.json
+
+## Rider / JetBrains
+.idea/
+*.iml
+
+## VS Code
+.vscode/
+
+## macOS
+.DS_Store
+
+## Test results
+TestResults/
+coverage/
+*.coveragexml
+
+## EF Core migrations (keep migrations, ignore snapshots from auto-gen if needed)
+# Uncomment to ignore snapshot:
+# **/Migrations/*ModelSnapshot.cs
+
+## Docker volumes (local)
+postgres_data/
+rabbitmq_data/
+
+## Logs
+*.log
+logs/

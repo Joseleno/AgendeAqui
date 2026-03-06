@@ -1,0 +1,30 @@
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: agendeaqui
+      POSTGRES_USER: agendeaqui
+      POSTGRES_PASSWORD: agendeaqui_dev
+
+  rabbitmq:
+    environment:
+      RABBITMQ_DEFAULT_USER: agendeaqui
+      RABBITMQ_DEFAULT_PASS: agendeaqui_dev
+
+  api:
+    build:
+      context: .
+      dockerfile: src/AgendeAqui.Api/Dockerfile
+    container_name: agendeaqui-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=agendeaqui;Username=agendeaqui;Password=agendeaqui_dev"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: agendeaqui
+      RabbitMQ__Password: agendeaqui_dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
