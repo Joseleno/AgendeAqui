@@ -1,5 +1,6 @@
 using AgendeAqui.Application.Abstractions.Data;
 using AgendeAqui.Application.Abstractions.Messaging;
+using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Clients;
 using AgendeAqui.Domain.Common;
 using Dapper;
@@ -7,7 +8,8 @@ using Dapper;
 namespace AgendeAqui.Application.Clients.GetClient;
 
 public sealed class GetClientQueryHandler(
-    ISqlConnectionFactory sqlConnectionFactory) : IQueryHandler<GetClientQuery, ClientResponse>
+    ISqlConnectionFactory sqlConnectionFactory,
+    ITenantProvider tenantProvider) : IQueryHandler<GetClientQuery, ClientResponse>
 {
     public async ValueTask<Result<ClientResponse>> Handle(
         GetClientQuery query,
@@ -22,12 +24,15 @@ public sealed class GetClientQueryHandler(
                    phone       AS Phone,
                    created_at  AS CreatedAt
             FROM clients
-            WHERE id = @ClientId
+            WHERE id = @ClientId AND tenant_id = @TenantId
             """;
 
-        var client = await connection.QueryFirstOrDefaultAsync<ClientResponse>(
+        var command = new CommandDefinition(
             sql,
-            new { query.ClientId });
+            new { query.ClientId, TenantId = tenantProvider.GetTenantId() },
+            cancellationToken: cancellationToken);
+
+        var client = await connection.QueryFirstOrDefaultAsync<ClientResponse>(command);
 
         if (client is null)
             return Result.Failure<ClientResponse>(ClientErrors.NotFound);

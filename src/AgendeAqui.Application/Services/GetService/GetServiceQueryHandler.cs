@@ -1,5 +1,6 @@
 using AgendeAqui.Application.Abstractions.Data;
 using AgendeAqui.Application.Abstractions.Messaging;
+using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Common;
 using AgendeAqui.Domain.Services;
 using Dapper;
@@ -7,7 +8,8 @@ using Dapper;
 namespace AgendeAqui.Application.Services.GetService;
 
 public sealed class GetServiceQueryHandler(
-    ISqlConnectionFactory sqlConnectionFactory) : IQueryHandler<GetServiceQuery, ServiceResponse>
+    ISqlConnectionFactory sqlConnectionFactory,
+    ITenantProvider tenantProvider) : IQueryHandler<GetServiceQuery, ServiceResponse>
 {
     public async ValueTask<Result<ServiceResponse>> Handle(
         GetServiceQuery query,
@@ -23,12 +25,15 @@ public sealed class GetServiceQueryHandler(
                    is_active AS IsActive,
                    created_at AS CreatedAt
             FROM services
-            WHERE id = @ServiceId
+            WHERE id = @ServiceId AND tenant_id = @TenantId
             """;
 
-        var result = await connection.QueryFirstOrDefaultAsync<ServiceResponse>(
+        var command = new CommandDefinition(
             sql,
-            new { query.ServiceId });
+            new { query.ServiceId, TenantId = tenantProvider.GetTenantId() },
+            cancellationToken: cancellationToken);
+
+        var result = await connection.QueryFirstOrDefaultAsync<ServiceResponse>(command);
 
         if (result is null)
             return Result.Failure<ServiceResponse>(ServiceErrors.NotFound);

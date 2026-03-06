@@ -6,5 +6,4 @@ public static class ProfessionalErrors
 {
     public static readonly Error NotFound = new("Professional.NotFound", "Professional not found.");
     public static readonly Error InvalidName = new("Professional.InvalidName", "Professional name is required.");
-    public static readonly Error AlreadyDeactivated = new("Professional.AlreadyDeactivated", "Professional is already deactivated.");
 }

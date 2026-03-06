@@ -27,11 +27,16 @@ public sealed class Client : TenantEntity
         return Result.Success(client);
     }
 
-    public void UpdateContact(string name, Email email, PhoneNumber phone)
+    public Result UpdateContact(string name, Email email, PhoneNumber phone)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure(ClientErrors.InvalidName);
+
         Name = name.Trim();
         Email = email;
         Phone = phone;
         UpdatedAt = DateTime.UtcNow;
+
+        return Result.Success();
     }
 }

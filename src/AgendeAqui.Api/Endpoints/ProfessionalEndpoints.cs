@@ -1,3 +1,4 @@
+using AgendeAqui.Api.Endpoints.Requests;
 using AgendeAqui.Application.Professionals.CreateProfessional;
 using AgendeAqui.Application.Professionals.GetProfessional;
 using AgendeAqui.Application.Professionals.ListProfessionals;
@@ -44,7 +45,9 @@ public static class ProfessionalEndpoints
             var query = new ListProfessionalsQuery(page ?? 1, pageSize ?? 10);
             var result = await mediator.Send(query);
 
-            return Results.Ok(result.Value);
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.BadRequest(new { error = result.Error.Message });
         })
         .WithName("ListProfessionals")
         .Produces(StatusCodes.Status200OK);
@@ -54,15 +57,16 @@ public static class ProfessionalEndpoints
             var command = new UpdateProfessionalCommand(id, request.Name, request.Email, request.Phone);
             var result = await mediator.Send(command);
 
-            return result.IsSuccess
-                ? Results.NoContent()
+            if (result.IsSuccess)
+                return Results.NoContent();
+
+            return result.Error.IsNotFound
+                ? Results.NotFound(new { error = result.Error.Message })
                 : Results.BadRequest(new { error = result.Error.Message });
         })
         .WithName("UpdateProfessional")
         .Produces(StatusCodes.Status204NoContent)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
     }
 }
-
-public sealed record CreateProfessionalRequest(string Name, string Email, string Phone);
-public sealed record UpdateProfessionalRequest(string Name, string Email, string Phone);

@@ -26,7 +26,9 @@ public sealed class UpdateClientCommandHandler(
         if (phoneResult.IsFailure)
             return Result.Failure<Mediator.Unit>(phoneResult.Error);
 
-        client.UpdateContact(command.Name, emailResult.Value, phoneResult.Value);
+        var updateResult = client.UpdateContact(command.Name, emailResult.Value, phoneResult.Value);
+        if (updateResult.IsFailure)
+            return Result.Failure<Mediator.Unit>(updateResult.Error);
 
         clientRepository.Update(client);
         await unitOfWork.SaveChangesAsync(cancellationToken);

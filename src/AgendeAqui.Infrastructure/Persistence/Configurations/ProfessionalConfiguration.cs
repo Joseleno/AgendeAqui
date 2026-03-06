@@ -30,7 +30,7 @@ internal sealed class ProfessionalConfiguration : IEntityTypeConfiguration<Profe
             .HasMaxLength(320)
             .HasConversion(
                 e => e.Value,
-                s => Email.Create(s).Value)
+                s => Email.Hydrate(s))
             .IsRequired();
 
         builder.Property(p => p.Phone)
@@ -38,7 +38,7 @@ internal sealed class ProfessionalConfiguration : IEntityTypeConfiguration<Profe
             .HasMaxLength(20)
             .HasConversion(
                 ph => ph.Value,
-                s => PhoneNumber.Create(s).Value)
+                s => PhoneNumber.Hydrate(s))
             .IsRequired();
 
         builder.Property(p => p.IsActive)
@@ -54,5 +54,9 @@ internal sealed class ProfessionalConfiguration : IEntityTypeConfiguration<Profe
 
         builder.HasIndex(p => p.TenantId)
             .HasDatabaseName("ix_professionals_tenant_id");
+
+        builder.HasIndex(p => new { p.TenantId, p.IsActive })
+            .HasFilter("is_active = true")
+            .HasDatabaseName("ix_professionals_tenant_active");
     }
 }

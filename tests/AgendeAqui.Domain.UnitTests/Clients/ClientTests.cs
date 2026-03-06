@@ -46,17 +46,30 @@ public class ClientTests
     }
 
     [Fact]
-    public void UpdateContact_ShouldUpdateAllFields()
+    public void UpdateContact_WithValidData_ShouldSucceed()
     {
         var client = Client.Create(Guid.NewGuid(), "Maria", ValidEmail(), ValidPhone()).Value;
         var newEmail = Email.Create("new@example.com").Value;
         var newPhone = PhoneNumber.Create("5521912345678").Value;
 
-        client.UpdateContact("Maria Updated", newEmail, newPhone);
+        var result = client.UpdateContact("Maria Updated", newEmail, newPhone);
 
+        result.IsSuccess.Should().BeTrue();
         client.Name.Should().Be("Maria Updated");
         client.Email.Should().Be(newEmail);
         client.Phone.Should().Be(newPhone);
         client.UpdatedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void UpdateContact_WithEmptyName_ShouldFail()
+    {
+        var client = Client.Create(Guid.NewGuid(), "Maria", ValidEmail(), ValidPhone()).Value;
+
+        var result = client.UpdateContact("", ValidEmail(), ValidPhone());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(ClientErrors.InvalidName);
+        client.Name.Should().Be("Maria");
     }
 }

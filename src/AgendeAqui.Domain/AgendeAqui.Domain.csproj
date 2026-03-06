@@ -4,4 +4,9 @@
     <PackageReference Include="Mediator.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="AgendeAqui.Infrastructure" />
+    <InternalsVisibleTo Include="AgendeAqui.Domain.UnitTests" />
+  </ItemGroup>
+
 </Project>

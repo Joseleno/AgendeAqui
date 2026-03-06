@@ -1,3 +1,4 @@
+using AgendeAqui.Api.Endpoints.Requests;
 using AgendeAqui.Application.Services.CreateService;
 using AgendeAqui.Application.Services.GetService;
 using AgendeAqui.Application.Services.ListServices;
@@ -44,7 +45,9 @@ public static class ServiceEndpoints
             var query = new ListServicesQuery(page ?? 1, pageSize ?? 10);
             var result = await mediator.Send(query);
 
-            return Results.Ok(result.Value);
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.BadRequest(new { error = result.Error.Message });
         })
         .WithName("ListServices")
         .Produces(StatusCodes.Status200OK);
@@ -54,15 +57,16 @@ public static class ServiceEndpoints
             var command = new UpdateServiceCommand(id, request.Name, request.DurationMinutes, request.Price);
             var result = await mediator.Send(command);
 
-            return result.IsSuccess
-                ? Results.NoContent()
+            if (result.IsSuccess)
+                return Results.NoContent();
+
+            return result.Error.IsNotFound
+                ? Results.NotFound(new { error = result.Error.Message })
                 : Results.BadRequest(new { error = result.Error.Message });
         })
         .WithName("UpdateService")
         .Produces(StatusCodes.Status204NoContent)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
     }
 }
-
-public sealed record CreateServiceRequest(string Name, int DurationMinutes, decimal Price);
-public sealed record UpdateServiceRequest(string Name, int DurationMinutes, decimal Price);

@@ -8,6 +8,8 @@ namespace AgendeAqui.Infrastructure.Mapping;
 [Mapper]
 internal sealed partial class ClientMapper
 {
+    [MapperIgnoreSource(nameof(Client.TenantId))]
+    [MapperIgnoreSource(nameof(Client.UpdatedAt))]
     public partial ClientResponse ToResponse(Client client);
 
     private static string MapEmail(Email email) => email.Value;

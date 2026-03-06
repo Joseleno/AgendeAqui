@@ -52,7 +52,7 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
             .HasMaxLength(50)
             .HasConversion(
                 s => s.Name,
-                n => AppointmentStatus.FromName(n).Value)
+                n => AppointmentStatus.Hydrate(n))
             .IsRequired();
 
         builder.Property(a => a.Notes)

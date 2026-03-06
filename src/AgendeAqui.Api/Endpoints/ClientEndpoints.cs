@@ -1,3 +1,4 @@
+using AgendeAqui.Api.Endpoints.Requests;
 using AgendeAqui.Application.Clients.CreateClient;
 using AgendeAqui.Application.Clients.GetClient;
 using AgendeAqui.Application.Clients.ListClients;
@@ -44,7 +45,9 @@ public static class ClientEndpoints
             var query = new ListClientsQuery(page ?? 1, pageSize ?? 10);
             var result = await mediator.Send(query);
 
-            return Results.Ok(result.Value);
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.BadRequest(new { error = result.Error.Message });
         })
         .WithName("ListClients")
         .Produces(StatusCodes.Status200OK);
@@ -54,15 +57,16 @@ public static class ClientEndpoints
             var command = new UpdateClientCommand(id, request.Name, request.Email, request.Phone);
             var result = await mediator.Send(command);
 
-            return result.IsSuccess
-                ? Results.NoContent()
+            if (result.IsSuccess)
+                return Results.NoContent();
+
+            return result.Error.IsNotFound
+                ? Results.NotFound(new { error = result.Error.Message })
                 : Results.BadRequest(new { error = result.Error.Message });
         })
         .WithName("UpdateClient")
         .Produces(StatusCodes.Status204NoContent)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
     }
 }
-
-public sealed record CreateClientRequest(string Name, string Email, string Phone);
-public sealed record UpdateClientRequest(string Name, string Email, string Phone);

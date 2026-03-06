@@ -18,10 +18,13 @@ public sealed class UpdateServiceCommandHandler(
         if (service is null)
             return Result.Failure<Mediator.Unit>(ServiceErrors.NotFound);
 
-        service.UpdateDetails(
+        var updateResult = service.UpdateDetails(
             command.Name,
             TimeSpan.FromMinutes(command.DurationMinutes),
             command.Price);
+
+        if (updateResult.IsFailure)
+            return Result.Failure<Mediator.Unit>(updateResult.Error);
 
         serviceRepository.Update(service);
         await unitOfWork.SaveChangesAsync(cancellationToken);

@@ -47,7 +47,7 @@ public class ProfessionalTests
     }
 
     [Fact]
-    public void Activate_ShouldSetIsActiveTrue()
+    public void Activate_ShouldSetIsActiveAndUpdatedAt()
     {
         var professional = Professional.Create(Guid.NewGuid(), "John", ValidEmail(), ValidPhone()).Value;
         professional.Deactivate();
@@ -55,30 +55,45 @@ public class ProfessionalTests
         professional.Activate();
 
         professional.IsActive.Should().BeTrue();
+        professional.UpdatedAt.Should().NotBeNull();
     }
 
     [Fact]
-    public void Deactivate_ShouldSetIsActiveFalse()
+    public void Deactivate_ShouldSetIsInactiveAndUpdatedAt()
     {
         var professional = Professional.Create(Guid.NewGuid(), "John", ValidEmail(), ValidPhone()).Value;
 
         professional.Deactivate();
 
         professional.IsActive.Should().BeFalse();
+        professional.UpdatedAt.Should().NotBeNull();
     }
 
     [Fact]
-    public void UpdateContact_ShouldUpdateAllFields()
+    public void UpdateContact_WithValidData_ShouldSucceed()
     {
         var professional = Professional.Create(Guid.NewGuid(), "John", ValidEmail(), ValidPhone()).Value;
         var newEmail = Email.Create("jane@example.com").Value;
         var newPhone = PhoneNumber.Create("5521912345678").Value;
 
-        professional.UpdateContact("Jane Doe", newEmail, newPhone);
+        var result = professional.UpdateContact("Jane Doe", newEmail, newPhone);
 
+        result.IsSuccess.Should().BeTrue();
         professional.Name.Should().Be("Jane Doe");
         professional.Email.Should().Be(newEmail);
         professional.Phone.Should().Be(newPhone);
         professional.UpdatedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void UpdateContact_WithEmptyName_ShouldFail()
+    {
+        var professional = Professional.Create(Guid.NewGuid(), "John", ValidEmail(), ValidPhone()).Value;
+
+        var result = professional.UpdateContact("", ValidEmail(), ValidPhone());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(ProfessionalErrors.InvalidName);
+        professional.Name.Should().Be("John");
     }
 }

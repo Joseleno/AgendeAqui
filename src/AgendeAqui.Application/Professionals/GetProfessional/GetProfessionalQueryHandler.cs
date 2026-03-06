@@ -1,5 +1,6 @@
 using AgendeAqui.Application.Abstractions.Data;
 using AgendeAqui.Application.Abstractions.Messaging;
+using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Common;
 using AgendeAqui.Domain.Professionals;
 using Dapper;
@@ -7,7 +8,8 @@ using Dapper;
 namespace AgendeAqui.Application.Professionals.GetProfessional;
 
 public sealed class GetProfessionalQueryHandler(
-    ISqlConnectionFactory sqlConnectionFactory) : IQueryHandler<GetProfessionalQuery, ProfessionalResponse>
+    ISqlConnectionFactory sqlConnectionFactory,
+    ITenantProvider tenantProvider) : IQueryHandler<GetProfessionalQuery, ProfessionalResponse>
 {
     public async ValueTask<Result<ProfessionalResponse>> Handle(
         GetProfessionalQuery query,
@@ -23,12 +25,15 @@ public sealed class GetProfessionalQueryHandler(
                    is_active   AS IsActive,
                    created_at  AS CreatedAt
             FROM professionals
-            WHERE id = @ProfessionalId
+            WHERE id = @ProfessionalId AND tenant_id = @TenantId
             """;
 
-        var professional = await connection.QueryFirstOrDefaultAsync<ProfessionalResponse>(
+        var command = new CommandDefinition(
             sql,
-            new { query.ProfessionalId });
+            new { query.ProfessionalId, TenantId = tenantProvider.GetTenantId() },
+            cancellationToken: cancellationToken);
+
+        var professional = await connection.QueryFirstOrDefaultAsync<ProfessionalResponse>(command);
 
         if (professional is null)
             return Result.Failure<ProfessionalResponse>(ProfessionalErrors.NotFound);

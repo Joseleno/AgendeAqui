@@ -31,6 +31,9 @@ public sealed class AppointmentStatus : ValueObject
     public bool CanTransitionTo(AppointmentStatus target) =>
         ValidTransitions.TryGetValue(Name, out var allowed) && allowed.Contains(target.Name);
 
+    /// <summary>Reconstitutes from a trusted data store (no validation).</summary>
+    internal static AppointmentStatus Hydrate(string name) => new(name);
+
     public static Result<AppointmentStatus> FromName(string name)
     {
         AppointmentStatus? status = name switch
