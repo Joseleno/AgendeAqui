@@ -1,4 +1,5 @@
 using AgendeAqui.Application.Abstractions.Data;
+using AgendeAqui.Application.Abstractions.Messaging;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Infrastructure.Messaging;
 using AgendeAqui.Infrastructure.MultiTenancy;

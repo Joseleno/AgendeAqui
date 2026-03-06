@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using AgendeAqui.Application.Abstractions.Messaging;
 using RabbitMQ.Client;
 
 namespace AgendeAqui.Infrastructure.Messaging;

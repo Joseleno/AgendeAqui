@@ -16,7 +16,7 @@ public sealed class ListProfessionalsQueryHandler(
         ListProfessionalsQuery query,
         CancellationToken cancellationToken)
     {
-        using var connection = sqlConnectionFactory.CreateConnection();
+        using var connection = await sqlConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         var tenantId = tenantProvider.GetTenantId();
 

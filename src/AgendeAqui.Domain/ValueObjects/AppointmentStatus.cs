@@ -16,8 +16,8 @@ public sealed class AppointmentStatus : ValueObject
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> ValidTransitions =
         new Dictionary<string, IReadOnlyList<string>>
         {
-            [Scheduled.Name] = ["Confirmed", "Cancelled"],
-            [Confirmed.Name] = ["InProgress", "Cancelled"],
+            [Scheduled.Name] = ["Scheduled", "Confirmed", "Cancelled"],
+            [Confirmed.Name] = ["Scheduled", "InProgress", "Cancelled"],
             [InProgress.Name] = ["Completed", "NoShow"],
             [Completed.Name] = [],
             [Cancelled.Name] = [],

@@ -46,12 +46,16 @@ internal sealed class TenantInterceptor : DbCommandInterceptor
     private async Task SetTenantContextAsync(DbCommand command, CancellationToken cancellationToken)
     {
         var tenantId = _tenantProvider.GetTenantId();
-        if (tenantId == Guid.Empty)
+        if (tenantId == Guid.Empty || command.Connection is null)
             return;
 
-        using var setTenantCommand = command.Connection!.CreateCommand();
+        using var setTenantCommand = command.Connection.CreateCommand();
         setTenantCommand.Transaction = command.Transaction;
-        setTenantCommand.CommandText = $"SET app.current_tenant_id = '{tenantId}'";
+        setTenantCommand.CommandText = "SELECT set_config('app.current_tenant_id', @tenantId, false)";
+        var parameter = setTenantCommand.CreateParameter();
+        parameter.ParameterName = "tenantId";
+        parameter.Value = tenantId.ToString();
+        setTenantCommand.Parameters.Add(parameter);
         await setTenantCommand.ExecuteNonQueryAsync(cancellationToken);
     }
 }

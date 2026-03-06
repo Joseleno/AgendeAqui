@@ -19,6 +19,8 @@ public static class WebApplicationExtensions
         app.MapProfessionalEndpoints();
         app.MapServiceEndpoints();
         app.MapClientEndpoints();
+        app.MapAppointmentEndpoints();
+        app.MapAvailabilityEndpoints();
 
         return app;
     }

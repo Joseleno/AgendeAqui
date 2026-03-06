@@ -27,6 +27,15 @@ internal sealed class ScheduleRepository : IScheduleRepository
             .Where(s => s.ProfessionalId == professionalId)
             .ToListAsync(ct);
 
+    public async Task<Schedule?> GetByProfessionalAndDayAsync(
+        Guid professionalId,
+        DayOfWeek dayOfWeek,
+        CancellationToken ct = default) =>
+        await _context.Schedules
+            .AsNoTracking()
+            .Where(s => s.ProfessionalId == professionalId && s.DayOfWeek == dayOfWeek && s.IsActive)
+            .FirstOrDefaultAsync(ct);
+
     public async Task AddAsync(Schedule entity, CancellationToken ct = default) =>
         await _context.Schedules.AddAsync(entity, ct);
 

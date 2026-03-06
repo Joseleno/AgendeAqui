@@ -17,7 +17,51 @@ public class AppointmentTests
             serviceId: Guid.NewGuid(),
             clientId: Guid.NewGuid(),
             date: DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
-            timeSlot: timeSlot ?? CreateTimeSlot());
+            timeSlot: timeSlot ?? CreateTimeSlot()).Value;
+
+    [Fact]
+    public void Create_WithEmptyTenantId_ShouldFail()
+    {
+        var result = Appointment.Create(
+            Guid.Empty, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+            DateOnly.FromDateTime(DateTime.Today.AddDays(1)), CreateTimeSlot());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(AppointmentErrors.InvalidTenant);
+    }
+
+    [Fact]
+    public void Create_WithEmptyProfessionalId_ShouldFail()
+    {
+        var result = Appointment.Create(
+            Guid.NewGuid(), Guid.Empty, Guid.NewGuid(), Guid.NewGuid(),
+            DateOnly.FromDateTime(DateTime.Today.AddDays(1)), CreateTimeSlot());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(AppointmentErrors.ProfessionalNotFound);
+    }
+
+    [Fact]
+    public void Create_WithEmptyServiceId_ShouldFail()
+    {
+        var result = Appointment.Create(
+            Guid.NewGuid(), Guid.NewGuid(), Guid.Empty, Guid.NewGuid(),
+            DateOnly.FromDateTime(DateTime.Today.AddDays(1)), CreateTimeSlot());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(AppointmentErrors.ServiceNotFound);
+    }
+
+    [Fact]
+    public void Create_WithEmptyClientId_ShouldFail()
+    {
+        var result = Appointment.Create(
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.Empty,
+            DateOnly.FromDateTime(DateTime.Today.AddDays(1)), CreateTimeSlot());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(AppointmentErrors.ClientNotFound);
+    }
 
     [Fact]
     public void Create_ShouldRaiseAppointmentCreatedEvent()
@@ -47,8 +91,10 @@ public class AppointmentTests
         var timeSlot = CreateTimeSlot();
         var notes = "Patient notes";
 
-        var appointment = Appointment.Create(tenantId, professionalId, serviceId, clientId, date, timeSlot, notes);
+        var result = Appointment.Create(tenantId, professionalId, serviceId, clientId, date, timeSlot, notes);
 
+        result.IsSuccess.Should().BeTrue();
+        var appointment = result.Value;
         appointment.TenantId.Should().Be(tenantId);
         appointment.ProfessionalId.Should().Be(professionalId);
         appointment.ServiceId.Should().Be(serviceId);
@@ -67,6 +113,30 @@ public class AppointmentTests
 
         result.IsSuccess.Should().BeTrue();
         appointment.Status.Should().Be(AppointmentStatus.Confirmed);
+    }
+
+    [Fact]
+    public void Confirm_FromScheduled_ShouldRaiseConfirmedEvent()
+    {
+        var appointment = CreateScheduledAppointment();
+        appointment.ClearDomainEvents();
+
+        appointment.Confirm();
+
+        appointment.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<AppointmentConfirmedEvent>();
+    }
+
+    [Fact]
+    public void Cancel_FromConfirmed_ShouldSucceed()
+    {
+        var appointment = CreateScheduledAppointment();
+        appointment.Confirm();
+
+        var result = appointment.Cancel("Changed mind");
+
+        result.IsSuccess.Should().BeTrue();
+        appointment.Status.Should().Be(AppointmentStatus.Cancelled);
     }
 
     [Fact]
@@ -103,7 +173,66 @@ public class AppointmentTests
         var result = appointment.Cancel("Too late");
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(Appointment.InvalidTransition);
+        result.Error.Should().Be(AppointmentErrors.InvalidTransition);
+    }
+
+    [Fact]
+    public void Complete_FromInProgress_ShouldRaiseCompletedEvent()
+    {
+        var appointment = CreateScheduledAppointment();
+        appointment.Confirm();
+        appointment.Start();
+        appointment.ClearDomainEvents();
+
+        appointment.Complete();
+
+        appointment.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<AppointmentCompletedEvent>();
+    }
+
+    [Fact]
+    public void MarkNoShow_FromInProgress_ShouldRaiseNoShowEvent()
+    {
+        var appointment = CreateScheduledAppointment();
+        appointment.Confirm();
+        appointment.Start();
+        appointment.ClearDomainEvents();
+
+        appointment.MarkNoShow();
+
+        appointment.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<AppointmentNoShowEvent>();
+    }
+
+    [Fact]
+    public void Reschedule_FromInProgress_ShouldFail()
+    {
+        var appointment = CreateScheduledAppointment();
+        appointment.Confirm();
+        appointment.Start();
+
+        var result = appointment.Reschedule(
+            DateOnly.FromDateTime(DateTime.Today.AddDays(5)),
+            CreateTimeSlot(14, 15));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(AppointmentErrors.InvalidTransition);
+    }
+
+    [Fact]
+    public void Reschedule_FromCompleted_ShouldFail()
+    {
+        var appointment = CreateScheduledAppointment();
+        appointment.Confirm();
+        appointment.Start();
+        appointment.Complete();
+
+        var result = appointment.Reschedule(
+            DateOnly.FromDateTime(DateTime.Today.AddDays(5)),
+            CreateTimeSlot(14, 15));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(AppointmentErrors.InvalidTransition);
     }
 
     [Fact]
@@ -146,7 +275,7 @@ public class AppointmentTests
             CreateTimeSlot(14, 15));
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(Appointment.InvalidTransition);
+        result.Error.Should().Be(AppointmentErrors.InvalidTransition);
     }
 
     [Fact]
@@ -183,7 +312,7 @@ public class AppointmentTests
         var result = appointment.MarkNoShow();
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(Appointment.InvalidTransition);
+        result.Error.Should().Be(AppointmentErrors.InvalidTransition);
     }
 
     [Fact]
@@ -208,7 +337,7 @@ public class AppointmentTests
         var result = appointment.Complete();
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(Appointment.InvalidTransition);
+        result.Error.Should().Be(AppointmentErrors.InvalidTransition);
     }
 
     [Fact]
@@ -224,6 +353,19 @@ public class AppointmentTests
     }
 
     [Fact]
+    public void Start_FromConfirmed_ShouldRaiseStartedEvent()
+    {
+        var appointment = CreateScheduledAppointment();
+        appointment.Confirm();
+        appointment.ClearDomainEvents();
+
+        appointment.Start();
+
+        appointment.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<AppointmentStartedEvent>();
+    }
+
+    [Fact]
     public void Start_FromScheduled_ShouldFail()
     {
         var appointment = CreateScheduledAppointment();
@@ -231,6 +373,6 @@ public class AppointmentTests
         var result = appointment.Start();
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(Appointment.InvalidTransition);
+        result.Error.Should().Be(AppointmentErrors.InvalidTransition);
     }
 }
