@@ -1,14 +1,19 @@
 using AgendeAqui.Application.Abstractions.Data;
 using AgendeAqui.Application.Abstractions.Messaging;
+using AgendeAqui.Application.Abstractions.Notifications;
 using AgendeAqui.Domain.Abstractions;
+using AgendeAqui.Infrastructure.Jobs;
 using AgendeAqui.Infrastructure.Messaging;
+using AgendeAqui.Infrastructure.Messaging.Consumers;
 using AgendeAqui.Infrastructure.MultiTenancy;
+using AgendeAqui.Infrastructure.Notifications;
 using AgendeAqui.Infrastructure.Persistence;
 using AgendeAqui.Infrastructure.Persistence.Interceptors;
 using AgendeAqui.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 
 namespace AgendeAqui.Infrastructure;
 
@@ -60,6 +65,31 @@ public static class DependencyInjection
         services.AddSingleton<RabbitMqConnection>();
         services.AddScoped<IEventBus, RabbitMqEventBus>();
         services.AddHostedService<RabbitMqSetup>();
+
+        // Notification Repository
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+
+        // Consumers
+        services.AddHostedService<AppointmentCreatedConsumer>();
+        services.AddHostedService<AppointmentCancelledConsumer>();
+        services.AddHostedService<AppointmentRescheduledConsumer>();
+        services.AddHostedService<AppointmentReminderJob>();
+
+        // Notification Service
+        services.AddScoped<INotificationService, NotificationService>();
+
+        // WhatsApp Client with resilience
+        services.Configure<ChakraChatSettings>(configuration.GetSection("ChakraChat"));
+
+        var chakraSettings = configuration.GetSection("ChakraChat").Get<ChakraChatSettings>()
+            ?? new ChakraChatSettings();
+
+        services.AddHttpClient<IWhatsAppClient, WhatsAppClient>(client =>
+        {
+            client.BaseAddress = new Uri(chakraSettings.BaseUrl);
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {chakraSettings.ApiKey}");
+        })
+        .AddStandardResilienceHandler();
 
         return services;
     }

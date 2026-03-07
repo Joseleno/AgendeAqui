@@ -30,6 +30,7 @@ public static class WebApplicationExtensions
         app.MapAppointmentEndpoints();
         app.MapAvailabilityEndpoints();
         app.MapScheduleEndpoints();
+        app.MapNotificationEndpoints();
 
         return app;
     }

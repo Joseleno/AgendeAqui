@@ -106,6 +106,43 @@ internal sealed class RabbitMqSetup : IHostedService
             routingKey: "appointmentrescheduled",
             cancellationToken: cancellationToken);
 
+        // Retry queues with TTL
+        await channel.QueueDeclareAsync(
+            queue: "appointment.retry.1s",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: new Dictionary<string, object?>
+            {
+                ["x-dead-letter-exchange"] = "appointment.events",
+                ["x-message-ttl"] = 1000
+            },
+            cancellationToken: cancellationToken);
+
+        await channel.QueueDeclareAsync(
+            queue: "appointment.retry.5s",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: new Dictionary<string, object?>
+            {
+                ["x-dead-letter-exchange"] = "appointment.events",
+                ["x-message-ttl"] = 5000
+            },
+            cancellationToken: cancellationToken);
+
+        await channel.QueueDeclareAsync(
+            queue: "appointment.retry.25s",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: new Dictionary<string, object?>
+            {
+                ["x-dead-letter-exchange"] = "appointment.events",
+                ["x-message-ttl"] = 25000
+            },
+            cancellationToken: cancellationToken);
+
         // Notification queue
         await channel.QueueDeclareAsync(
             queue: "notifications.whatsapp",

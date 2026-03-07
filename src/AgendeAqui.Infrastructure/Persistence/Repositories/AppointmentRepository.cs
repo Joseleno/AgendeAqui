@@ -66,6 +66,15 @@ internal sealed class AppointmentRepository : IAppointmentRepository
                 a.Status != AppointmentStatus.Cancelled)
             .ToListAsync(ct);
 
+    public async Task<List<Appointment>> GetByDateRangeAsync(
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct = default) =>
+        await _context.Appointments
+            .AsNoTracking()
+            .Where(a => a.Date >= from && a.Date <= to)
+            .ToListAsync(ct);
+
     public async Task AddAsync(Appointment entity, CancellationToken ct = default) =>
         await _context.Appointments.AddAsync(entity, ct);
 
