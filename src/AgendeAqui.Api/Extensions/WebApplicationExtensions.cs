@@ -11,8 +11,16 @@ public static class WebApplicationExtensions
             app.MapOpenApi();
 
         app.UseMiddleware<ExceptionHandlingMiddleware>();
-        app.UseMiddleware<TenantResolutionMiddleware>();
+
         app.UseHttpsRedirection();
+
+        app.UseRateLimiter();
+
+        app.UseAuthentication();
+
+        app.UseMiddleware<TenantResolutionMiddleware>();
+
+        app.UseAuthorization();
 
         app.MapHealthChecks("/health");
         app.MapTenantEndpoints();
@@ -21,6 +29,7 @@ public static class WebApplicationExtensions
         app.MapClientEndpoints();
         app.MapAppointmentEndpoints();
         app.MapAvailabilityEndpoints();
+        app.MapScheduleEndpoints();
 
         return app;
     }

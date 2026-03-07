@@ -33,7 +33,7 @@ internal sealed class ScheduleRepository : IScheduleRepository
         CancellationToken ct = default) =>
         await _context.Schedules
             .AsNoTracking()
-            .Where(s => s.ProfessionalId == professionalId && s.DayOfWeek == dayOfWeek && s.IsActive)
+            .Where(s => s.ProfessionalId == professionalId && s.DayOfWeek == dayOfWeek)
             .FirstOrDefaultAsync(ct);
 
     public async Task AddAsync(Schedule entity, CancellationToken ct = default) =>

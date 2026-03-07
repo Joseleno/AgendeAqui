@@ -11,7 +11,7 @@ public class CreateAppointmentCommandValidatorTests
     public void Validate_WithValidCommand_ShouldHaveNoErrors()
     {
         var command = new CreateAppointmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
-            DateOnly.FromDateTime(DateTime.Today.AddDays(1)), new TimeOnly(9, 0), null);
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)), new TimeOnly(9, 0), null);
 
         var result = _validator.TestValidate(command);
 
@@ -22,7 +22,7 @@ public class CreateAppointmentCommandValidatorTests
     public void Validate_WithEmptyProfessionalId_ShouldHaveError()
     {
         var command = new CreateAppointmentCommand(Guid.Empty, Guid.NewGuid(), Guid.NewGuid(),
-            DateOnly.FromDateTime(DateTime.Today.AddDays(1)), new TimeOnly(9, 0), null);
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)), new TimeOnly(9, 0), null);
 
         var result = _validator.TestValidate(command);
 
@@ -33,7 +33,7 @@ public class CreateAppointmentCommandValidatorTests
     public void Validate_WithEmptyServiceId_ShouldHaveError()
     {
         var command = new CreateAppointmentCommand(Guid.NewGuid(), Guid.Empty, Guid.NewGuid(),
-            DateOnly.FromDateTime(DateTime.Today.AddDays(1)), new TimeOnly(9, 0), null);
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)), new TimeOnly(9, 0), null);
 
         var result = _validator.TestValidate(command);
 
@@ -44,7 +44,7 @@ public class CreateAppointmentCommandValidatorTests
     public void Validate_WithEmptyClientId_ShouldHaveError()
     {
         var command = new CreateAppointmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.Empty,
-            DateOnly.FromDateTime(DateTime.Today.AddDays(1)), new TimeOnly(9, 0), null);
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)), new TimeOnly(9, 0), null);
 
         var result = _validator.TestValidate(command);
 
@@ -55,7 +55,7 @@ public class CreateAppointmentCommandValidatorTests
     public void Validate_WithNotesExceeding1000Chars_ShouldHaveError()
     {
         var command = new CreateAppointmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
-            DateOnly.FromDateTime(DateTime.Today.AddDays(1)), new TimeOnly(9, 0), new string('x', 1001));
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)), new TimeOnly(9, 0), new string('x', 1001));
 
         var result = _validator.TestValidate(command);
 

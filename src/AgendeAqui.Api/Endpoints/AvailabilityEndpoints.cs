@@ -1,3 +1,4 @@
+using AgendeAqui.Api.Auth;
 using AgendeAqui.Application.Availability.GetAvailability;
 using Mediator;
 
@@ -8,12 +9,14 @@ public static class AvailabilityEndpoints
     public static void MapAvailabilityEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/availability")
-            .WithTags("Availability");
+            .WithTags("Availability")
+            .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated)
+            .RequireRateLimiting("tenant");
 
-        group.MapGet("/", async (Guid professionalId, DateOnly date, Guid serviceId, IMediator mediator) =>
+        group.MapGet("/", async (Guid professionalId, DateOnly date, Guid serviceId, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var query = new GetAvailabilityQuery(professionalId, date, serviceId);
-            var result = await mediator.Send(query);
+            var result = await mediator.Send(query, cancellationToken);
 
             return result.IsSuccess
                 ? Results.Ok(result.Value)

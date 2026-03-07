@@ -105,4 +105,32 @@ public class ArchitectureTests
         result.IsSuccessful.Should().BeTrue(
             because: $"Domain layer must be completely independent. Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
     }
+
+    [Fact]
+    public void CommandHandlers_Should_ImplementICommandHandler()
+    {
+        var result = Types.InAssembly(ApplicationAssembly)
+            .That()
+            .HaveNameEndingWith("CommandHandler")
+            .Should()
+            .HaveDependencyOn("AgendeAqui.Application.Abstractions.Messaging")
+            .GetResult();
+
+        result.IsSuccessful.Should().BeTrue(
+            because: $"All command handlers must use ICommandHandler. Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+    }
+
+    [Fact]
+    public void QueryHandlers_Should_ImplementIQueryHandler()
+    {
+        var result = Types.InAssembly(ApplicationAssembly)
+            .That()
+            .HaveNameEndingWith("QueryHandler")
+            .Should()
+            .HaveDependencyOn("AgendeAqui.Application.Abstractions.Messaging")
+            .GetResult();
+
+        result.IsSuccessful.Should().BeTrue(
+            because: $"All query handlers must use IQueryHandler. Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+    }
 }

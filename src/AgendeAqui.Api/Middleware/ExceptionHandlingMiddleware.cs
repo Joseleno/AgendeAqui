@@ -14,6 +14,11 @@ public sealed class ExceptionHandlingMiddleware(
         {
             await next(context);
         }
+        catch (ValidationException validationException)
+        {
+            logger.LogWarning("Validation error: {ErrorCount} failures", validationException.Errors.Count);
+            await HandleExceptionAsync(context, validationException);
+        }
         catch (Exception exception)
         {
             logger.LogError(exception, "An unhandled exception occurred");

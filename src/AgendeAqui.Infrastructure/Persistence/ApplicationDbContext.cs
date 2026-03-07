@@ -1,4 +1,5 @@
 using AgendeAqui.Domain.Abstractions;
+using AgendeAqui.Domain.ApiKeys;
 using AgendeAqui.Domain.Appointments;
 using AgendeAqui.Domain.Clients;
 using AgendeAqui.Domain.Common;
@@ -21,6 +22,7 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
     public DbSet<Professional> Professionals => Set<Professional>();
     public DbSet<Service> Services => Set<Service>();
     public DbSet<Client> Clients => Set<Client>();
+    public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IPublisher publisher)
         : base(options)

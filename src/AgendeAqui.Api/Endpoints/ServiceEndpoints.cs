@@ -1,3 +1,4 @@
+using AgendeAqui.Api.Auth;
 using AgendeAqui.Api.Endpoints.Requests;
 using AgendeAqui.Application.Services.CreateService;
 using AgendeAqui.Application.Services.GetService;
@@ -12,12 +13,13 @@ public static class ServiceEndpoints
     public static void MapServiceEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/services")
-            .WithTags("Services");
+            .WithTags("Services")
+            .RequireRateLimiting("tenant");
 
-        group.MapPost("/", async (CreateServiceRequest request, IMediator mediator) =>
+        group.MapPost("/", async (CreateServiceRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var command = new CreateServiceCommand(request.Name, request.DurationMinutes, request.Price);
-            var result = await mediator.Send(command);
+            var result = await mediator.Send(command, cancellationToken);
 
             return result.IsSuccess
                 ? Results.Created($"/api/v1/services/{result.Value}", new { id = result.Value })
@@ -25,12 +27,13 @@ public static class ServiceEndpoints
         })
         .WithName("CreateService")
         .Produces(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(AuthorizationPolicies.RequireAdmin);
 
-        group.MapGet("/{id:guid}", async (Guid id, IMediator mediator) =>
+        group.MapGet("/{id:guid}", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var query = new GetServiceQuery(id);
-            var result = await mediator.Send(query);
+            var result = await mediator.Send(query, cancellationToken);
 
             return result.IsSuccess
                 ? Results.Ok(result.Value)
@@ -38,24 +41,26 @@ public static class ServiceEndpoints
         })
         .WithName("GetService")
         .Produces<ServiceResponse>()
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
 
-        group.MapGet("/", async (int? page, int? pageSize, IMediator mediator) =>
+        group.MapGet("/", async (int? page, int? pageSize, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var query = new ListServicesQuery(page ?? 1, pageSize ?? 10);
-            var result = await mediator.Send(query);
+            var result = await mediator.Send(query, cancellationToken);
 
             return result.IsSuccess
                 ? Results.Ok(result.Value)
                 : Results.BadRequest(new { error = result.Error.Message });
         })
         .WithName("ListServices")
-        .Produces(StatusCodes.Status200OK);
+        .Produces(StatusCodes.Status200OK)
+        .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
 
-        group.MapPut("/{id:guid}", async (Guid id, UpdateServiceRequest request, IMediator mediator) =>
+        group.MapPut("/{id:guid}", async (Guid id, UpdateServiceRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var command = new UpdateServiceCommand(id, request.Name, request.DurationMinutes, request.Price);
-            var result = await mediator.Send(command);
+            var result = await mediator.Send(command, cancellationToken);
 
             if (result.IsSuccess)
                 return Results.NoContent();
@@ -67,6 +72,7 @@ public static class ServiceEndpoints
         .WithName("UpdateService")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireAuthorization(AuthorizationPolicies.RequireAdmin);
     }
 }

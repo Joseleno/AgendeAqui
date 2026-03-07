@@ -11,7 +11,7 @@ public class RescheduleAppointmentCommandValidatorTests
     public void Validate_WithValidCommand_ShouldHaveNoErrors()
     {
         var command = new RescheduleAppointmentCommand(
-            Guid.NewGuid(), DateOnly.FromDateTime(DateTime.Today.AddDays(1)), new TimeOnly(9, 0));
+            Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)), new TimeOnly(9, 0));
 
         var result = _validator.TestValidate(command);
 
@@ -22,7 +22,7 @@ public class RescheduleAppointmentCommandValidatorTests
     public void Validate_WithEmptyAppointmentId_ShouldHaveError()
     {
         var command = new RescheduleAppointmentCommand(
-            Guid.Empty, DateOnly.FromDateTime(DateTime.Today.AddDays(1)), new TimeOnly(9, 0));
+            Guid.Empty, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)), new TimeOnly(9, 0));
 
         var result = _validator.TestValidate(command);
 

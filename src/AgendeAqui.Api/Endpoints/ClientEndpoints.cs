@@ -1,3 +1,4 @@
+using AgendeAqui.Api.Auth;
 using AgendeAqui.Api.Endpoints.Requests;
 using AgendeAqui.Application.Clients.CreateClient;
 using AgendeAqui.Application.Clients.GetClient;
@@ -12,12 +13,13 @@ public static class ClientEndpoints
     public static void MapClientEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/clients")
-            .WithTags("Clients");
+            .WithTags("Clients")
+            .RequireRateLimiting("tenant");
 
-        group.MapPost("/", async (CreateClientRequest request, IMediator mediator) =>
+        group.MapPost("/", async (CreateClientRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var command = new CreateClientCommand(request.Name, request.Email, request.Phone);
-            var result = await mediator.Send(command);
+            var result = await mediator.Send(command, cancellationToken);
 
             return result.IsSuccess
                 ? Results.Created($"/api/v1/clients/{result.Value}", new { id = result.Value })
@@ -25,12 +27,13 @@ public static class ClientEndpoints
         })
         .WithName("CreateClient")
         .Produces(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
 
-        group.MapGet("/{id:guid}", async (Guid id, IMediator mediator) =>
+        group.MapGet("/{id:guid}", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var query = new GetClientQuery(id);
-            var result = await mediator.Send(query);
+            var result = await mediator.Send(query, cancellationToken);
 
             return result.IsSuccess
                 ? Results.Ok(result.Value)
@@ -38,24 +41,26 @@ public static class ClientEndpoints
         })
         .WithName("GetClient")
         .Produces<ClientResponse>()
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
 
-        group.MapGet("/", async (int? page, int? pageSize, IMediator mediator) =>
+        group.MapGet("/", async (int? page, int? pageSize, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var query = new ListClientsQuery(page ?? 1, pageSize ?? 10);
-            var result = await mediator.Send(query);
+            var result = await mediator.Send(query, cancellationToken);
 
             return result.IsSuccess
                 ? Results.Ok(result.Value)
                 : Results.BadRequest(new { error = result.Error.Message });
         })
         .WithName("ListClients")
-        .Produces(StatusCodes.Status200OK);
+        .Produces(StatusCodes.Status200OK)
+        .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
 
-        group.MapPut("/{id:guid}", async (Guid id, UpdateClientRequest request, IMediator mediator) =>
+        group.MapPut("/{id:guid}", async (Guid id, UpdateClientRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var command = new UpdateClientCommand(id, request.Name, request.Email, request.Phone);
-            var result = await mediator.Send(command);
+            var result = await mediator.Send(command, cancellationToken);
 
             if (result.IsSuccess)
                 return Results.NoContent();
@@ -67,6 +72,7 @@ public static class ClientEndpoints
         .WithName("UpdateClient")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
     }
 }
