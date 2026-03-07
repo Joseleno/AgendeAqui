@@ -20,10 +20,13 @@ public static class AvailabilityEndpoints
 
             return result.IsSuccess
                 ? Results.Ok(result.Value)
-                : Results.BadRequest(new { error = result.Error.Message });
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
         })
         .WithName("GetAvailability")
         .Produces<AvailabilityResponse>()
-        .Produces(StatusCodes.Status400BadRequest);
+        .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 }

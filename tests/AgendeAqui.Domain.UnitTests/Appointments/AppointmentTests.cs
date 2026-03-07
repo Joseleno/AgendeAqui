@@ -177,6 +177,20 @@ public class AppointmentTests
     }
 
     [Fact]
+    public void Cancel_FromCompleted_ShouldFail()
+    {
+        var appointment = CreateScheduledAppointment();
+        appointment.Confirm();
+        appointment.Start();
+        appointment.Complete();
+
+        var result = appointment.Cancel("Too late");
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(AppointmentErrors.InvalidTransition);
+    }
+
+    [Fact]
     public void Complete_FromInProgress_ShouldRaiseCompletedEvent()
     {
         var appointment = CreateScheduledAppointment();

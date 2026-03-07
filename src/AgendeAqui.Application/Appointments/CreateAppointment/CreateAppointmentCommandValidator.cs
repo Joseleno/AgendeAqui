@@ -20,6 +20,10 @@ public sealed class CreateAppointmentCommandValidator : AbstractValidator<Create
             .GreaterThan(DateOnly.FromDateTime(DateTime.UtcNow))
             .WithMessage("Appointment date must be in the future.");
 
+        RuleFor(x => x.StartTime)
+            .NotEqual(default(TimeOnly))
+            .WithMessage("A valid start time is required.");
+
         RuleFor(x => x.Notes)
             .MaximumLength(1000);
     }

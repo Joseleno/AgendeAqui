@@ -1,4 +1,5 @@
 using AgendeAqui.Application.Appointments.CreateAppointment;
+using FluentAssertions;
 using FluentValidation.TestHelper;
 
 namespace AgendeAqui.Application.UnitTests.Appointments;
@@ -71,5 +72,22 @@ public class CreateAppointmentCommandValidatorTests
         var result = _validator.TestValidate(command);
 
         result.ShouldHaveValidationErrorFor(x => x.Date);
+    }
+
+    [Fact]
+    public void Validate_WithDefaultStartTime_ShouldHaveError()
+    {
+        var command = new CreateAppointmentCommand(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+            default,
+            null);
+
+        var result = _validator.Validate(command);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "StartTime");
     }
 }

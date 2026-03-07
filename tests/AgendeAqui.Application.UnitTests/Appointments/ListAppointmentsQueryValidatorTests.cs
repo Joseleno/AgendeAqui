@@ -1,4 +1,5 @@
 using AgendeAqui.Application.Appointments.ListAppointments;
+using FluentAssertions;
 using FluentValidation.TestHelper;
 
 namespace AgendeAqui.Application.UnitTests.Appointments;
@@ -55,6 +56,16 @@ public class ListAppointmentsQueryValidatorTests
         var result = _validator.TestValidate(query);
 
         result.ShouldHaveValidationErrorFor(x => x.PageSize);
+    }
+
+    [Fact]
+    public void Validate_WithPageSizeAtMax_ShouldHaveNoErrors()
+    {
+        var query = new ListAppointmentsQuery(1, 50);
+
+        var result = _validator.Validate(query);
+
+        result.IsValid.Should().BeTrue();
     }
 
     [Theory]

@@ -13,5 +13,9 @@ public sealed class RescheduleAppointmentCommandValidator : AbstractValidator<Re
             .NotEmpty()
             .GreaterThan(DateOnly.FromDateTime(DateTime.UtcNow))
             .WithMessage("New date must be in the future.");
+
+        RuleFor(x => x.NewStartTime)
+            .NotEqual(default(TimeOnly))
+            .WithMessage("A valid start time is required.");
     }
 }

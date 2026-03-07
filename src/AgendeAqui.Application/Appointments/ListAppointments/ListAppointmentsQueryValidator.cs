@@ -13,7 +13,8 @@ public sealed class ListAppointmentsQueryValidator : AbstractValidator<ListAppoi
             .GreaterThanOrEqualTo(1);
 
         RuleFor(x => x.PageSize)
-            .GreaterThanOrEqualTo(1);
+            .InclusiveBetween(1, 50)
+            .WithMessage("Page size must be between 1 and 50.");
 
         RuleFor(x => x.Status)
             .Must(s => ValidStatuses.Contains(s))

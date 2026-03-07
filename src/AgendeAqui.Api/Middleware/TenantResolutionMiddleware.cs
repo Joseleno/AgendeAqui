@@ -1,4 +1,5 @@
 using AgendeAqui.Domain.Abstractions;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace AgendeAqui.Api.Middleware;
@@ -35,12 +36,12 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
             // Authenticated user without tenant_id claim = misconfigured token
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             context.Response.ContentType = "application/problem+json";
-            await context.Response.WriteAsJsonAsync(new
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
             {
-                type = "https://tools.ietf.org/html/rfc7231#section-6.5.3",
-                title = "Forbidden",
-                status = 403,
-                detail = "Authenticated user does not have a valid tenant_id claim."
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+                Title = "Forbidden",
+                Status = 403,
+                Detail = "Authenticated user does not have a valid tenant_id claim."
             });
             return;
         }
@@ -51,12 +52,12 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             context.Response.ContentType = "application/problem+json";
-            await context.Response.WriteAsJsonAsync(new
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
             {
-                type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-                title = "Bad Request",
-                status = 400,
-                detail = "X-Tenant-Id header is required and must be a valid GUID."
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Title = "Bad Request",
+                Status = 400,
+                Detail = "X-Tenant-Id header is required and must be a valid GUID."
             });
             return;
         }

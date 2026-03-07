@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AgendeAqui.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 

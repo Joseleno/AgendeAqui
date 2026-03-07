@@ -19,13 +19,17 @@ public static class TenantEndpoints
             var command = new CreateTenantCommand(request.Name, request.Slug, request.Plan);
             var result = await mediator.Send(command, cancellationToken);
 
-            return result.IsSuccess
-                ? Results.Created($"/api/v1/tenants/{result.Value}", new { id = result.Value })
-                : Results.BadRequest(new { error = result.Error.Message });
+            if (result.IsSuccess)
+                return Results.Created($"/api/v1/tenants/{result.Value}", new { id = result.Value });
+
+            return Results.Problem(
+                detail: result.Error.Message,
+                statusCode: StatusCodes.Status400BadRequest,
+                title: result.Error.Code);
         })
         .WithName("CreateTenant")
         .Produces(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest);
+        .ProducesProblem(StatusCodes.Status400BadRequest);
 
         group.MapGet("/{id:guid}", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
         {
@@ -34,11 +38,14 @@ public static class TenantEndpoints
 
             return result.IsSuccess
                 ? Results.Ok(result.Value)
-                : Results.NotFound(new { error = result.Error.Message });
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: result.Error.Code);
         })
         .WithName("GetTenant")
         .Produces<TenantResponse>()
-        .Produces(StatusCodes.Status404NotFound);
+        .ProducesProblem(StatusCodes.Status404NotFound);
     }
 }
 

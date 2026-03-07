@@ -26,9 +26,12 @@ public sealed class GetTenantQueryHandler(
             WHERE id = @TenantId
             """;
 
-        var tenant = await connection.QueryFirstOrDefaultAsync<TenantResponse>(
+        var command = new CommandDefinition(
             sql,
-            new { query.TenantId });
+            new { query.TenantId },
+            cancellationToken: cancellationToken);
+
+        var tenant = await connection.QueryFirstOrDefaultAsync<TenantResponse>(command);
 
         if (tenant is null)
             return Result.Failure<TenantResponse>(TenantErrors.NotFound);

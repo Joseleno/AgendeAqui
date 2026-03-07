@@ -363,4 +363,17 @@ public class ScheduleTests
 
         available.Should().BeFalse();
     }
+
+    [Fact]
+    public void IsAvailableAt_WithTimeAtStartTime_ShouldReturnTrue()
+    {
+        // Arrange
+        var schedule = CreateSchedule(); // Uses 08:00-18:00
+
+        // Act
+        var result = schedule.IsAvailableAt(new TimeOnly(8, 0));
+
+        // Assert
+        result.Should().BeTrue();
+    }
 }

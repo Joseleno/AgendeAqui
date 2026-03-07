@@ -115,6 +115,18 @@ public class UpdateAttendanceCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_NoShow_FromScheduled_ShouldFail()
+    {
+        var appointment = CreateAppointment();
+        _appointmentRepository.GetByIdAsync(appointment.Id, Arg.Any<CancellationToken>()).Returns(appointment);
+
+        var result = await _handler.Handle(new UpdateAttendanceCommand(appointment.Id, AttendanceAction.NoShow), CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(AppointmentErrors.InvalidTransition);
+    }
+
+    [Fact]
     public async Task Handle_WithNonExistentAppointment_ShouldReturnNotFound()
     {
         _appointmentRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Appointment?)null);

@@ -88,6 +88,18 @@ public class AppointmentStatusTests
     }
 
     [Fact]
+    public void Confirmed_CannotTransitionTo_Completed()
+    {
+        AppointmentStatus.Confirmed.CanTransitionTo(AppointmentStatus.Completed).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Scheduled_CannotTransitionTo_NoShow()
+    {
+        AppointmentStatus.Scheduled.CanTransitionTo(AppointmentStatus.NoShow).Should().BeFalse();
+    }
+
+    [Fact]
     public void InProgress_CanTransitionTo_Completed()
     {
         AppointmentStatus.InProgress.CanTransitionTo(AppointmentStatus.Completed)

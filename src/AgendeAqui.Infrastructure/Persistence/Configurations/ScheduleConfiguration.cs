@@ -61,8 +61,9 @@ internal sealed class ScheduleConfiguration : IEntityTypeConfiguration<Schedule>
             bp.Property(b => b.BreakEnd).HasColumnName("break_end").IsRequired();
         });
 
-        builder.HasIndex(s => new { s.TenantId, s.ProfessionalId })
-            .HasDatabaseName("ix_schedules_tenant_professional");
+        builder.HasIndex(s => new { s.TenantId, s.ProfessionalId, s.DayOfWeek })
+            .HasDatabaseName("ix_schedules_tenant_professional_day")
+            .IsUnique();
 
         builder.Ignore(s => s.DomainEvents);
     }

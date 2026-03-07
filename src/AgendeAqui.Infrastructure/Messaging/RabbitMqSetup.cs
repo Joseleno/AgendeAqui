@@ -75,7 +75,7 @@ internal sealed class RabbitMqSetup : IHostedService
         await channel.QueueBindAsync(
             queue: "appointment.created",
             exchange: "appointment.events",
-            routingKey: "appointmentcreatedevent",
+            routingKey: "appointmentcreated",
             cancellationToken: cancellationToken);
 
         await channel.QueueDeclareAsync(
@@ -89,7 +89,7 @@ internal sealed class RabbitMqSetup : IHostedService
         await channel.QueueBindAsync(
             queue: "appointment.cancelled",
             exchange: "appointment.events",
-            routingKey: "appointmentcancelledevent",
+            routingKey: "appointmentcancelled",
             cancellationToken: cancellationToken);
 
         await channel.QueueDeclareAsync(
@@ -103,7 +103,7 @@ internal sealed class RabbitMqSetup : IHostedService
         await channel.QueueBindAsync(
             queue: "appointment.rescheduled",
             exchange: "appointment.events",
-            routingKey: "appointmentreschedulededvent",
+            routingKey: "appointmentrescheduled",
             cancellationToken: cancellationToken);
 
         // Notification queue

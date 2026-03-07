@@ -35,18 +35,27 @@ public static class AppointmentEndpoints
                 return Results.Created($"/api/v1/appointments/{result.Value}", new { id = result.Value });
 
             if (result.Error.IsNotFound)
-                return Results.NotFound(new { error = result.Error.Message });
+                return Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: result.Error.Code);
 
             if (result.Error.IsConflict)
-                return Results.Conflict(new { error = result.Error.Message });
+                return Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: result.Error.Code);
 
-            return Results.BadRequest(new { error = result.Error.Message });
+            return Results.Problem(
+                detail: result.Error.Message,
+                statusCode: StatusCodes.Status400BadRequest,
+                title: result.Error.Code);
         })
         .WithName("CreateAppointment")
         .Produces(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireAuthorization(AuthorizationPolicies.RequireClient);
 
         group.MapGet("/{id:guid}", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
@@ -56,11 +65,14 @@ public static class AppointmentEndpoints
 
             return result.IsSuccess
                 ? Results.Ok(result.Value)
-                : Results.NotFound(new { error = result.Error.Message });
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: result.Error.Code);
         })
         .WithName("GetAppointment")
         .Produces<AppointmentResponse>()
-        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
 
         group.MapGet("/", async (
@@ -78,7 +90,10 @@ public static class AppointmentEndpoints
 
             return result.IsSuccess
                 ? Results.Ok(result.Value)
-                : Results.BadRequest(new { error = result.Error.Message });
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
         })
         .WithName("ListAppointments")
         .Produces<PagedResponse<AppointmentResponse>>(StatusCodes.Status200OK)
@@ -93,13 +108,19 @@ public static class AppointmentEndpoints
                 return Results.NoContent();
 
             return result.Error.IsNotFound
-                ? Results.NotFound(new { error = result.Error.Message })
-                : Results.BadRequest(new { error = result.Error.Message });
+                ? Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: result.Error.Code)
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
         })
         .WithName("CancelAppointment")
         .Produces(StatusCodes.Status204NoContent)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireClient);
 
         group.MapPost("/{id:guid}/reschedule", async (Guid id, RescheduleAppointmentRequest request, IMediator mediator, CancellationToken cancellationToken) =>
@@ -111,19 +132,28 @@ public static class AppointmentEndpoints
                 return Results.NoContent();
 
             return result.Error.IsNotFound
-                ? Results.NotFound(new { error = result.Error.Message })
-                : Results.BadRequest(new { error = result.Error.Message });
+                ? Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: result.Error.Code)
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
         })
         .WithName("RescheduleAppointment")
         .Produces(StatusCodes.Status204NoContent)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireClient);
 
         group.MapPost("/{id:guid}/attendance", async (Guid id, UpdateAttendanceRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
             if (!Enum.TryParse<AttendanceAction>(request.Action, ignoreCase: false, out var action))
-                return Results.BadRequest(new { error = "Action must be one of: Confirm, Start, Complete, NoShow." });
+                return Results.Problem(
+                    detail: "Action must be one of: Confirm, Start, Complete, NoShow.",
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "InvalidAction");
 
             var command = new UpdateAttendanceCommand(id, action);
             var result = await mediator.Send(command, cancellationToken);
@@ -132,13 +162,19 @@ public static class AppointmentEndpoints
                 return Results.NoContent();
 
             return result.Error.IsNotFound
-                ? Results.NotFound(new { error = result.Error.Message })
-                : Results.BadRequest(new { error = result.Error.Message });
+                ? Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: result.Error.Code)
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
         })
         .WithName("UpdateAttendance")
         .Produces(StatusCodes.Status204NoContent)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
     }
 }

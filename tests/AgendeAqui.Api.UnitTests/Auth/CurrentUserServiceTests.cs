@@ -128,6 +128,14 @@ public class CurrentUserServiceTests
     }
 
     [Fact]
+    public void IsProfessional_WithApiKeyRole_ShouldReturnTrue()
+    {
+        var service = CreateService(new Claim(ClaimTypes.Role, "ApiKey"));
+
+        service.IsProfessional.Should().BeTrue();
+    }
+
+    [Fact]
     public void IsClient_WithClientRole_ShouldReturnTrue()
     {
         var service = CreateService(new Claim(ClaimTypes.Role, "Client"));

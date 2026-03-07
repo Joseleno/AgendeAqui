@@ -150,4 +150,19 @@ public class ServiceTests
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ServiceErrors.InvalidPrice);
     }
+
+    [Fact]
+    public void UpdateDetails_WithDurationExceeding8Hours_ShouldReturnInvalidDuration()
+    {
+        // Arrange
+        var result = Service.Create(Guid.NewGuid(), "Test Service", TimeSpan.FromMinutes(60), 100m);
+        var service = result.Value;
+
+        // Act
+        var updateResult = service.UpdateDetails("Updated", TimeSpan.FromHours(9), 200m);
+
+        // Assert
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Should().Be(ServiceErrors.InvalidDuration);
+    }
 }

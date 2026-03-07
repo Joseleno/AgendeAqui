@@ -23,7 +23,7 @@ internal sealed class RabbitMqEventBus : IEventBus
         var json = JsonSerializer.Serialize(@event, @event.GetType());
         var body = Encoding.UTF8.GetBytes(json);
 
-        var routingKey = typeof(T).Name.ToLowerInvariant();
+        var routingKey = typeof(T).Name.Replace("IntegrationEvent", string.Empty).ToLowerInvariant();
 
         var properties = new BasicProperties
         {

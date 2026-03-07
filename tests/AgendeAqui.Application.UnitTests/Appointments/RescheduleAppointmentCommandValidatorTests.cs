@@ -39,4 +39,15 @@ public class RescheduleAppointmentCommandValidatorTests
 
         result.ShouldHaveValidationErrorFor(x => x.NewDate);
     }
+
+    [Fact]
+    public void Validate_WithDefaultNewStartTime_ShouldHaveError()
+    {
+        var command = new RescheduleAppointmentCommand(
+            Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)), default);
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.NewStartTime);
+    }
 }
