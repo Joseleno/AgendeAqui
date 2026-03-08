@@ -1,11 +1,35 @@
 using AgendeAqui.Api.Extensions;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-builder.Services.AddAgendeAqui(builder.Configuration);
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+    builder.Host.UseSerilog((context, loggerConfig) =>
+        loggerConfig
+            .ReadFrom.Configuration(context.Configuration)
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("Application", "AgendeAqui")
+            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}"));
 
-app.UseAgendeAqui();
+    builder.Services.AddAgendeAqui(builder.Configuration);
 
-app.Run();
+    var app = builder.Build();
+
+    app.UseSerilogRequestLogging();
+    app.UseAgendeAqui();
+
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

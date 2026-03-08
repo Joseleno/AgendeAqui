@@ -10,6 +10,7 @@ using AgendeAqui.Infrastructure.Notifications;
 using AgendeAqui.Infrastructure.Persistence;
 using AgendeAqui.Infrastructure.Persistence.Interceptors;
 using AgendeAqui.Infrastructure.Persistence.Repositories;
+using AgendeAqui.Infrastructure.Webhooks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<IProfessionalRepository, ProfessionalRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
+        services.AddScoped<IDataDeletionRequestRepository, DataDeletionRequestRepository>();
 
         // Dapper
         services.AddScoped<ISqlConnectionFactory>(sp =>
@@ -77,6 +79,20 @@ public static class DependencyInjection
 
         // Notification Service
         services.AddScoped<INotificationService, NotificationService>();
+
+        // Webhook Repository
+        services.AddScoped<IWebhookRepository, WebhookRepository>();
+
+        // Webhook Consumer
+        services.AddHostedService<WebhookDeliveryConsumer>();
+
+        // Webhook Dispatcher (typed HttpClient with timeout + resilience)
+        services.AddHttpClient<WebhookDispatcher>()
+            .AddStandardResilienceHandler(options =>
+            {
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
+            });
 
         // WhatsApp Client with resilience
         services.Configure<ChakraChatSettings>(configuration.GetSection("ChakraChat"));

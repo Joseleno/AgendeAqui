@@ -62,11 +62,43 @@ public class ClientTests
     }
 
     [Fact]
+    public void UpdateContact_ShouldTrimName()
+    {
+        var client = Client.Create(Guid.NewGuid(), "Maria", ValidEmail(), ValidPhone()).Value;
+
+        var result = client.UpdateContact("  Maria Updated  ", ValidEmail(), ValidPhone());
+
+        result.IsSuccess.Should().BeTrue();
+        client.Name.Should().Be("Maria Updated");
+    }
+
+    [Fact]
     public void UpdateContact_WithEmptyName_ShouldFail()
     {
         var client = Client.Create(Guid.NewGuid(), "Maria", ValidEmail(), ValidPhone()).Value;
 
         var result = client.UpdateContact("", ValidEmail(), ValidPhone());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(ClientErrors.InvalidName);
+        client.Name.Should().Be("Maria");
+    }
+
+    [Fact]
+    public void Create_WithEmptyTenantId_ShouldFail()
+    {
+        var result = Client.Create(Guid.Empty, "Maria Silva", ValidEmail(), ValidPhone());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(ClientErrors.InvalidTenant);
+    }
+
+    [Fact]
+    public void UpdateContact_WithWhitespaceName_ShouldFail()
+    {
+        var client = Client.Create(Guid.NewGuid(), "Maria", ValidEmail(), ValidPhone()).Value;
+
+        var result = client.UpdateContact("   ", ValidEmail(), ValidPhone());
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ClientErrors.InvalidName);

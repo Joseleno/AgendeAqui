@@ -2,6 +2,7 @@ using AgendeAqui.Api.Auth;
 using AgendeAqui.Application;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Infrastructure;
+using AgendeAqui.Infrastructure.Observability;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
@@ -22,7 +23,8 @@ public static class ServiceCollectionExtensions
             .AddOpenApi()
             .AddApplication()
             .AddInfrastructure(configuration)
-            .AddMediator();
+            .AddMediator()
+            .AddObservability(configuration);
 
         services.AddHealthChecks()
             .AddNpgSql(configuration.GetConnectionString("Database")!);

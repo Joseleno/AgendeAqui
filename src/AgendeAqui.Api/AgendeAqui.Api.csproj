@@ -12,6 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="prometheus-net.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AgendeAqui.Application\AgendeAqui.Application.csproj" />
     <ProjectReference Include="..\AgendeAqui.Infrastructure\AgendeAqui.Infrastructure.csproj" />
   </ItemGroup>

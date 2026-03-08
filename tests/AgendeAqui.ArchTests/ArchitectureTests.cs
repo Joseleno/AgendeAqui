@@ -133,4 +133,26 @@ public class ArchitectureTests
         result.IsSuccessful.Should().BeTrue(
             because: $"All query handlers must use IQueryHandler. Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
     }
+
+    [Fact]
+    public void Commands_Should_Have_Corresponding_Validators()
+    {
+        var commandTypes = ApplicationAssembly.GetTypes()
+            .Where(t => t.Name.EndsWith("Command") && t.IsClass && !t.IsAbstract)
+            .ToList();
+
+        var validatorTypes = ApplicationAssembly.GetTypes()
+            .Where(t => t.Name.EndsWith("CommandValidator") && t.IsClass && !t.IsAbstract)
+            .Select(t => t.Name.Replace("Validator", ""))
+            .ToHashSet();
+
+        var missingValidators = commandTypes
+            .Where(c => !validatorTypes.Contains(c.Name))
+            .Select(c => c.FullName)
+            .ToList();
+
+        missingValidators.Should().BeEmpty(
+            "all commands should have corresponding validators, but these are missing: {0}",
+            string.Join(", ", missingValidators));
+    }
 }

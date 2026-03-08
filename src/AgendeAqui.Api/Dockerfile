@@ -21,11 +21,16 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 appgroup && \
     adduser --system --uid 1001 --ingroup appgroup appuser
 
+RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/publish .
 
 USER appuser
 
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD wget -qO- http://localhost:8080/health || exit 1
 
 ENTRYPOINT ["dotnet", "AgendeAqui.Api.dll"]

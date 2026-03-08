@@ -158,6 +158,28 @@ internal sealed class RabbitMqSetup : IHostedService
             routingKey: "whatsapp",
             cancellationToken: cancellationToken);
 
+        // Integration events exchange and webhook delivery queue
+        await channel.ExchangeDeclareAsync(
+            exchange: "integration.events",
+            type: ExchangeType.Direct,
+            durable: true,
+            autoDelete: false,
+            cancellationToken: cancellationToken);
+
+        await channel.QueueDeclareAsync(
+            queue: "integrations.webhook",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: dlxArgs,
+            cancellationToken: cancellationToken);
+
+        await channel.QueueBindAsync(
+            queue: "integrations.webhook",
+            exchange: "integration.events",
+            routingKey: "webhookdelivery",
+            cancellationToken: cancellationToken);
+
         _logger.LogInformation("RabbitMQ setup completed.");
     }
 

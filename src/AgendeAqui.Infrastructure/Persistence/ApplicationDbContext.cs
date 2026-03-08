@@ -7,6 +7,7 @@ using AgendeAqui.Domain.Professionals;
 using AgendeAqui.Domain.Schedules;
 using AgendeAqui.Domain.Services;
 using AgendeAqui.Domain.Tenants;
+using AgendeAqui.Domain.Webhooks;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,8 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
     public DbSet<Service> Services => Set<Service>();
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+    public DbSet<Webhook> Webhooks => Set<Webhook>();
+    public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IPublisher publisher)
         : base(options)

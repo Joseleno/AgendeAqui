@@ -1,5 +1,6 @@
 using AgendeAqui.Api.Endpoints;
 using AgendeAqui.Api.Middleware;
+using Prometheus;
 
 namespace AgendeAqui.Api.Extensions;
 
@@ -10,6 +11,7 @@ public static class WebApplicationExtensions
         if (app.Environment.IsDevelopment())
             app.MapOpenApi();
 
+        app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseHttpsRedirection();
@@ -22,7 +24,12 @@ public static class WebApplicationExtensions
 
         app.UseAuthorization();
 
+        app.UseHttpMetrics();
+
         app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health/ready");
+        app.MapMetrics();
+        app.MapLgpdEndpoints();
         app.MapTenantEndpoints();
         app.MapProfessionalEndpoints();
         app.MapServiceEndpoints();
@@ -31,6 +38,8 @@ public static class WebApplicationExtensions
         app.MapAvailabilityEndpoints();
         app.MapScheduleEndpoints();
         app.MapNotificationEndpoints();
+        app.MapWebhookEndpoints();
+        app.MapReportEndpoints();
 
         return app;
     }
