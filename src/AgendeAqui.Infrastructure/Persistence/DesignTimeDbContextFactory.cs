@@ -1,3 +1,4 @@
+using AgendeAqui.Domain.Abstractions;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -20,12 +21,9 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<App
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
         optionsBuilder.UseNpgsql(connectionString);
 
-        return new ApplicationDbContext(optionsBuilder.Options, new NoOpPublisher());
+        return new ApplicationDbContext(optionsBuilder.Options, new NoOpPublisher(), new DesignTimeTenantProvider());
     }
 
-    /// <summary>
-    /// No-op publisher used only at design time for migrations.
-    /// </summary>
     private sealed class NoOpPublisher : IPublisher
     {
         public ValueTask Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
@@ -34,5 +32,11 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<App
 
         public ValueTask Publish(object notification, CancellationToken cancellationToken = default)
             => ValueTask.CompletedTask;
+    }
+
+    private sealed class DesignTimeTenantProvider : ITenantProvider
+    {
+        public Guid GetTenantId() => Guid.Empty;
+        public void SetTenantId(Guid tenantId) { }
     }
 }
