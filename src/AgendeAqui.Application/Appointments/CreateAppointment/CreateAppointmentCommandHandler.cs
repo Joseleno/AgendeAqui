@@ -13,7 +13,8 @@ public sealed class CreateAppointmentCommandHandler(
     IClientRepository clientRepository,
     IScheduleRepository scheduleRepository,
     IUnitOfWork unitOfWork,
-    ITenantProvider tenantProvider) : ICommandHandler<CreateAppointmentCommand, Guid>
+    ITenantProvider tenantProvider,
+    ICurrentUser currentUser) : ICommandHandler<CreateAppointmentCommand, Guid>
 {
     public async ValueTask<Result<Guid>> Handle(
         CreateAppointmentCommand command,
@@ -55,6 +56,10 @@ public sealed class CreateAppointmentCommandHandler(
         if (hasConflict)
             return Result.Failure<Guid>(AppointmentErrors.Conflict);
 
+        Guid? sourceApiKeyId = currentUser.Role.Equals("ApiKey", StringComparison.OrdinalIgnoreCase)
+            ? currentUser.UserId
+            : null;
+
         var appointmentResult = Appointment.Create(
             tenantId,
             command.ProfessionalId,
@@ -62,7 +67,8 @@ public sealed class CreateAppointmentCommandHandler(
             command.ClientId,
             command.Date,
             timeSlotResult.Value,
-            command.Notes);
+            command.Notes,
+            sourceApiKeyId);
 
         if (appointmentResult.IsFailure)
             return Result.Failure<Guid>(appointmentResult.Error);

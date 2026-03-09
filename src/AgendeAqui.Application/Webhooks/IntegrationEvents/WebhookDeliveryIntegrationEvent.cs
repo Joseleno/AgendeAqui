@@ -7,4 +7,5 @@ public sealed record WebhookDeliveryIntegrationEvent(
     DateTime OccurredAt,
     Guid WebhookId,
     string EventType,
-    string Payload) : IntegrationEvent(Id, OccurredAt);
+    string Payload,
+    Guid? SourceApiKeyId = null) : IntegrationEvent(Id, OccurredAt);

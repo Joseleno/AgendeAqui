@@ -24,7 +24,8 @@ public sealed class Appointment : AggregateRoot
         Guid clientId,
         DateOnly date,
         TimeSlot timeSlot,
-        string? notes = null)
+        string? notes = null,
+        Guid? sourceApiKeyId = null)
     {
         if (tenantId == Guid.Empty)
             return Result.Failure<Appointment>(AppointmentErrors.InvalidTenant);
@@ -47,12 +48,12 @@ public sealed class Appointment : AggregateRoot
             Notes = notes
         };
 
-        appointment.RaiseDomainEvent(new AppointmentCreatedEvent(appointment.Id));
+        appointment.RaiseDomainEvent(new AppointmentCreatedEvent(appointment.Id, sourceApiKeyId));
 
         return Result.Success(appointment);
     }
 
-    public Result Cancel(string reason)
+    public Result Cancel(string reason, Guid? sourceApiKeyId = null)
     {
         if (!Status.CanTransitionTo(AppointmentStatus.Cancelled))
             return Result.Failure(AppointmentErrors.InvalidTransition);
@@ -60,12 +61,12 @@ public sealed class Appointment : AggregateRoot
         Status = AppointmentStatus.Cancelled;
         UpdatedAt = DateTime.UtcNow;
 
-        RaiseDomainEvent(new AppointmentCancelledEvent(Id, reason));
+        RaiseDomainEvent(new AppointmentCancelledEvent(Id, reason, sourceApiKeyId));
 
         return Result.Success();
     }
 
-    public Result Reschedule(DateOnly newDate, TimeSlot newTimeSlot)
+    public Result Reschedule(DateOnly newDate, TimeSlot newTimeSlot, Guid? sourceApiKeyId = null)
     {
         if (!Status.CanTransitionTo(AppointmentStatus.Scheduled))
             return Result.Failure(AppointmentErrors.InvalidTransition);
@@ -75,7 +76,7 @@ public sealed class Appointment : AggregateRoot
         Status = AppointmentStatus.Scheduled;
         UpdatedAt = DateTime.UtcNow;
 
-        RaiseDomainEvent(new AppointmentRescheduledEvent(Id, newDate));
+        RaiseDomainEvent(new AppointmentRescheduledEvent(Id, newDate, sourceApiKeyId));
 
         return Result.Success();
     }

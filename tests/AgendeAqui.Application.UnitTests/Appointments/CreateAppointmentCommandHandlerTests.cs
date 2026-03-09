@@ -20,6 +20,7 @@ public class CreateAppointmentCommandHandlerTests
     private readonly IScheduleRepository _scheduleRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITenantProvider _tenantProvider;
+    private readonly ICurrentUser _currentUser;
     private readonly CreateAppointmentCommandHandler _handler;
     private readonly Guid _tenantId = Guid.NewGuid();
 
@@ -33,6 +34,8 @@ public class CreateAppointmentCommandHandlerTests
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _tenantProvider = Substitute.For<ITenantProvider>();
         _tenantProvider.GetTenantId().Returns(_tenantId);
+        _currentUser = Substitute.For<ICurrentUser>();
+        _currentUser.Role.Returns("Admin");
 
         _handler = new CreateAppointmentCommandHandler(
             _appointmentRepository,
@@ -41,7 +44,8 @@ public class CreateAppointmentCommandHandlerTests
             _clientRepository,
             _scheduleRepository,
             _unitOfWork,
-            _tenantProvider);
+            _tenantProvider,
+            _currentUser);
     }
 
     private Professional CreateProfessional() =>

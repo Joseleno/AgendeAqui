@@ -114,15 +114,14 @@ public static class AppointmentEndpoints
             if (result.IsSuccess)
                 return Results.NoContent();
 
-            return result.Error.IsNotFound
-                ? Results.Problem(
-                    detail: result.Error.Message,
-                    statusCode: StatusCodes.Status404NotFound,
-                    title: result.Error.Code)
-                : Results.Problem(
-                    detail: result.Error.Message,
-                    statusCode: StatusCodes.Status400BadRequest,
-                    title: result.Error.Code);
+            var statusCode = result.Error.IsNotFound ? StatusCodes.Status404NotFound
+                : result.Error.IsConflict ? StatusCodes.Status409Conflict
+                : StatusCodes.Status400BadRequest;
+
+            return Results.Problem(
+                detail: result.Error.Message,
+                statusCode: statusCode,
+                title: result.Error.Code);
         })
         .WithName("CancelAppointment")
         .WithSummary("Cancel appointment")
@@ -130,6 +129,7 @@ public static class AppointmentEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireAuthorization(AuthorizationPolicies.RequireClient);
 
         group.MapPost("/{id:guid}/reschedule", async (Guid id, RescheduleAppointmentRequest request, IMediator mediator, CancellationToken cancellationToken) =>
@@ -140,15 +140,14 @@ public static class AppointmentEndpoints
             if (result.IsSuccess)
                 return Results.NoContent();
 
-            return result.Error.IsNotFound
-                ? Results.Problem(
-                    detail: result.Error.Message,
-                    statusCode: StatusCodes.Status404NotFound,
-                    title: result.Error.Code)
-                : Results.Problem(
-                    detail: result.Error.Message,
-                    statusCode: StatusCodes.Status400BadRequest,
-                    title: result.Error.Code);
+            var statusCode = result.Error.IsNotFound ? StatusCodes.Status404NotFound
+                : result.Error.IsConflict ? StatusCodes.Status409Conflict
+                : StatusCodes.Status400BadRequest;
+
+            return Results.Problem(
+                detail: result.Error.Message,
+                statusCode: statusCode,
+                title: result.Error.Code);
         })
         .WithName("RescheduleAppointment")
         .WithSummary("Reschedule appointment")
@@ -156,6 +155,7 @@ public static class AppointmentEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireAuthorization(AuthorizationPolicies.RequireClient);
 
         group.MapPost("/{id:guid}/attendance", async (Guid id, UpdateAttendanceRequest request, IMediator mediator, CancellationToken cancellationToken) =>
@@ -172,15 +172,14 @@ public static class AppointmentEndpoints
             if (result.IsSuccess)
                 return Results.NoContent();
 
-            return result.Error.IsNotFound
-                ? Results.Problem(
-                    detail: result.Error.Message,
-                    statusCode: StatusCodes.Status404NotFound,
-                    title: result.Error.Code)
-                : Results.Problem(
-                    detail: result.Error.Message,
-                    statusCode: StatusCodes.Status400BadRequest,
-                    title: result.Error.Code);
+            var statusCode = result.Error.IsNotFound ? StatusCodes.Status404NotFound
+                : result.Error.IsConflict ? StatusCodes.Status409Conflict
+                : StatusCodes.Status400BadRequest;
+
+            return Results.Problem(
+                detail: result.Error.Message,
+                statusCode: statusCode,
+                title: result.Error.Code);
         })
         .WithName("UpdateAttendance")
         .WithSummary("Update attendance")
@@ -188,6 +187,7 @@ public static class AppointmentEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
     }
 }

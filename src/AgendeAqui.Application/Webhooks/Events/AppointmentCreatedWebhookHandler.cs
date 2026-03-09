@@ -17,6 +17,7 @@ public sealed class AppointmentCreatedWebhookHandler(
             event_type = "appointment.created",
             tenant_id = tenantProvider.GetTenantId(),
             appointment_id = notification.AppointmentId,
+            source_api_key_id = notification.SourceApiKeyId,
             occurred_at = DateTime.UtcNow
         });
 
@@ -25,6 +26,7 @@ public sealed class AppointmentCreatedWebhookHandler(
             DateTime.UtcNow,
             WebhookId: Guid.Empty,
             EventType: "appointment.created",
-            Payload: payload), cancellationToken);
+            Payload: payload,
+            SourceApiKeyId: notification.SourceApiKeyId), cancellationToken);
     }
 }

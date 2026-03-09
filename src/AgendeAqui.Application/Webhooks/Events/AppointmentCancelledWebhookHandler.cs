@@ -18,6 +18,7 @@ public sealed class AppointmentCancelledWebhookHandler(
             tenant_id = tenantProvider.GetTenantId(),
             appointment_id = notification.AppointmentId,
             reason = notification.Reason,
+            source_api_key_id = notification.SourceApiKeyId,
             occurred_at = DateTime.UtcNow
         });
 
@@ -26,6 +27,7 @@ public sealed class AppointmentCancelledWebhookHandler(
             DateTime.UtcNow,
             WebhookId: Guid.Empty,
             EventType: "appointment.cancelled",
-            Payload: payload), cancellationToken);
+            Payload: payload,
+            SourceApiKeyId: notification.SourceApiKeyId), cancellationToken);
     }
 }
