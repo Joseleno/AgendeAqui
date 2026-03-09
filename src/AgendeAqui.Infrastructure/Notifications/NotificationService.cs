@@ -74,10 +74,9 @@ internal sealed class NotificationService : INotificationService
         }
 
         var phoneNumber = client.Phone.Value;
-        var actualTenantId = tenantId == Guid.Empty ? appointment.TenantId : tenantId;
 
         var notificationResult = Notification.Create(
-            actualTenantId,
+            tenantId,
             appointmentId,
             NotificationChannel.WhatsApp,
             phoneNumber,

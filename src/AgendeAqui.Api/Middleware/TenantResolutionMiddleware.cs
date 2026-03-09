@@ -11,15 +11,19 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
     private static readonly HashSet<string> ExcludedPaths =
     [
         "/health",
-        "/openapi"
+        "/openapi",
+        "/metrics"
     ];
 
     public async Task InvokeAsync(HttpContext context, ITenantProvider tenantProvider)
     {
-        if (ExcludedPaths.Any(p => context.Request.Path.StartsWithSegments(p, StringComparison.OrdinalIgnoreCase)))
+        foreach (var excluded in ExcludedPaths)
         {
-            await next(context);
-            return;
+            if (context.Request.Path.StartsWithSegments(excluded, StringComparison.OrdinalIgnoreCase))
+            {
+                await next(context);
+                return;
+            }
         }
 
         // Primary source: tenant_id claim from authenticated user (JWT or ApiKey)

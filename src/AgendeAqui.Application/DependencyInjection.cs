@@ -3,6 +3,8 @@ using FluentValidation;
 using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
+[assembly: MediatorOptions(ServiceLifetime = ServiceLifetime.Scoped)]
+
 namespace AgendeAqui.Application;
 
 public static class DependencyInjection

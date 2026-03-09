@@ -71,7 +71,7 @@ public class NotificationServiceTests
             .Returns(true);
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
 
-        await _service.SendAppointmentCreatedAsync(Guid.Empty, appointment.Id, CancellationToken.None);
+        await _service.SendAppointmentCreatedAsync(appointment.TenantId, appointment.Id, CancellationToken.None);
 
         await _whatsAppClient.Received(1).SendTemplateMessageAsync(
             Arg.Any<string>(), "appointment_created", Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>());
@@ -84,7 +84,7 @@ public class NotificationServiceTests
     {
         _appointmentRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Appointment?)null);
 
-        await _service.SendAppointmentCreatedAsync(Guid.Empty, Guid.NewGuid(), CancellationToken.None);
+        await _service.SendAppointmentCreatedAsync(Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
 
         await _whatsAppClient.DidNotReceive().SendTemplateMessageAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>());
@@ -99,7 +99,7 @@ public class NotificationServiceTests
         _appointmentRepository.GetByIdAsync(appointment.Id, Arg.Any<CancellationToken>()).Returns(appointment);
         _clientRepository.GetByIdAsync(appointment.ClientId, Arg.Any<CancellationToken>()).Returns((Client?)null);
 
-        await _service.SendAppointmentCreatedAsync(Guid.Empty, appointment.Id, CancellationToken.None);
+        await _service.SendAppointmentCreatedAsync(appointment.TenantId, appointment.Id, CancellationToken.None);
 
         await _whatsAppClient.DidNotReceive().SendTemplateMessageAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>());
@@ -119,7 +119,7 @@ public class NotificationServiceTests
             .Returns(false);
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
 
-        await _service.SendAppointmentCreatedAsync(Guid.Empty, appointment.Id, CancellationToken.None);
+        await _service.SendAppointmentCreatedAsync(appointment.TenantId, appointment.Id, CancellationToken.None);
 
         await _notificationRepository.Received(1).AddAsync(
             Arg.Is<Domain.Notifications.Notification>(n => n.Status == NotificationStatus.Failed),
@@ -140,7 +140,7 @@ public class NotificationServiceTests
             .Returns<bool>(_ => { throw new HttpRequestException("Connection refused"); });
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
 
-        await _service.SendAppointmentCreatedAsync(Guid.Empty, appointment.Id, CancellationToken.None);
+        await _service.SendAppointmentCreatedAsync(appointment.TenantId, appointment.Id, CancellationToken.None);
 
         await _notificationRepository.Received(1).AddAsync(
             Arg.Is<Domain.Notifications.Notification>(n => n.Status == NotificationStatus.Failed),
@@ -161,7 +161,7 @@ public class NotificationServiceTests
             .Returns(true);
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
 
-        await _service.SendAppointmentCancelledAsync(Guid.Empty, appointment.Id, reason, CancellationToken.None);
+        await _service.SendAppointmentCancelledAsync(appointment.TenantId, appointment.Id, reason, CancellationToken.None);
 
         await _whatsAppClient.Received(1).SendTemplateMessageAsync(
             Arg.Any<string>(),
@@ -184,7 +184,7 @@ public class NotificationServiceTests
             .Returns(true);
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
 
-        await _service.SendAppointmentRescheduledAsync(Guid.Empty, appointment.Id, newDate, CancellationToken.None);
+        await _service.SendAppointmentRescheduledAsync(appointment.TenantId, appointment.Id, newDate, CancellationToken.None);
 
         await _whatsAppClient.Received(1).SendTemplateMessageAsync(
             Arg.Any<string>(),
@@ -206,7 +206,7 @@ public class NotificationServiceTests
             .Returns(true);
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
 
-        await _service.SendAppointmentReminderAsync(Guid.Empty, appointment.Id, CancellationToken.None);
+        await _service.SendAppointmentReminderAsync(appointment.TenantId, appointment.Id, CancellationToken.None);
 
         await _whatsAppClient.Received(1).SendTemplateMessageAsync(
             Arg.Any<string>(), "appointment_reminder", Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>());

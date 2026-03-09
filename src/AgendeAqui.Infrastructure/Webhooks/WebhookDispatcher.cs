@@ -68,10 +68,13 @@ internal sealed class WebhookDispatcher(
             deliveries.Add(delivery);
         }
 
-        foreach (var delivery in deliveries)
-            await webhookRepository.AddDeliveryAsync(delivery, ct);
+        if (deliveries.Count > 0)
+        {
+            foreach (var delivery in deliveries)
+                await webhookRepository.AddDeliveryAsync(delivery, ct);
 
-        await unitOfWork.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
+        }
     }
 
     // HMAC key = SHA-256(raw_secret), which is stored as SecretHash.

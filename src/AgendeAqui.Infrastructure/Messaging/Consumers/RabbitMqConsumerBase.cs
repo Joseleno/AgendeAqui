@@ -71,7 +71,17 @@ internal abstract class RabbitMqConsumerBase<T> : BackgroundService where T : cl
                 }
                 else
                 {
-                    await channel.BasicNackAsync(ea.DeliveryTag, false, true, stoppingToken);
+                    // Republish with incremented retry count, then ack original
+                    var props = new BasicProperties();
+                    props.Headers = new Dictionary<string, object?> { ["x-retry-count"] = retryCount + 1 };
+                    await channel.BasicPublishAsync(
+                        exchange: string.Empty,
+                        routingKey: _queueName,
+                        mandatory: false,
+                        basicProperties: props,
+                        body: ea.Body,
+                        cancellationToken: stoppingToken);
+                    await channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
                 }
             }
         };

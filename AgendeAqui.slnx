@@ -17,5 +17,6 @@
     <Project Path="tests/AgendeAqui.Application.UnitTests/AgendeAqui.Application.UnitTests.csproj" />
     <Project Path="tests/AgendeAqui.ArchTests/AgendeAqui.ArchTests.csproj" />
     <Project Path="tests/AgendeAqui.Domain.UnitTests/AgendeAqui.Domain.UnitTests.csproj" />
+    <Project Path="tests/AgendeAqui.Integration.Tests/AgendeAqui.Integration.Tests.csproj" />
   </Folder>
 </Solution>

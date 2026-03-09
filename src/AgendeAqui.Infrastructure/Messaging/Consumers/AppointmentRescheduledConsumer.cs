@@ -1,5 +1,6 @@
 using AgendeAqui.Application.Abstractions.Notifications;
 using AgendeAqui.Application.Appointments.IntegrationEvents;
+using AgendeAqui.Domain.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +19,10 @@ internal sealed class AppointmentRescheduledConsumer : RabbitMqConsumerBase<Appo
         IServiceScope scope,
         CancellationToken ct)
     {
+        var tenantProvider = scope.ServiceProvider.GetRequiredService<ITenantProvider>();
+        tenantProvider.SetTenantId(message.TenantId);
+
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-        await notificationService.SendAppointmentRescheduledAsync(Guid.Empty, message.AppointmentId, message.NewDate, ct);
+        await notificationService.SendAppointmentRescheduledAsync(message.TenantId, message.AppointmentId, message.NewDate, ct);
     }
 }

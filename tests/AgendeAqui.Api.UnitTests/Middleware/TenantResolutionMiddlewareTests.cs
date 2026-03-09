@@ -41,6 +41,18 @@ public class TenantResolutionMiddlewareTests
     }
 
     [Fact]
+    public async Task InvokeAsync_WithExcludedMetricsPath_ShouldSkipResolution()
+    {
+        var middleware = CreateMiddleware();
+        var context = CreateContext("/metrics");
+
+        await middleware.InvokeAsync(context, _tenantProvider);
+
+        _nextCalled.Should().BeTrue();
+        _tenantProvider.DidNotReceive().SetTenantId(Arg.Any<Guid>());
+    }
+
+    [Fact]
     public async Task InvokeAsync_WithExcludedOpenApiPath_ShouldSkipResolution()
     {
         var middleware = CreateMiddleware();

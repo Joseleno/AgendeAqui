@@ -8,7 +8,8 @@
       "Bash(ls:*)",
       "Bash(rm:*)",
       "Skill(code-reviewer)",
-      "Bash(find .:*)"
+      "Bash(find .:*)",
+      "Bash(docker info:*)"
     ]
   }
 }

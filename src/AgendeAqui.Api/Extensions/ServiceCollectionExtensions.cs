@@ -1,13 +1,13 @@
 using AgendeAqui.Api.Auth;
+using AgendeAqui.Api.RateLimiting;
 using AgendeAqui.Application;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Infrastructure;
 using AgendeAqui.Infrastructure.Observability;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -96,42 +96,37 @@ public static class ServiceCollectionExtensions
                 }, cancellationToken);
             };
 
-            // tenant_plan claim values: 1=Free, 2=Starter, 3=Professional, 4=Enterprise
-            options.AddPolicy("tenant", httpContext =>
-            {
-                var tenantId = httpContext.User.FindFirstValue("tenant_id") ?? "anonymous";
-                var planClaim = httpContext.User.FindFirstValue("tenant_plan");
-                var permitLimit = GetPermitLimitForPlan(planClaim);
+            // Named policy used by endpoint groups via .RequireRateLimiting("tenant")
+            options.AddPolicy<string, TenantRateLimitPolicy>("tenant");
 
-                return RateLimitPartition.GetFixedWindowLimiter(tenantId, _ =>
-                    new FixedWindowRateLimiterOptions
+            // Global limiter applies tenant-plan FixedWindow rate limits to all routes.
+            // Health check and metrics endpoints bypass limiting via GetNoLimiter.
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
+                context =>
+                {
+                    // Skip rate limiting for health/metrics endpoints
+                    var path = context.Request.Path.Value ?? string.Empty;
+                    if (path.StartsWith("/health", StringComparison.OrdinalIgnoreCase) ||
+                        path.Equals("/metrics", StringComparison.OrdinalIgnoreCase))
                     {
-                        PermitLimit = permitLimit,
-                        Window = TimeSpan.FromMinutes(1),
-                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                        QueueLimit = 0
-                    });
-            });
+                        return RateLimitPartition.GetNoLimiter<string>("health");
+                    }
+
+                    var tenantId = context.User.FindFirstValue("tenant_id") ?? "anonymous";
+                    var planClaim = context.User.FindFirstValue("tenant_plan");
+                    var permitLimit = TenantRateLimitPolicy.GetPermitLimit(planClaim);
+
+                    return RateLimitPartition.GetFixedWindowLimiter(tenantId, _ =>
+                        new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = permitLimit,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        });
+                });
         });
 
         return services;
-    }
-
-    /// <summary>
-    /// Maps tenant_plan claim (integer) to request-per-minute limits.
-    /// Expected claim values: 1=Free(30), 2=Starter(100), 3=Professional(1000), 4=Enterprise(5000).
-    /// </summary>
-    private static int GetPermitLimitForPlan(string? planClaim)
-    {
-        if (!int.TryParse(planClaim, out var plan))
-            return 30;
-
-        return plan switch
-        {
-            2 => 100,   // Starter
-            3 => 1000,  // Professional
-            4 => 5000,  // Enterprise
-            _ => 30     // Free (1) or unknown
-        };
     }
 }
