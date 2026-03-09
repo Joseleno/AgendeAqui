@@ -234,4 +234,124 @@ public class NotificationServiceTests
             Arg.Is<Domain.Notifications.Notification>(n => n.Status == NotificationStatus.Sent && n.Recipient == client.Phone.Value),
             Arg.Any<CancellationToken>());
     }
+
+    // --- SendAppointmentRemindersAsync (batch) tests ---
+
+    private static Client CreateClientWithId(Guid clientId, Guid tenantId, string? phone = null)
+    {
+        var client = Client.Create(
+            tenantId,
+            "Maria Silva",
+            Email.Create("maria@test.com").Value,
+            PhoneNumber.Create(phone ?? "5521912345678").Value).Value;
+
+        typeof(AgendeAqui.Domain.Common.Entity)
+            .GetProperty(nameof(AgendeAqui.Domain.Common.Entity.Id))!
+            .SetValue(client, clientId);
+
+        return client;
+    }
+
+    [Fact]
+    public async Task SendAppointmentRemindersAsync_WithValidAppointments_ShouldSendNotifications()
+    {
+        var tenantId = Guid.NewGuid();
+        var appointment1 = CreateAppointment(tenantId);
+        var appointment2 = CreateAppointment(tenantId);
+        var appointments = new List<Appointment> { appointment1, appointment2 };
+
+        var client1 = CreateClientWithId(appointment1.ClientId, tenantId);
+        var client2 = CreateClientWithId(appointment2.ClientId, tenantId);
+
+        _clientRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Client> { client1, client2 });
+        _notificationRepository.GetExistingAppointmentIdsAsync(Arg.Any<IEnumerable<Guid>>(), "appointment_reminder", Arg.Any<CancellationToken>())
+            .Returns(new HashSet<Guid>());
+        _whatsAppClient.SendTemplateMessageAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>())
+            .Returns(true);
+        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
+
+        await _service.SendAppointmentRemindersAsync(appointments, CancellationToken.None);
+
+        await _whatsAppClient.Received(2).SendTemplateMessageAsync(
+            Arg.Any<string>(), "appointment_reminder", Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>());
+        await _notificationRepository.Received(2).AddAsync(
+            Arg.Is<Domain.Notifications.Notification>(n => n.Status == NotificationStatus.Sent),
+            Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SendAppointmentRemindersAsync_WithEmptyList_ShouldNotCallAnyServices()
+    {
+        var appointments = new List<Appointment>();
+
+        await _service.SendAppointmentRemindersAsync(appointments, CancellationToken.None);
+
+        await _clientRepository.DidNotReceive().GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>());
+        await _whatsAppClient.DidNotReceive().SendTemplateMessageAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>());
+        await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SendAppointmentRemindersAsync_WithAlreadySentReminder_ShouldSkipDuplicate()
+    {
+        var tenantId = Guid.NewGuid();
+        var appointment = CreateAppointment(tenantId);
+        var appointments = new List<Appointment> { appointment };
+
+        var client = CreateClientWithId(appointment.ClientId, tenantId);
+
+        _clientRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Client> { client });
+        _notificationRepository.GetExistingAppointmentIdsAsync(Arg.Any<IEnumerable<Guid>>(), "appointment_reminder", Arg.Any<CancellationToken>())
+            .Returns(new HashSet<Guid> { appointment.Id });
+        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
+
+        await _service.SendAppointmentRemindersAsync(appointments, CancellationToken.None);
+
+        await _whatsAppClient.DidNotReceive().SendTemplateMessageAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>());
+        await _notificationRepository.DidNotReceive().AddAsync(Arg.Any<Domain.Notifications.Notification>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SendAppointmentRemindersAsync_WhenWhatsAppFailsForOne_ShouldContinueWithOthersAndSaveFailedStatus()
+    {
+        var tenantId = Guid.NewGuid();
+        var appointment1 = CreateAppointment(tenantId);
+        var appointment2 = CreateAppointment(tenantId);
+        var appointments = new List<Appointment> { appointment1, appointment2 };
+
+        var client1 = CreateClientWithId(appointment1.ClientId, tenantId, "5521911111111");
+        var client2 = CreateClientWithId(appointment2.ClientId, tenantId, "5521922222222");
+
+        _clientRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Client> { client1, client2 });
+        _notificationRepository.GetExistingAppointmentIdsAsync(Arg.Any<IEnumerable<Guid>>(), "appointment_reminder", Arg.Any<CancellationToken>())
+            .Returns(new HashSet<Guid>());
+
+        // First call throws, second succeeds
+        _whatsAppClient.SendTemplateMessageAsync(
+            client1.Phone.Value, "appointment_reminder", Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>())
+            .Returns<bool>(_ => throw new HttpRequestException("Connection refused"));
+        _whatsAppClient.SendTemplateMessageAsync(
+            client2.Phone.Value, "appointment_reminder", Arg.Any<Dictionary<string, string>>(), Arg.Any<CancellationToken>())
+            .Returns(true);
+        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
+
+        await _service.SendAppointmentRemindersAsync(appointments, CancellationToken.None);
+
+        // Both notifications should be saved (one failed, one sent)
+        await _notificationRepository.Received(2).AddAsync(Arg.Any<Domain.Notifications.Notification>(), Arg.Any<CancellationToken>());
+        await _notificationRepository.Received(1).AddAsync(
+            Arg.Is<Domain.Notifications.Notification>(n => n.Status == NotificationStatus.Failed),
+            Arg.Any<CancellationToken>());
+        await _notificationRepository.Received(1).AddAsync(
+            Arg.Is<Domain.Notifications.Notification>(n => n.Status == NotificationStatus.Sent),
+            Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
 }

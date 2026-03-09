@@ -1,4 +1,5 @@
 using AgendeAqui.Domain.Webhooks;
+using AgendeAqui.Domain.Webhooks.Events;
 using FluentAssertions;
 
 namespace AgendeAqui.Domain.UnitTests.Webhooks;
@@ -173,5 +174,78 @@ public class WebhookTests
 
         webhook.UpdatedAt.Should().NotBeNull();
         webhook.UpdatedAt!.Value.Should().BeAfter(before);
+    }
+
+    [Fact]
+    public void Delete_ShouldSetIsDeletedTrue_And_IsActiveFalse_And_UpdateUpdatedAt_And_RaiseEvent()
+    {
+        var webhook = Webhook.Create(Guid.NewGuid(), "https://example.com/webhook", "secret", ValidEvents()).Value;
+        webhook.ClearDomainEvents();
+        var before = DateTime.UtcNow.AddSeconds(-1);
+
+        webhook.Delete();
+
+        webhook.IsDeleted.Should().BeTrue();
+        webhook.IsActive.Should().BeFalse();
+        webhook.UpdatedAt.Should().NotBeNull();
+        webhook.UpdatedAt!.Value.Should().BeAfter(before);
+        webhook.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<WebhookDeletedEvent>();
+    }
+
+    [Fact]
+    public void Delete_CalledTwice_ShouldOnlyRaiseOneEvent()
+    {
+        var webhook = Webhook.Create(Guid.NewGuid(), "https://example.com/webhook", "secret", ValidEvents()).Value;
+        webhook.ClearDomainEvents();
+
+        webhook.Delete();
+        webhook.Delete();
+
+        webhook.DomainEvents.OfType<WebhookDeletedEvent>().Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void Activate_WhenAlreadyActive_ShouldBeNoOp()
+    {
+        var webhook = Webhook.Create(Guid.NewGuid(), "https://example.com/webhook", "secret", ValidEvents()).Value;
+        webhook.ClearDomainEvents();
+
+        webhook.Activate();
+
+        webhook.IsActive.Should().BeTrue();
+        webhook.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Deactivate_WhenAlreadyInactive_ShouldBeNoOp()
+    {
+        var webhook = Webhook.Create(Guid.NewGuid(), "https://example.com/webhook", "secret", ValidEvents()).Value;
+        webhook.Deactivate();
+        webhook.ClearDomainEvents();
+
+        webhook.Deactivate();
+
+        webhook.IsActive.Should().BeFalse();
+        webhook.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Update_WithValidData_ShouldChangeUrlAndEvents_And_RaiseEvent()
+    {
+        var webhook = Webhook.Create(Guid.NewGuid(), "https://example.com/webhook", "secret", ValidEvents()).Value;
+        webhook.ClearDomainEvents();
+
+        var newUrl = "https://new-example.com/hook";
+        var newEvents = new List<string> { "appointment.rescheduled" };
+
+        var result = webhook.Update(newUrl, newEvents, false);
+
+        result.IsSuccess.Should().BeTrue();
+        webhook.Url.Should().Be(newUrl);
+        webhook.Events.Should().BeEquivalentTo(newEvents);
+        webhook.IsActive.Should().BeFalse();
+        webhook.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<WebhookUpdatedEvent>();
     }
 }

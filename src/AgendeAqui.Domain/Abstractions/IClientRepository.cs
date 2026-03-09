@@ -7,4 +7,5 @@ public interface IClientRepository : IRepository<Client>
 {
     Task<Client?> GetByPhoneAsync(PhoneNumber phone, CancellationToken ct = default);
     Task<Client?> GetByEmailAsync(Email email, CancellationToken ct = default);
+    Task<IReadOnlyList<Client>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default);
 }

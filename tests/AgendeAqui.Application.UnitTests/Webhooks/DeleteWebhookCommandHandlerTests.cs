@@ -39,8 +39,10 @@ public class DeleteWebhookCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+        webhook.IsDeleted.Should().BeTrue();
+        webhook.IsActive.Should().BeFalse();
 
-        _webhookRepository.Received(1).Remove(webhook);
+        _webhookRepository.Received(1).Update(webhook);
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -60,7 +62,7 @@ public class DeleteWebhookCommandHandlerTests
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(WebhookErrors.NotFound);
 
-        _webhookRepository.DidNotReceive().Remove(Arg.Any<Webhook>());
+        _webhookRepository.DidNotReceive().Update(Arg.Any<Webhook>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

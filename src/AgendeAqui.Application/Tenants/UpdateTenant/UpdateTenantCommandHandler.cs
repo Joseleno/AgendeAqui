@@ -1,5 +1,4 @@
 using AgendeAqui.Application.Abstractions.Messaging;
-using AgendeAqui.Application.Tenants.CreateTenant;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Common;
 using AgendeAqui.Domain.Tenants;
@@ -19,7 +18,8 @@ public sealed class UpdateTenantCommandHandler(
         if (tenant is null)
             return Result.Failure<Mediator.Unit>(TenantErrors.NotFound);
 
-        var plan = Enum.Parse<TenantPlan>(command.Plan, true);
+        if (!Enum.TryParse<TenantPlan>(command.Plan, true, out var plan))
+            return Result.Failure<Mediator.Unit>(TenantErrors.InvalidPlan);
 
         tenant.UpdateName(command.Name);
         tenant.ChangePlan(plan);

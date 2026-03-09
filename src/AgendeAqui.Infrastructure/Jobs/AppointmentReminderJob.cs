@@ -51,26 +51,23 @@ internal sealed class AppointmentReminderJob : BackgroundService
         var today = DateOnly.FromDateTime(localNow);
         var reminderDate = DateOnly.FromDateTime(localNow.AddHours(_settings.HoursBeforeAppointment));
 
-        var appointments = await appointmentRepository.GetByDateRangeAsync(today, reminderDate, ct);
+        AppointmentStatus[] eligibleStatuses = [AppointmentStatus.Scheduled, AppointmentStatus.Confirmed];
+        var eligibleAppointments = await appointmentRepository.GetByDateRangeAndStatusesAsync(
+            today, reminderDate, eligibleStatuses, ct);
 
         _logger.LogInformation(
-            "Found {Count} appointments for reminders (range: {From} to {To})",
-            appointments.Count, today, reminderDate);
+            "Found {Count} eligible appointments for reminders (range: {From} to {To})",
+            eligibleAppointments.Count, today, reminderDate);
 
-        foreach (var appointment in appointments)
+        if (eligibleAppointments.Count > 0)
         {
-            if (appointment.Status == AppointmentStatus.Scheduled ||
-                appointment.Status == AppointmentStatus.Confirmed)
+            try
             {
-                try
-                {
-                    await notificationService.SendAppointmentReminderAsync(
-                        appointment.TenantId, appointment.Id, ct);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to send reminder for appointment {AppointmentId}", appointment.Id);
-                }
+                await notificationService.SendAppointmentRemindersAsync(eligibleAppointments, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send batch reminders for {Count} appointments", eligibleAppointments.Count);
             }
         }
     }

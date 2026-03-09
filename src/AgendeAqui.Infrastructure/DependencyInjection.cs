@@ -1,6 +1,7 @@
 using AgendeAqui.Application.Abstractions.Data;
 using AgendeAqui.Application.Abstractions.Messaging;
 using AgendeAqui.Application.Abstractions.Notifications;
+using AgendeAqui.Application.Webhooks;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Infrastructure.Jobs;
 using AgendeAqui.Infrastructure.Messaging;
@@ -15,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
+using System.Net.Sockets;
 
 namespace AgendeAqui.Infrastructure;
 
@@ -24,19 +26,25 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services
+            .AddPersistence(configuration)
+            .AddMessaging(configuration)
+            .AddExternalServices(configuration)
+            .AddBackgroundJobs(configuration);
+
+        return services;
+    }
+
+    private static IServiceCollection AddPersistence(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
         var connectionString = configuration.GetConnectionString("Database")
             ?? throw new InvalidOperationException("Connection string 'Database' is not configured.");
 
-        services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMq"));
-
-        var rabbitMqSettings = configuration.GetSection("RabbitMq").Get<RabbitMqSettings>()
-            ?? new RabbitMqSettings();
-
-        // Multi-tenancy
         services.AddScoped<ITenantProvider, TenantProvider>();
         services.AddScoped<TenantInterceptor>();
 
-        // DbContext
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             var interceptor = sp.GetRequiredService<TenantInterceptor>();
@@ -46,7 +54,6 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
-        // Repositories
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<IAppointmentRepository, AppointmentRepository>();
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
@@ -54,48 +61,60 @@ public static class DependencyInjection
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IDataDeletionRequestRepository, DataDeletionRequestRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IWebhookRepository, WebhookRepository>();
 
-        // Dapper
         services.AddScoped<ISqlConnectionFactory>(sp =>
         {
             var tenantProvider = sp.GetRequiredService<ITenantProvider>();
             return new SqlConnectionFactory(connectionString, tenantProvider);
         });
 
-        // RabbitMQ
+        return services;
+    }
+
+    private static IServiceCollection AddMessaging(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMq"));
+
+        var rabbitMqSettings = configuration.GetSection("RabbitMq").Get<RabbitMqSettings>()
+            ?? new RabbitMqSettings();
+
         services.AddSingleton(rabbitMqSettings);
         services.AddSingleton<RabbitMqConnection>();
         services.AddScoped<IEventBus, RabbitMqEventBus>();
         services.AddHostedService<RabbitMqSetup>();
 
-        // Notification Repository
-        services.AddScoped<INotificationRepository, NotificationRepository>();
-
-        // Consumers
         services.AddHostedService<AppointmentCreatedConsumer>();
         services.AddHostedService<AppointmentCancelledConsumer>();
         services.AddHostedService<AppointmentRescheduledConsumer>();
-        services.Configure<ReminderSettings>(configuration.GetSection(ReminderSettings.SectionName));
-        services.AddHostedService<AppointmentReminderJob>();
-
-        // Notification Service
-        services.AddScoped<INotificationService, NotificationService>();
-
-        // Webhook Repository
-        services.AddScoped<IWebhookRepository, WebhookRepository>();
-
-        // Webhook Consumer
         services.AddHostedService<WebhookDeliveryConsumer>();
 
-        // Webhook Dispatcher (typed HttpClient with timeout + resilience)
+        return services;
+    }
+
+    private static IServiceCollection AddExternalServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddScoped<INotificationService, NotificationService>();
+
         services.AddHttpClient<WebhookDispatcher>()
+            .ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                return new SocketsHttpHandler
+                {
+                    ConnectCallback = SsrfProtectedHandler.ConnectCallback,
+                };
+            })
             .AddStandardResilienceHandler(options =>
             {
                 options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
             });
 
-        // WhatsApp Client with resilience
         services.Configure<ChakraChatSettings>(configuration.GetSection("ChakraChat"));
 
         var chakraSettings = configuration.GetSection("ChakraChat").Get<ChakraChatSettings>()
@@ -107,6 +126,16 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {chakraSettings.ApiKey}");
         })
         .AddStandardResilienceHandler();
+
+        return services;
+    }
+
+    private static IServiceCollection AddBackgroundJobs(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<ReminderSettings>(configuration.GetSection(ReminderSettings.SectionName));
+        services.AddHostedService<AppointmentReminderJob>();
 
         return services;
     }

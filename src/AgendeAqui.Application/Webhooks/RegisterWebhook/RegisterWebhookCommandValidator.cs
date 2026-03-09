@@ -7,12 +7,11 @@ public sealed class RegisterWebhookCommandValidator : AbstractValidator<Register
     public RegisterWebhookCommandValidator()
     {
         RuleFor(x => x.Url)
-            .NotEmpty()
-            .MaximumLength(2048);
+            .MustBeValidWebhookUrl();
 
         RuleFor(x => x.Secret)
             .NotEmpty()
-            .MinimumLength(32);
+            .MinimumLength(WebhookValidationRules.MinSecretLength);
 
         RuleFor(x => x.Events)
             .NotEmpty();

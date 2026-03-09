@@ -1,4 +1,4 @@
-using AgendeAqui.Application.Tenants.CreateTenant;
+using AgendeAqui.Application.Tenants;
 using AgendeAqui.Application.Tenants.UpdateTenant;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Tenants;
@@ -72,6 +72,23 @@ public class UpdateTenantCommandHandlerTests
         _tenantRepository.GetByIdAsync(command.TenantId, Arg.Any<CancellationToken>()).Returns((Tenant?)null);
 
         await _handler.Handle(command, CancellationToken.None);
+
+        _tenantRepository.DidNotReceive().Update(Arg.Any<Tenant>());
+        await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WithInvalidPlan_ShouldReturnFailure()
+    {
+        var tenant = Tenant.Create("Test Corp", "test-corp", TenantPlan.Free);
+        var command = new UpdateTenantCommand(tenant.Id, "Test Corp", "InvalidPlan");
+
+        _tenantRepository.GetByIdAsync(tenant.Id, Arg.Any<CancellationToken>()).Returns(tenant);
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Tenant.InvalidPlan");
 
         _tenantRepository.DidNotReceive().Update(Arg.Any<Tenant>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());

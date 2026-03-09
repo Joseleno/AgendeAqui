@@ -1,6 +1,5 @@
 using AgendeAqui.Application.Abstractions.Data;
 using AgendeAqui.Application.Abstractions.Messaging;
-using AgendeAqui.Application.Tenants.CreateTenant;
 using AgendeAqui.Domain.Common;
 using AgendeAqui.Domain.Tenants;
 using Dapper;

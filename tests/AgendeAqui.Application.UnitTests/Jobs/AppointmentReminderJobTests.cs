@@ -57,77 +57,71 @@ public class AppointmentReminderJobTests
     }
 
     [Fact]
-    public async Task ProcessRemindersAsync_WithScheduledAppointments_ShouldSendReminders()
+    public async Task ProcessRemindersAsync_WithScheduledAppointments_ShouldSendBatchReminders()
     {
         // Arrange
         var appointment = CreateScheduledAppointment();
-        _appointmentRepository.GetByDateRangeAsync(
-            Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+        _appointmentRepository.GetByDateRangeAndStatusesAsync(
+            Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<IEnumerable<AppointmentStatus>>(), Arg.Any<CancellationToken>())
             .Returns(new List<Appointment> { appointment });
 
         // Act
         await _job.ProcessRemindersAsync(CancellationToken.None);
 
         // Assert
-        await _notificationService.Received(1).SendAppointmentReminderAsync(
-            appointment.TenantId, appointment.Id, Arg.Any<CancellationToken>());
+        await _notificationService.Received(1).SendAppointmentRemindersAsync(
+            Arg.Is<IReadOnlyList<Appointment>>(list => list.Count == 1 && list[0].Id == appointment.Id),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task ProcessRemindersAsync_WithNoAppointments_ShouldNotSendReminders()
     {
         // Arrange
-        _appointmentRepository.GetByDateRangeAsync(
-            Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+        _appointmentRepository.GetByDateRangeAndStatusesAsync(
+            Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<IEnumerable<AppointmentStatus>>(), Arg.Any<CancellationToken>())
             .Returns(new List<Appointment>());
 
         // Act
         await _job.ProcessRemindersAsync(CancellationToken.None);
 
         // Assert
-        await _notificationService.DidNotReceive().SendAppointmentReminderAsync(
-            Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _notificationService.DidNotReceive().SendAppointmentRemindersAsync(
+            Arg.Any<IReadOnlyList<Appointment>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task ProcessRemindersAsync_WithCancelledAppointment_ShouldNotSendReminder()
     {
-        // Arrange
-        var appointment = CreateScheduledAppointment();
-        appointment.Cancel("test reason");
-
-        _appointmentRepository.GetByDateRangeAsync(
-            Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
-            .Returns(new List<Appointment> { appointment });
+        // Arrange: repository filters at DB level, so returns empty when only cancelled exist
+        _appointmentRepository.GetByDateRangeAndStatusesAsync(
+            Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<IEnumerable<AppointmentStatus>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Appointment>());
 
         // Act
         await _job.ProcessRemindersAsync(CancellationToken.None);
 
         // Assert
-        await _notificationService.DidNotReceive().SendAppointmentReminderAsync(
-            Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _notificationService.DidNotReceive().SendAppointmentRemindersAsync(
+            Arg.Any<IReadOnlyList<Appointment>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task ProcessRemindersAsync_WhenReminderFails_ShouldContinueWithOthers()
+    public async Task ProcessRemindersAsync_WithMixedStatuses_ShouldOnlySendEligible()
     {
-        // Arrange
-        var appointment1 = CreateScheduledAppointment();
-        var appointment2 = CreateScheduledAppointment();
+        // Arrange: repository filters at DB level, so only eligible appointments are returned
+        var scheduledAppointment = CreateScheduledAppointment();
 
-        _appointmentRepository.GetByDateRangeAsync(
-            Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
-            .Returns(new List<Appointment> { appointment1, appointment2 });
-
-        _notificationService.SendAppointmentReminderAsync(
-            appointment1.TenantId, appointment1.Id, Arg.Any<CancellationToken>())
-            .ThrowsAsync(new Exception("WhatsApp down"));
+        _appointmentRepository.GetByDateRangeAndStatusesAsync(
+            Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<IEnumerable<AppointmentStatus>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Appointment> { scheduledAppointment });
 
         // Act
         await _job.ProcessRemindersAsync(CancellationToken.None);
 
         // Assert
-        await _notificationService.Received(1).SendAppointmentReminderAsync(
-            appointment2.TenantId, appointment2.Id, Arg.Any<CancellationToken>());
+        await _notificationService.Received(1).SendAppointmentRemindersAsync(
+            Arg.Is<IReadOnlyList<Appointment>>(list => list.Count == 1 && list[0].Id == scheduledAppointment.Id),
+            Arg.Any<CancellationToken>());
     }
 }

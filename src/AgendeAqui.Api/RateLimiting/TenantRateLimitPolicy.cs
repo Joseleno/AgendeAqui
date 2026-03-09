@@ -1,4 +1,5 @@
 using AgendeAqui.Domain.Tenants;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
@@ -11,7 +12,13 @@ namespace AgendeAqui.Api.RateLimiting;
 /// </summary>
 public sealed class TenantRateLimitPolicy : IRateLimiterPolicy<string>
 {
-    public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected => null;
+    public const int FreePlanLimit = 30;
+    public const int StarterPlanLimit = 100;
+    public const int ProfessionalPlanLimit = 1000;
+    public const int EnterprisePlanLimit = 5000;
+    public const int DefaultWindowMinutes = 1;
+
+    public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected => WriteRateLimitResponse;
 
     public RateLimitPartition<string> GetPartition(HttpContext httpContext)
     {
@@ -23,7 +30,7 @@ public sealed class TenantRateLimitPolicy : IRateLimiterPolicy<string>
             new FixedWindowRateLimiterOptions
             {
                 PermitLimit = permitLimit,
-                Window = TimeSpan.FromMinutes(1),
+                Window = TimeSpan.FromMinutes(DefaultWindowMinutes),
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                 QueueLimit = 0
             });
@@ -36,14 +43,30 @@ public sealed class TenantRateLimitPolicy : IRateLimiterPolicy<string>
     public static int GetPermitLimit(string? planClaim)
     {
         if (!int.TryParse(planClaim, out var plan))
-            return 30;
+            return FreePlanLimit;
 
         return (TenantPlan)plan switch
         {
-            TenantPlan.Starter => 100,
-            TenantPlan.Professional => 1000,
-            TenantPlan.Enterprise => 5000,
-            _ => 30  // Free (1) or unknown
+            TenantPlan.Starter => StarterPlanLimit,
+            TenantPlan.Professional => ProfessionalPlanLimit,
+            TenantPlan.Enterprise => EnterprisePlanLimit,
+            _ => FreePlanLimit  // Free (1) or unknown
         };
+    }
+
+    /// <summary>
+    /// Shared RFC 7807 ProblemDetails response for rate limit rejections.
+    /// </summary>
+    public static async ValueTask WriteRateLimitResponse(OnRejectedContext context, CancellationToken cancellationToken)
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        await context.HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Type = "https://tools.ietf.org/html/rfc6585#section-4",
+            Title = "Too Many Requests",
+            Status = 429,
+            Detail = "Rate limit exceeded. Please try again later."
+        }, cancellationToken);
     }
 }

@@ -13,6 +13,8 @@ public static class WebApplicationExtensions
         if (app.Environment.IsDevelopment())
             app.MapOpenApi();
 
+        app.UseForwardedHeaders();
+
         app.UseMiddleware<CorrelationIdMiddleware>();
 
         app.UseCors(app.Environment.IsDevelopment() ? "AllowAll" : "Production");

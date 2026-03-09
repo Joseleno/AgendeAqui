@@ -1,3 +1,4 @@
+using AgendeAqui.Application.Tenants;
 using AgendeAqui.Application.Tenants.CreateTenant;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Tenants;
@@ -79,6 +80,23 @@ public class CreateTenantCommandHandlerTests
         capturedTenant.Should().NotBeNull();
         capturedTenant!.Plan.Should().Be(TenantPlan.Professional);
         capturedTenant.Slug.Should().Be("pro-corp");
+    }
+
+    [Fact]
+    public async Task Handle_WithInvalidPlan_ShouldReturnFailure()
+    {
+        var command = new CreateTenantCommand("Acme Corp", "acme-corp", "InvalidPlan");
+
+        _tenantRepository.GetBySlugAsync(command.Slug, Arg.Any<CancellationToken>())
+            .Returns((Tenant?)null);
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Tenant.InvalidPlan");
+
+        await _tenantRepository.DidNotReceive().AddAsync(Arg.Any<Tenant>(), Arg.Any<CancellationToken>());
+        await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

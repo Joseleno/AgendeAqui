@@ -16,7 +16,8 @@ public sealed class DeleteWebhookCommandHandler(
         if (webhook is null)
             return Result.Failure<Mediator.Unit>(WebhookErrors.NotFound);
 
-        webhookRepository.Remove(webhook);
+        webhook.Delete();
+        webhookRepository.Update(webhook);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success(Mediator.Unit.Value);

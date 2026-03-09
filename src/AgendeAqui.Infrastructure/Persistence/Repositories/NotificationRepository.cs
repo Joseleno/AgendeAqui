@@ -25,10 +25,27 @@ internal sealed class NotificationRepository : INotificationRepository
     public void Remove(Notification notification) =>
         _context.Set<Notification>().Remove(notification);
 
-    public async Task<List<Notification>> GetByAppointmentIdAsync(Guid appointmentId, CancellationToken ct = default) =>
+    public async Task<IReadOnlyList<Notification>> GetByAppointmentIdAsync(Guid appointmentId, CancellationToken ct = default) =>
         await _context.Set<Notification>()
             .AsNoTracking()
             .Where(n => n.AppointmentId == appointmentId)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(ct);
+
+    public async Task<bool> ExistsByAppointmentIdAndTemplateAsync(Guid appointmentId, string templateName, CancellationToken ct = default) =>
+        await _context.Set<Notification>()
+            .AsNoTracking()
+            .AnyAsync(n => n.AppointmentId == appointmentId && n.TemplateName == templateName, ct);
+
+    public async Task<HashSet<Guid>> GetExistingAppointmentIdsAsync(IEnumerable<Guid> appointmentIds, string templateName, CancellationToken ct = default)
+    {
+        var ids = appointmentIds.ToList();
+        var existing = await _context.Set<Notification>()
+            .AsNoTracking()
+            .Where(n => ids.Contains(n.AppointmentId) && n.TemplateName == templateName)
+            .Select(n => n.AppointmentId)
+            .Distinct()
+            .ToListAsync(ct);
+        return existing.ToHashSet();
+    }
 }

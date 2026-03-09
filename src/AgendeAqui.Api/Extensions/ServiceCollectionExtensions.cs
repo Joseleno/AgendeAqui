@@ -7,12 +7,13 @@ using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Infrastructure;
 using AgendeAqui.Infrastructure.Messaging;
 using AgendeAqui.Infrastructure.Observability;
+using RabbitMQ.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
-using RabbitMQ.Client;
 using System.Security.Claims;
+using Microsoft.AspNetCore.HttpOverrides;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -71,11 +72,7 @@ public static class ServiceCollectionExtensions
             $"amqp://{rabbitMqSettings.UserName}:{rabbitMqSettings.Password}" +
             $"@{rabbitMqSettings.HostName}:{rabbitMqSettings.Port}/{vhost}");
 
-        services.AddSingleton<IConnection>(_ =>
-        {
-            var factory = new ConnectionFactory { Uri = rabbitMqUri };
-            return factory.CreateConnectionAsync().GetAwaiter().GetResult();
-        });
+        services.AddSingleton(new ConnectionFactory { Uri = rabbitMqUri });
 
         services.AddHealthChecks()
             .AddNpgSql(
@@ -88,6 +85,11 @@ public static class ServiceCollectionExtensions
 
         services.AddSignalR();
         services.AddScoped<IAppointmentHubNotifier, AppointmentHubNotifier>();
+
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        });
 
         services.AddAgendeAquiAuthentication(configuration);
         services.AddAuthorization(options => options.AddAgendeAquiPolicies());
@@ -106,6 +108,10 @@ public static class ServiceCollectionExtensions
         if (string.IsNullOrWhiteSpace(jwtSettings.SecretKey))
             throw new InvalidOperationException(
                 "JWT SecretKey is not configured. Use 'dotnet user-secrets set \"Jwt:SecretKey\" \"<your-key>\"' to configure it.");
+
+        if (Encoding.UTF8.GetByteCount(jwtSettings.SecretKey) < 32)
+            throw new InvalidOperationException(
+                "JWT SecretKey must be at least 32 bytes (256 bits) for HS256. Current key is too short.");
 
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
@@ -141,17 +147,7 @@ public static class ServiceCollectionExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            options.OnRejected = async (context, cancellationToken) =>
-            {
-                context.HttpContext.Response.ContentType = "application/problem+json";
-                await context.HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
-                {
-                    Type = "https://tools.ietf.org/html/rfc6585#section-4",
-                    Title = "Too Many Requests",
-                    Status = 429,
-                    Detail = "Rate limit exceeded. Please try again later."
-                }, cancellationToken);
-            };
+            options.OnRejected = TenantRateLimitPolicy.WriteRateLimitResponse;
 
             // Named policy used by endpoint groups via .RequireRateLimiting("tenant")
             options.AddPolicy<string, TenantRateLimitPolicy>("tenant");
@@ -169,15 +165,19 @@ public static class ServiceCollectionExtensions
                         return RateLimitPartition.GetNoLimiter<string>("health");
                     }
 
-                    var tenantId = context.User.FindFirstValue("tenant_id") ?? "anonymous";
+                    var tenantId = context.User.FindFirstValue("tenant_id");
                     var planClaim = context.User.FindFirstValue("tenant_plan");
                     var permitLimit = TenantRateLimitPolicy.GetPermitLimit(planClaim);
 
-                    return RateLimitPartition.GetFixedWindowLimiter(tenantId, _ =>
+                    var partitionKey = tenantId
+                        ?? context.Connection.RemoteIpAddress?.ToString()
+                        ?? "unknown";
+
+                    return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ =>
                         new FixedWindowRateLimiterOptions
                         {
                             PermitLimit = permitLimit,
-                            Window = TimeSpan.FromMinutes(1),
+                            Window = TimeSpan.FromMinutes(TenantRateLimitPolicy.DefaultWindowMinutes),
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                             QueueLimit = 0
                         });

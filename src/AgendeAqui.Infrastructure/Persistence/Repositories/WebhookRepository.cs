@@ -31,7 +31,7 @@ internal sealed class WebhookRepository : IWebhookRepository
             .Where(w => w.IsActive && w.Events.Contains(eventType))
             .ToListAsync(ct);
 
-    public async Task<List<WebhookDelivery>> GetDeliveriesByWebhookIdAsync(Guid webhookId, CancellationToken ct = default) =>
+    public async Task<IReadOnlyList<WebhookDelivery>> GetDeliveriesByWebhookIdAsync(Guid webhookId, CancellationToken ct = default) =>
         await _context.Set<WebhookDelivery>()
             .AsNoTracking()
             .Where(d => d.WebhookId == webhookId)

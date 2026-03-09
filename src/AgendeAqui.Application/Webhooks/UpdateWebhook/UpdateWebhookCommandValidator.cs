@@ -10,11 +10,7 @@ public sealed class UpdateWebhookCommandValidator : AbstractValidator<UpdateWebh
             .NotEmpty();
 
         RuleFor(x => x.Url)
-            .NotEmpty()
-            .MaximumLength(2048)
-            .Must(url => Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
-                         (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
-            .WithMessage("URL must be a valid HTTP or HTTPS address.");
+            .MustBeValidWebhookUrl();
 
         RuleFor(x => x.Events)
             .NotEmpty()

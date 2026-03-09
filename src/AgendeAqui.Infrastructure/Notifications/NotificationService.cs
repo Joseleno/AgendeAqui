@@ -1,5 +1,7 @@
 using AgendeAqui.Application.Abstractions.Notifications;
 using AgendeAqui.Domain.Abstractions;
+using AgendeAqui.Domain.Appointments;
+using AgendeAqui.Domain.Clients;
 using AgendeAqui.Domain.Notifications;
 using Microsoft.Extensions.Logging;
 
@@ -52,6 +54,48 @@ internal sealed class NotificationService : INotificationService
         await SendNotificationAsync(tenantId, appointmentId, "appointment_reminder", new Dictionary<string, string>(), ct);
     }
 
+    public async Task SendAppointmentRemindersAsync(IReadOnlyList<Appointment> appointments, CancellationToken ct = default)
+    {
+        if (appointments.Count == 0)
+            return;
+
+        var clientsById = await BuildClientLookup(appointments, ct);
+
+        const string templateName = "appointment_reminder";
+        var alreadySentIds = await _notificationRepository
+            .GetExistingAppointmentIdsAsync(appointments.Select(a => a.Id), templateName, ct);
+
+        foreach (var appointment in appointments)
+        {
+            if (alreadySentIds.Contains(appointment.Id))
+            {
+                _logger.LogDebug("Skipping duplicate reminder for appointment {AppointmentId}", appointment.Id);
+                continue;
+            }
+
+            if (!clientsById.TryGetValue(appointment.ClientId, out var client))
+            {
+                _logger.LogWarning("Client {ClientId} not found for reminder notification", appointment.ClientId);
+                continue;
+            }
+
+            await CreateSendAndPersistAsync(
+                appointment.TenantId, appointment.Id, client.Phone.Value,
+                templateName, new Dictionary<string, string>(), persistImmediately: false, ct);
+        }
+
+        await _unitOfWork.SaveChangesAsync(ct);
+    }
+
+    private async Task<Dictionary<Guid, Client>> BuildClientLookup(
+        IReadOnlyList<Appointment> appointments,
+        CancellationToken ct)
+    {
+        var clientIds = appointments.Select(a => a.ClientId).Distinct().ToList();
+        var clients = await _clientRepository.GetByIdsAsync(clientIds, ct);
+        return clients.ToDictionary(c => c.Id);
+    }
+
     private async Task SendNotificationAsync(
         Guid tenantId,
         Guid appointmentId,
@@ -73,13 +117,25 @@ internal sealed class NotificationService : INotificationService
             return;
         }
 
-        var phoneNumber = client.Phone.Value;
+        await CreateSendAndPersistAsync(
+            tenantId, appointmentId, client.Phone.Value,
+            templateName, parameters, persistImmediately: true, ct);
+    }
 
+    private async Task CreateSendAndPersistAsync(
+        Guid tenantId,
+        Guid appointmentId,
+        string phone,
+        string templateName,
+        Dictionary<string, string> parameters,
+        bool persistImmediately,
+        CancellationToken ct)
+    {
         var notificationResult = Notification.Create(
             tenantId,
             appointmentId,
             NotificationChannel.WhatsApp,
-            phoneNumber,
+            phone,
             templateName);
 
         if (notificationResult.IsFailure)
@@ -92,7 +148,8 @@ internal sealed class NotificationService : INotificationService
 
         try
         {
-            var sent = await _whatsAppClient.SendTemplateMessageAsync(phoneNumber, templateName, parameters, ct);
+            var sent = await _whatsAppClient.SendTemplateMessageAsync(
+                phone, templateName, parameters, ct);
 
             if (sent)
                 notification.MarkAsSent();
@@ -106,6 +163,8 @@ internal sealed class NotificationService : INotificationService
         }
 
         await _notificationRepository.AddAsync(notification, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
+
+        if (persistImmediately)
+            await _unitOfWork.SaveChangesAsync(ct);
     }
 }
