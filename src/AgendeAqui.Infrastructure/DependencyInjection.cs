@@ -63,6 +63,7 @@ public static class DependencyInjection
         services.AddScoped<IDataDeletionRequestRepository, DataDeletionRequestRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IWebhookRepository, WebhookRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         services.AddScoped<ISqlConnectionFactory>(sp =>
         {

@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Mediator -->
+    <PackageVersion Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageVersion Include="Mediator.Abstractions" Version="3.0.1" />
     <PackageVersion Include="Mediator.SourceGenerator" Version="3.0.1" />
     <!-- Application -->

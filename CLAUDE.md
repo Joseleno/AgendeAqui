@@ -80,3 +80,41 @@ dotnet ef migrations remove -p src/AgendeAqui.Infrastructure -s src/AgendeAqui.A
 - Group by feature/aggregate (e.g., `Appointments/`, `Tenants/`)
 - One class per file
 - Namespace matches folder structure
+
+## Frontend (React Dashboard)
+
+- Located in `frontend/` directory (monorepo)
+- Stack: React 19, TypeScript, Vite, TailwindCSS 4, TanStack Query, React Router, Recharts, @microsoft/signalr, date-fns
+- The frontend is a pure SPA client of the API — no special/exclusive endpoints
+- API types generated from OpenAPI spec via `openapi-typescript`
+
+```bash
+# Install dependencies
+cd frontend && npm install
+
+# Dev server (proxies API to localhost:5001)
+cd frontend && npm run dev
+
+# Build production
+cd frontend && npm run build
+
+# Generate API types from OpenAPI
+cd frontend && npm run generate-api
+
+# Run tests
+cd frontend && npm test
+```
+
+## Design Docs
+
+- Design documents saved in `docs/plans/`
+- Implementation plans saved in `docs/plans/`
+- Current: `docs/plans/2026-03-09-dashboard-react-sync-design.md`
+- Plan: `docs/plans/2026-03-09-dashboard-react-sync-implementation.md`
+
+## Two Products
+
+1. **AgendeAqui API** — produto core, vendido standalone para chatbots/ERPs/apps
+2. **AgendeAqui Dashboard** — frontend React opcional, consome a mesma API
+
+Todos os clientes (dashboard, chatbot, parceiro) usam a mesma API com os mesmos endpoints.

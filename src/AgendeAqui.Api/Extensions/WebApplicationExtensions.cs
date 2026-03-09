@@ -42,6 +42,7 @@ public static class WebApplicationExtensions
             Predicate = check => check.Tags.Contains("ready")
         });
         app.MapMetrics();
+        app.MapAuthEndpoints();
         app.MapLgpdEndpoints();
         app.MapTenantEndpoints();
         app.MapProfessionalEndpoints();

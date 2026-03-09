@@ -82,6 +82,7 @@ public static class ServiceCollectionExtensions
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserService>();
+        services.AddScoped<AgendeAqui.Application.Auth.IJwtTokenGenerator, AgendeAqui.Api.Auth.JwtTokenGenerator>();
 
         services.AddSignalR();
         services.AddScoped<IAppointmentHubNotifier, AppointmentHubNotifier>();
