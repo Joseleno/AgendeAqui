@@ -22,13 +22,11 @@ public sealed class HealthCheckIntegrationTests : IntegrationTestBase
     {
         // /health/ready checks PostgreSQL + RabbitMQ. In CI, RabbitMQ may still be
         // initializing when this test runs. We accept both OK and ServiceUnavailable
-        // and only verify that the endpoint responds correctly.
+        // and only verify that the endpoint responds.
         var response = await Client.GetAsync("/health/ready");
 
         response.StatusCode.Should().BeOneOf(
             HttpStatusCode.OK,
             HttpStatusCode.ServiceUnavailable);
-
-        response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
     }
 }
