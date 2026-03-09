@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using AgendeAqui.Application.Abstractions.Messaging;
+using AgendeAqui.Application.Webhooks.IntegrationEvents;
 using RabbitMQ.Client;
 
 namespace AgendeAqui.Infrastructure.Messaging;
@@ -8,6 +9,7 @@ namespace AgendeAqui.Infrastructure.Messaging;
 internal sealed class RabbitMqEventBus : IEventBus
 {
     private const string AppointmentEventsExchange = "appointment.events";
+    private const string IntegrationEventsExchange = "integration.events";
 
     private readonly RabbitMqConnection _connection;
 
@@ -24,6 +26,7 @@ internal sealed class RabbitMqEventBus : IEventBus
         var body = Encoding.UTF8.GetBytes(json);
 
         var routingKey = typeof(T).Name.Replace("IntegrationEvent", string.Empty).ToLowerInvariant();
+        var exchange = GetExchangeFor<T>();
 
         var properties = new BasicProperties
         {
@@ -34,11 +37,16 @@ internal sealed class RabbitMqEventBus : IEventBus
         };
 
         await channel.BasicPublishAsync(
-            exchange: AppointmentEventsExchange,
+            exchange: exchange,
             routingKey: routingKey,
             mandatory: false,
             basicProperties: properties,
             body: body,
             cancellationToken: ct);
     }
+
+    private static string GetExchangeFor<T>() where T : IntegrationEvent =>
+        typeof(T) == typeof(WebhookDeliveryIntegrationEvent)
+            ? IntegrationEventsExchange
+            : AppointmentEventsExchange;
 }
