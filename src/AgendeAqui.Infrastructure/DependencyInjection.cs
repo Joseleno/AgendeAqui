@@ -64,6 +64,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IWebhookRepository, WebhookRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
 
         services.AddScoped<ISqlConnectionFactory>(sp =>
         {

@@ -53,6 +53,7 @@ public static class WebApplicationExtensions
         app.MapScheduleEndpoints();
         app.MapNotificationEndpoints();
         app.MapWebhookEndpoints();
+        app.MapApiKeyEndpoints();
         app.MapReportEndpoints();
         app.MapHub<AppointmentHub>("/hubs/appointments");
 

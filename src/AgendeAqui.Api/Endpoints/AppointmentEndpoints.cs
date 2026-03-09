@@ -82,13 +82,13 @@ public static class AppointmentEndpoints
         group.MapGet("/", async (
             int? page, int? pageSize,
             DateOnly? dateFrom, DateOnly? dateTo,
-            Guid? professionalId, string? status,
+            Guid? professionalId, string? status, Guid? clientId,
             IMediator mediator,
             CancellationToken cancellationToken) =>
         {
             var query = new ListAppointmentsQuery(
                 page ?? 1, pageSize ?? 10,
-                dateFrom, dateTo, professionalId, status);
+                dateFrom, dateTo, professionalId, status, clientId);
 
             var result = await mediator.Send(query, cancellationToken);
 

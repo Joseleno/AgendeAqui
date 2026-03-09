@@ -9,6 +9,7 @@ public sealed record ListAppointmentsQuery : PagedRequest, IQuery<PagedResponse<
     public DateOnly? DateFrom { get; init; }
     public DateOnly? DateTo { get; init; }
     public Guid? ProfessionalId { get; init; }
+    public Guid? ClientId { get; init; }
     public string? Status { get; init; }
 
     public ListAppointmentsQuery(
@@ -17,7 +18,8 @@ public sealed record ListAppointmentsQuery : PagedRequest, IQuery<PagedResponse<
         DateOnly? dateFrom = null,
         DateOnly? dateTo = null,
         Guid? professionalId = null,
-        string? status = null)
+        string? status = null,
+        Guid? clientId = null)
     {
         Page = page;
         PageSize = pageSize;
@@ -25,5 +27,6 @@ public sealed record ListAppointmentsQuery : PagedRequest, IQuery<PagedResponse<
         DateTo = dateTo;
         ProfessionalId = professionalId;
         Status = status;
+        ClientId = clientId;
     }
 }

@@ -43,6 +43,12 @@ public sealed class ListAppointmentsQueryHandler(
             parameters.Add("ProfessionalId", query.ProfessionalId.Value);
         }
 
+        if (query.ClientId.HasValue)
+        {
+            whereClause.Append(" AND a.client_id = @ClientId");
+            parameters.Add("ClientId", query.ClientId.Value);
+        }
+
         if (!string.IsNullOrWhiteSpace(query.Status))
         {
             whereClause.Append(" AND a.status = @Status");
