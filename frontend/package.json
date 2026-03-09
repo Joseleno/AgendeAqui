@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-api": "npx openapi-typescript https://localhost:5001/openapi/v1.json -o src/api/schema.d.ts"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",

@@ -15,6 +15,9 @@ import { RelatoriosPage } from './pages/RelatoriosPage'
 import { AtendimentosPage } from './pages/relatorios/AtendimentosPage'
 import { FaturamentoPage } from './pages/relatorios/FaturamentoPage'
 import { ConfigPage } from './pages/ConfigPage'
+import { IntegracoesPage } from './pages/config/IntegracoesPage'
+import { NotificacoesPage } from './pages/config/NotificacoesPage'
+import { ContaPage } from './pages/config/ContaPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,7 +50,12 @@ export default function App() {
               <Route path="atendimentos" element={<AtendimentosPage />} />
               <Route path="faturamento" element={<FaturamentoPage />} />
             </Route>
-            <Route path="config" element={<ConfigPage />} />
+            <Route path="config" element={<ConfigPage />}>
+              <Route index element={<Navigate to="integracoes" replace />} />
+              <Route path="integracoes" element={<IntegracoesPage />} />
+              <Route path="notificacoes" element={<NotificacoesPage />} />
+              <Route path="conta" element={<ContaPage />} />
+            </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
