@@ -26,6 +26,8 @@ public static class AvailabilityEndpoints
                     title: result.Error.Code);
         })
         .WithName("GetAvailability")
+        .WithSummary("Get availability")
+        .WithDescription("Returns available time slots for a professional on a specific date.")
         .Produces<AvailabilityResponse>()
         .ProducesProblem(StatusCodes.Status400BadRequest);
     }

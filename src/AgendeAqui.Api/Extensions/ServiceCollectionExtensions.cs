@@ -1,12 +1,17 @@
 using AgendeAqui.Api.Auth;
+using AgendeAqui.Api.Hubs;
 using AgendeAqui.Api.RateLimiting;
 using AgendeAqui.Application;
+using AgendeAqui.Application.Abstractions.RealTime;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Infrastructure;
+using AgendeAqui.Infrastructure.Messaging;
 using AgendeAqui.Infrastructure.Observability;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -26,11 +31,63 @@ public static class ServiceCollectionExtensions
             .AddMediator()
             .AddObservability(configuration);
 
+        services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(5),
+                LocalCacheExpiration = TimeSpan.FromMinutes(2)
+            };
+        });
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy => policy
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+
+            var allowedOrigins = configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]>() ?? [];
+
+            options.AddPolicy("Production", policy => policy
+                .WithOrigins(allowedOrigins)
+                .WithMethods("GET", "POST", "PUT", "DELETE")
+                .WithHeaders(
+                    "Authorization",
+                    "Content-Type",
+                    "X-Tenant-Id",
+                    "X-Correlation-Id",
+                    "X-Api-Key"));
+        });
+
+        var rabbitMqSettings = configuration
+            .GetSection("RabbitMq")
+            .Get<RabbitMqSettings>() ?? new RabbitMqSettings();
+
+        var vhost = Uri.EscapeDataString(rabbitMqSettings.VirtualHost.TrimStart('/'));
+        var rabbitMqUri = new Uri(
+            $"amqp://{rabbitMqSettings.UserName}:{rabbitMqSettings.Password}" +
+            $"@{rabbitMqSettings.HostName}:{rabbitMqSettings.Port}/{vhost}");
+
+        services.AddSingleton<IConnection>(_ =>
+        {
+            var factory = new ConnectionFactory { Uri = rabbitMqUri };
+            return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+        });
+
         services.AddHealthChecks()
-            .AddNpgSql(configuration.GetConnectionString("Database")!);
+            .AddNpgSql(
+                configuration.GetConnectionString("Database")!,
+                tags: ["ready"])
+            .AddRabbitMQ(tags: ["ready"]);
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserService>();
+
+        services.AddSignalR();
+        services.AddScoped<IAppointmentHubNotifier, AppointmentHubNotifier>();
 
         services.AddAgendeAquiAuthentication(configuration);
         services.AddAuthorization(options => options.AddAgendeAquiPolicies());

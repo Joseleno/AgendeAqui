@@ -44,6 +44,8 @@ public static class ScheduleEndpoints
                 title: result.Error.Code);
         })
         .WithName("CreateSchedule")
+        .WithSummary("Create schedule")
+        .WithDescription("Creates a weekly schedule for a professional.")
         .Produces(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
@@ -62,6 +64,8 @@ public static class ScheduleEndpoints
                     title: result.Error.Code);
         })
         .WithName("GetSchedule")
+        .WithSummary("Get schedule by ID")
+        .WithDescription("Retrieves schedule details.")
         .Produces<ScheduleResponse>()
         .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
@@ -83,6 +87,8 @@ public static class ScheduleEndpoints
                     title: result.Error.Code);
         })
         .WithName("ListSchedules")
+        .WithSummary("List schedules")
+        .WithDescription("Lists schedules with optional professional filter. Supports pagination.")
         .Produces<PagedResponse<ScheduleResponse>>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
@@ -111,6 +117,8 @@ public static class ScheduleEndpoints
                     title: result.Error.Code);
         })
         .WithName("UpdateSchedule")
+        .WithSummary("Update schedule")
+        .WithDescription("Updates schedule times and active status.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
@@ -135,6 +143,8 @@ public static class ScheduleEndpoints
                     title: result.Error.Code);
         })
         .WithName("DeactivateSchedule")
+        .WithSummary("Deactivate schedule")
+        .WithDescription("Deactivates a professional's schedule.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)

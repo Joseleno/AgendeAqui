@@ -29,6 +29,8 @@ public static class LgpdEndpoints
                     title: result.Error.Code);
         })
         .WithName("DeleteClientData")
+        .WithSummary("Delete client data (LGPD)")
+        .WithDescription("Anonymizes client data in compliance with LGPD data protection law.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound);
@@ -49,6 +51,8 @@ public static class LgpdEndpoints
                 title: result.Error.Code);
         })
         .WithName("ExportClientData")
+        .WithSummary("Export client data (LGPD)")
+        .WithDescription("Exports all client data including appointment history for LGPD compliance.")
         .Produces<ClientDataExport>()
         .ProducesProblem(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status400BadRequest);

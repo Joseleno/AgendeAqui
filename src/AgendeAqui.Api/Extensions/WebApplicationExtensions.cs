@@ -1,5 +1,7 @@
 using AgendeAqui.Api.Endpoints;
+using AgendeAqui.Api.Hubs;
 using AgendeAqui.Api.Middleware;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Prometheus;
 
 namespace AgendeAqui.Api.Extensions;
@@ -12,6 +14,9 @@ public static class WebApplicationExtensions
             app.MapOpenApi();
 
         app.UseMiddleware<CorrelationIdMiddleware>();
+
+        app.UseCors(app.Environment.IsDevelopment() ? "AllowAll" : "Production");
+
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseHttpsRedirection();
@@ -26,8 +31,14 @@ public static class WebApplicationExtensions
 
         app.UseHttpMetrics();
 
-        app.MapHealthChecks("/health");
-        app.MapHealthChecks("/health/ready");
+        app.MapHealthChecks("/health", new HealthCheckOptions
+        {
+            Predicate = _ => false
+        });
+        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+        {
+            Predicate = check => check.Tags.Contains("ready")
+        });
         app.MapMetrics();
         app.MapLgpdEndpoints();
         app.MapTenantEndpoints();
@@ -40,6 +51,7 @@ public static class WebApplicationExtensions
         app.MapNotificationEndpoints();
         app.MapWebhookEndpoints();
         app.MapReportEndpoints();
+        app.MapHub<AppointmentHub>("/hubs/appointments");
 
         return app;
     }

@@ -55,4 +55,27 @@ public sealed class Webhook : TenantEntity
         IsActive = false;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public Result<Webhook> Update(string url, IReadOnlyList<string> events, bool isActive)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return Result.Failure<Webhook>(WebhookErrors.InvalidUrl);
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            return Result.Failure<Webhook>(WebhookErrors.InvalidUrl);
+
+        if (url.Length > 2048)
+            return Result.Failure<Webhook>(WebhookErrors.InvalidUrl);
+
+        if (events is null || events.Count == 0)
+            return Result.Failure<Webhook>(WebhookErrors.InvalidEvents);
+
+        Url = url;
+        Events = events.ToList();
+        IsActive = isActive;
+        UpdatedAt = DateTime.UtcNow;
+
+        return Result.Success(this);
+    }
 }

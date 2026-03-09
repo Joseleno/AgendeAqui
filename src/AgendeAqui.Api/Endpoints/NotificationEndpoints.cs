@@ -26,6 +26,8 @@ public static class NotificationEndpoints
                     title: result.Error.Code);
         })
         .WithName("ListNotifications")
+        .WithSummary("List notifications")
+        .WithDescription("Lists notifications for a specific appointment.")
         .Produces<List<NotificationResponse>>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest);
     }

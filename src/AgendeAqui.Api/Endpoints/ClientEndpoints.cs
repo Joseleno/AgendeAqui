@@ -30,6 +30,8 @@ public static class ClientEndpoints
                 title: result.Error.Code);
         })
         .WithName("CreateClient")
+        .WithSummary("Create client")
+        .WithDescription("Registers a new client for the current tenant.")
         .Produces(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
@@ -47,6 +49,8 @@ public static class ClientEndpoints
                     title: result.Error.Code);
         })
         .WithName("GetClient")
+        .WithSummary("Get client by ID")
+        .WithDescription("Retrieves client details.")
         .Produces<ClientResponse>()
         .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
@@ -64,6 +68,8 @@ public static class ClientEndpoints
                     title: result.Error.Code);
         })
         .WithName("ListClients")
+        .WithSummary("List clients")
+        .WithDescription("Lists clients for the current tenant with optional search. Supports pagination.")
         .Produces(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
@@ -87,6 +93,8 @@ public static class ClientEndpoints
                     title: result.Error.Code);
         })
         .WithName("UpdateClient")
+        .WithSummary("Update client")
+        .WithDescription("Updates client details.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)

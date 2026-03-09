@@ -71,7 +71,17 @@ internal abstract class RabbitMqConsumerBase<T> : BackgroundService where T : cl
                 }
                 else
                 {
-                    // Republish with incremented retry count, then ack original
+                    // Exponential backoff before republishing: 1s, 5s, 25s
+                    // Blocks the consumer intentionally (prefetch=1) to avoid hammering a broken dependency
+                    var delays = new[] { 1_000, 5_000, 25_000 };
+                    var delayMs = delays[Math.Min(retryCount, delays.Length - 1)];
+
+                    _logger.LogWarning(
+                        "Retrying message from {Queue} in {DelayMs}ms (attempt {Attempt}/{MaxRetries})",
+                        _queueName, delayMs, retryCount + 1, MaxRetries);
+
+                    await Task.Delay(delayMs, stoppingToken);
+
                     var props = new BasicProperties();
                     props.Headers = new Dictionary<string, object?> { ["x-retry-count"] = retryCount + 1 };
                     await channel.BasicPublishAsync(

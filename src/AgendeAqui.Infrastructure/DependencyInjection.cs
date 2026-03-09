@@ -75,6 +75,7 @@ public static class DependencyInjection
         services.AddHostedService<AppointmentCreatedConsumer>();
         services.AddHostedService<AppointmentCancelledConsumer>();
         services.AddHostedService<AppointmentRescheduledConsumer>();
+        services.Configure<ReminderSettings>(configuration.GetSection(ReminderSettings.SectionName));
         services.AddHostedService<AppointmentReminderJob>();
 
         // Notification Service

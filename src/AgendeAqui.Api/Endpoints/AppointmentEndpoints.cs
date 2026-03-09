@@ -52,6 +52,8 @@ public static class AppointmentEndpoints
                 title: result.Error.Code);
         })
         .WithName("CreateAppointment")
+        .WithSummary("Create appointment")
+        .WithDescription("Creates a new appointment for the specified professional, service, and client.")
         .Produces(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
@@ -71,6 +73,8 @@ public static class AppointmentEndpoints
                     title: result.Error.Code);
         })
         .WithName("GetAppointment")
+        .WithSummary("Get appointment by ID")
+        .WithDescription("Retrieves appointment details including professional, service, client, date, time, and status.")
         .Produces<AppointmentResponse>()
         .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
@@ -96,6 +100,8 @@ public static class AppointmentEndpoints
                     title: result.Error.Code);
         })
         .WithName("ListAppointments")
+        .WithSummary("List appointments")
+        .WithDescription("Lists appointments with optional filters by date range, professional, and status. Supports pagination.")
         .Produces<PagedResponse<AppointmentResponse>>(StatusCodes.Status200OK)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
 
@@ -118,6 +124,8 @@ public static class AppointmentEndpoints
                     title: result.Error.Code);
         })
         .WithName("CancelAppointment")
+        .WithSummary("Cancel appointment")
+        .WithDescription("Cancels an existing appointment with a required reason.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
@@ -142,6 +150,8 @@ public static class AppointmentEndpoints
                     title: result.Error.Code);
         })
         .WithName("RescheduleAppointment")
+        .WithSummary("Reschedule appointment")
+        .WithDescription("Reschedules an appointment to a new date and time.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
@@ -172,6 +182,8 @@ public static class AppointmentEndpoints
                     title: result.Error.Code);
         })
         .WithName("UpdateAttendance")
+        .WithSummary("Update attendance")
+        .WithDescription("Marks an appointment as attended or no-show.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)

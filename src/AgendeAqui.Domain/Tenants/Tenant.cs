@@ -43,4 +43,11 @@ public sealed class Tenant : Entity
         Plan = plan;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void UpdateName(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        Name = name;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

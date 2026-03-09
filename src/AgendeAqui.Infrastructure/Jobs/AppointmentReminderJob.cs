@@ -4,6 +4,7 @@ using AgendeAqui.Domain.ValueObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AgendeAqui.Infrastructure.Jobs;
 
@@ -11,14 +12,16 @@ internal sealed class AppointmentReminderJob : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<AppointmentReminderJob> _logger;
-    private static readonly TimeSpan Interval = TimeSpan.FromHours(1);
+    private readonly ReminderSettings _settings;
 
     public AppointmentReminderJob(
         IServiceScopeFactory scopeFactory,
-        ILogger<AppointmentReminderJob> logger)
+        ILogger<AppointmentReminderJob> logger,
+        IOptions<ReminderSettings> settings)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _settings = settings.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -34,22 +37,25 @@ internal sealed class AppointmentReminderJob : BackgroundService
                 _logger.LogError(ex, "Error processing appointment reminders");
             }
 
-            await Task.Delay(Interval, stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(_settings.IntervalMinutes), stoppingToken);
         }
     }
 
-    private async Task ProcessRemindersAsync(CancellationToken ct)
+    internal async Task ProcessRemindersAsync(CancellationToken ct)
     {
         using var scope = _scopeFactory.CreateScope();
         var appointmentRepository = scope.ServiceProvider.GetRequiredService<IAppointmentRepository>();
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-        var tomorrow = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(24));
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var localNow = DateTime.UtcNow.AddHours(_settings.TimezoneOffsetHours);
+        var today = DateOnly.FromDateTime(localNow);
+        var reminderDate = DateOnly.FromDateTime(localNow.AddHours(_settings.HoursBeforeAppointment));
 
-        var appointments = await appointmentRepository.GetByDateRangeAsync(today, tomorrow, ct);
+        var appointments = await appointmentRepository.GetByDateRangeAsync(today, reminderDate, ct);
 
-        _logger.LogInformation("Found {Count} appointments for reminders", appointments.Count);
+        _logger.LogInformation(
+            "Found {Count} appointments for reminders (range: {From} to {To})",
+            appointments.Count, today, reminderDate);
 
         foreach (var appointment in appointments)
         {

@@ -30,6 +30,8 @@ public static class ServiceEndpoints
                 title: result.Error.Code);
         })
         .WithName("CreateService")
+        .WithSummary("Create service")
+        .WithDescription("Creates a new service with name, duration, and price.")
         .Produces(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .RequireAuthorization(AuthorizationPolicies.RequireAdmin);
@@ -47,6 +49,8 @@ public static class ServiceEndpoints
                     title: result.Error.Code);
         })
         .WithName("GetService")
+        .WithSummary("Get service by ID")
+        .WithDescription("Retrieves service details.")
         .Produces<ServiceResponse>()
         .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
@@ -64,6 +68,8 @@ public static class ServiceEndpoints
                     title: result.Error.Code);
         })
         .WithName("ListServices")
+        .WithSummary("List services")
+        .WithDescription("Lists active services for the current tenant. Supports pagination.")
         .Produces(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
@@ -87,6 +93,8 @@ public static class ServiceEndpoints
                     title: result.Error.Code);
         })
         .WithName("UpdateService")
+        .WithSummary("Update service")
+        .WithDescription("Updates service details.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)

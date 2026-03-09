@@ -30,6 +30,8 @@ public static class ProfessionalEndpoints
                 title: result.Error.Code);
         })
         .WithName("CreateProfessional")
+        .WithSummary("Create professional")
+        .WithDescription("Registers a new professional for the current tenant.")
         .Produces(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .RequireAuthorization(AuthorizationPolicies.RequireAdmin);
@@ -47,6 +49,8 @@ public static class ProfessionalEndpoints
                     title: result.Error.Code);
         })
         .WithName("GetProfessional")
+        .WithSummary("Get professional by ID")
+        .WithDescription("Retrieves professional details.")
         .Produces<ProfessionalResponse>()
         .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
@@ -64,6 +68,8 @@ public static class ProfessionalEndpoints
                     title: result.Error.Code);
         })
         .WithName("ListProfessionals")
+        .WithSummary("List professionals")
+        .WithDescription("Lists active professionals for the current tenant. Supports pagination.")
         .Produces(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
@@ -87,6 +93,8 @@ public static class ProfessionalEndpoints
                     title: result.Error.Code);
         })
         .WithName("UpdateProfessional")
+        .WithSummary("Update professional")
+        .WithDescription("Updates professional details including name, email, and phone.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)

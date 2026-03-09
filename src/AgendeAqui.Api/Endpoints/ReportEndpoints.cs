@@ -24,6 +24,8 @@ public static class ReportEndpoints
                 : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
         })
         .WithName("GetAttendanceReport")
+        .WithSummary("Attendance report")
+        .WithDescription("Generates an attendance report for the specified date range.")
         .Produces<AttendanceReportResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest);
 
@@ -37,6 +39,8 @@ public static class ReportEndpoints
                 : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
         })
         .WithName("GetRevenueReport")
+        .WithSummary("Revenue report")
+        .WithDescription("Generates a revenue report for the specified date range.")
         .Produces<RevenueReportResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest);
     }
