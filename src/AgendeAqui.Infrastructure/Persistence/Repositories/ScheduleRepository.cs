@@ -14,7 +14,7 @@ internal sealed class ScheduleRepository : IScheduleRepository
     }
 
     public async Task<Schedule?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Schedules.FindAsync([id], ct);
+        await _context.Schedules.FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<Schedule>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Schedules.AsNoTracking().ToListAsync(ct);

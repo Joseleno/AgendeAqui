@@ -15,7 +15,7 @@ internal sealed class ClientRepository : IClientRepository
     }
 
     public async Task<Client?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Clients.FindAsync([id], ct);
+        await _context.Clients.FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<Client>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Clients.AsNoTracking().ToListAsync(ct);

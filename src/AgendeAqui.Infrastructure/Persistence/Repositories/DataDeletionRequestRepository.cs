@@ -11,7 +11,7 @@ internal sealed class DataDeletionRequestRepository : IDataDeletionRequestReposi
     public DataDeletionRequestRepository(ApplicationDbContext context) => _context = context;
 
     public async Task<DataDeletionRequest?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Set<DataDeletionRequest>().FindAsync([id], ct);
+        await _context.Set<DataDeletionRequest>().FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<DataDeletionRequest>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Set<DataDeletionRequest>().AsNoTracking().ToListAsync(ct);

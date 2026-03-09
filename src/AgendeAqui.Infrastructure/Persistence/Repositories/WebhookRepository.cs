@@ -11,7 +11,7 @@ internal sealed class WebhookRepository : IWebhookRepository
     public WebhookRepository(ApplicationDbContext context) => _context = context;
 
     public async Task<Webhook?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Set<Webhook>().FindAsync([id], ct);
+        await _context.Set<Webhook>().FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<Webhook>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Set<Webhook>().AsNoTracking().ToListAsync(ct);

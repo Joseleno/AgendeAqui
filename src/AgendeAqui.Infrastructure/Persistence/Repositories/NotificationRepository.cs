@@ -11,7 +11,7 @@ internal sealed class NotificationRepository : INotificationRepository
     public NotificationRepository(ApplicationDbContext context) => _context = context;
 
     public async Task<Notification?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Set<Notification>().FindAsync([id], ct);
+        await _context.Set<Notification>().FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<Notification>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Set<Notification>().AsNoTracking().ToListAsync(ct);

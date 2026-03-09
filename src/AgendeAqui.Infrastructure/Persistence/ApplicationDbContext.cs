@@ -19,6 +19,10 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
     private readonly IPublisher _publisher;
     private readonly ITenantProvider _tenantProvider;
 
+    // Exposed as property so EF Core can parameterize it in query filters.
+    // EF Core re-evaluates DbContext member access on each query execution.
+    public Guid CurrentTenantId => _tenantProvider.GetTenantId();
+
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<Schedule> Schedules => Set<Schedule>();
@@ -55,17 +59,17 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
             if (!typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))
                 continue;
 
+            // e => e.TenantId == EF.Property<Guid>(this, "CurrentTenantId")
+            // EF Core parameterizes DbContext member access, ensuring the filter
+            // uses the current tenant ID for each query execution.
             var parameter = Expression.Parameter(entityType.ClrType, "e");
-
             var tenantIdProperty = Expression.Property(parameter, nameof(TenantEntity.TenantId));
-
-            var tenantProviderExpr = Expression.Constant(_tenantProvider);
-            var getTenantIdCall = Expression.Call(
-                tenantProviderExpr,
-                typeof(ITenantProvider).GetMethod(nameof(ITenantProvider.GetTenantId))!);
+            var currentTenantId = Expression.Property(
+                Expression.Constant(this),
+                nameof(CurrentTenantId));
 
             var filter = Expression.Lambda(
-                Expression.Equal(tenantIdProperty, getTenantIdCall),
+                Expression.Equal(tenantIdProperty, currentTenantId),
                 parameter);
 
             entityType.SetQueryFilter(filter);

@@ -15,7 +15,7 @@ internal sealed class AppointmentRepository : IAppointmentRepository
     }
 
     public async Task<Appointment?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Appointments.FindAsync([id], ct);
+        await _context.Appointments.FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<Appointment>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Appointments.AsNoTracking().ToListAsync(ct);

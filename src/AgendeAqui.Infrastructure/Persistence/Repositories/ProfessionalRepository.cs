@@ -15,7 +15,7 @@ internal sealed class ProfessionalRepository : IProfessionalRepository
     }
 
     public async Task<Professional?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Professionals.FindAsync([id], ct);
+        await _context.Professionals.FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<Professional>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Professionals.AsNoTracking().ToListAsync(ct);
