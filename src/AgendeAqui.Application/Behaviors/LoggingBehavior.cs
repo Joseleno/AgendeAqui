@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Mediator;
 using Microsoft.Extensions.Logging;
 
@@ -14,12 +15,22 @@ public sealed class LoggingBehavior<TRequest, TResponse>(
     {
         var requestName = typeof(TRequest).Name;
 
-        logger.LogInformation("Handling {RequestName}", requestName);
+        var stopwatch = Stopwatch.StartNew();
 
-        var response = await next(message, cancellationToken);
+        try
+        {
+            var response = await next(message, cancellationToken);
 
-        logger.LogInformation("Handled {RequestName}", requestName);
+            stopwatch.Stop();
+            logger.LogInformation("Handled {RequestName} in {ElapsedMs}ms", requestName, stopwatch.ElapsedMilliseconds);
 
-        return response;
+            return response;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            logger.LogError(ex, "Failed {RequestName} after {ElapsedMs}ms", requestName, stopwatch.ElapsedMilliseconds);
+            throw;
+        }
     }
 }

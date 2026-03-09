@@ -7,7 +7,11 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(rm:*)",
-      "Skill(code-reviewer)"
+      "Skill(code-reviewer)",
+      "Bash(find .:*)",
+      "Bash(docker info:*)",
+      "Bash(dotnet-ilspy ~/.nuget/packages/aspnetcore.healthchecks.rabbitmq/9.0.0/lib/net8.0/HealthChecks.Rabbitmq.dll)",
+      "Read(//c/Users/josel/.nuget/packages/aspnetcore.healthchecks.rabbitmq/**)"
     ]
   }
 }

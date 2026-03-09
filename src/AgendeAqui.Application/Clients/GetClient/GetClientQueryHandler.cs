@@ -15,7 +15,7 @@ public sealed class GetClientQueryHandler(
         GetClientQuery query,
         CancellationToken cancellationToken)
     {
-        using var connection = sqlConnectionFactory.CreateConnection();
+        using var connection = await sqlConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         const string sql = """
             SELECT id          AS Id,

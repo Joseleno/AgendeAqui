@@ -3,6 +3,8 @@ using FluentValidation;
 using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
+[assembly: MediatorOptions(ServiceLifetime = ServiceLifetime.Scoped)]
+
 namespace AgendeAqui.Application;
 
 public static class DependencyInjection
@@ -13,8 +15,8 @@ public static class DependencyInjection
             typeof(DependencyInjection).Assembly,
             includeInternalTypes: true);
 
-        services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-        services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         return services;
     }

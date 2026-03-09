@@ -5,55 +5,65 @@ using AgendeAqui.Application.Professionals.GetProfessional;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Common;
 using Dapper;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace AgendeAqui.Application.Professionals.ListProfessionals;
 
 public sealed class ListProfessionalsQueryHandler(
     ISqlConnectionFactory sqlConnectionFactory,
-    ITenantProvider tenantProvider) : IQueryHandler<ListProfessionalsQuery, PagedResponse<ProfessionalResponse>>
+    ITenantProvider tenantProvider,
+    HybridCache cache) : IQueryHandler<ListProfessionalsQuery, PagedResponse<ProfessionalResponse>>
 {
     public async ValueTask<Result<PagedResponse<ProfessionalResponse>>> Handle(
         ListProfessionalsQuery query,
         CancellationToken cancellationToken)
     {
-        using var connection = sqlConnectionFactory.CreateConnection();
-
         var tenantId = tenantProvider.GetTenantId();
+        var cacheKey = $"professionals:{tenantId}:p{query.Page}:s{query.PageSize}";
 
-        const string countSql = """
-            SELECT COUNT(*)
-            FROM professionals
-            WHERE tenant_id = @TenantId AND is_active = true
-            """;
+        var cached = await cache.GetOrCreateAsync(
+            cacheKey,
+            async ct =>
+            {
+                using var connection = await sqlConnectionFactory.CreateConnectionAsync(ct);
 
-        const string itemsSql = """
-            SELECT id          AS Id,
-                   name        AS Name,
-                   email       AS Email,
-                   phone       AS Phone,
-                   is_active   AS IsActive,
-                   created_at  AS CreatedAt
-            FROM professionals
-            WHERE tenant_id = @TenantId AND is_active = true
-            ORDER BY name
-            LIMIT @PageSize OFFSET @Offset
-            """;
+                const string countSql = """
+                    SELECT COUNT(*)
+                    FROM professionals
+                    WHERE tenant_id = @TenantId AND is_active = true
+                    """;
 
-        var offset = (query.Page - 1) * query.PageSize;
-        var parameters = new { TenantId = tenantId, query.PageSize, Offset = offset };
+                const string itemsSql = """
+                    SELECT id          AS Id,
+                           name        AS Name,
+                           email       AS Email,
+                           phone       AS Phone,
+                           is_active   AS IsActive,
+                           created_at  AS CreatedAt
+                    FROM professionals
+                    WHERE tenant_id = @TenantId AND is_active = true
+                    ORDER BY name
+                    LIMIT @PageSize OFFSET @Offset
+                    """;
 
-        var countCommand = new CommandDefinition(countSql, new { TenantId = tenantId }, cancellationToken: cancellationToken);
-        var totalCount = await connection.ExecuteScalarAsync<int>(countCommand);
+                var offset = (query.Page - 1) * query.PageSize;
+                var parameters = new { TenantId = tenantId, query.PageSize, Offset = offset };
 
-        var itemsCommand = new CommandDefinition(itemsSql, parameters, cancellationToken: cancellationToken);
-        var items = await connection.QueryAsync<ProfessionalResponse>(itemsCommand);
+                var countCommand = new CommandDefinition(countSql, new { TenantId = tenantId }, cancellationToken: ct);
+                var totalCount = await connection.ExecuteScalarAsync<int>(countCommand);
 
-        var response = new PagedResponse<ProfessionalResponse>(
-            items.AsList(),
-            query.Page,
-            query.PageSize,
-            totalCount);
+                var itemsCommand = new CommandDefinition(itemsSql, parameters, cancellationToken: ct);
+                var items = await connection.QueryAsync<ProfessionalResponse>(itemsCommand);
 
-        return Result.Success(response);
+                return new PagedResponse<ProfessionalResponse>(
+                    items.AsList(),
+                    query.Page,
+                    query.PageSize,
+                    totalCount);
+            },
+            tags: [$"tenant:{tenantId}", "professionals"],
+            cancellationToken: cancellationToken);
+
+        return Result.Success(cached!);
     }
 }

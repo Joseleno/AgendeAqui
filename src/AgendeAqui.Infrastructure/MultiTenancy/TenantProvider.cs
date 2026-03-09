@@ -4,9 +4,9 @@ namespace AgendeAqui.Infrastructure.MultiTenancy;
 
 internal sealed class TenantProvider : ITenantProvider
 {
-    private static readonly AsyncLocal<Guid> _tenantId = new();
+    private Guid _tenantId;
 
-    public Guid GetTenantId() => _tenantId.Value;
+    public Guid GetTenantId() => _tenantId;
 
-    public void SetTenantId(Guid tenantId) => _tenantId.Value = tenantId;
+    public void SetTenantId(Guid tenantId) => _tenantId = tenantId;
 }

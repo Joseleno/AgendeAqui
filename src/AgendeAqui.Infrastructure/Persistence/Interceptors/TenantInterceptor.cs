@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace AgendeAqui.Infrastructure.Persistence.Interceptors;
 
-internal sealed class TenantInterceptor : DbCommandInterceptor
+internal sealed class TenantInterceptor : DbConnectionInterceptor
 {
     private readonly ITenantProvider _tenantProvider;
 
@@ -13,45 +13,49 @@ internal sealed class TenantInterceptor : DbCommandInterceptor
         _tenantProvider = tenantProvider;
     }
 
-    public override async ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
-        DbCommand command,
-        CommandEventData eventData,
-        InterceptionResult<DbDataReader> result,
-        CancellationToken cancellationToken = default)
+    public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
     {
-        await SetTenantContextAsync(command, cancellationToken);
-        return result;
+        SetTenantContext(connection);
+        base.ConnectionOpened(connection, eventData);
     }
 
-    public override async ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(
-        DbCommand command,
-        CommandEventData eventData,
-        InterceptionResult<int> result,
+    public override async Task ConnectionOpenedAsync(
+        DbConnection connection,
+        ConnectionEndEventData eventData,
         CancellationToken cancellationToken = default)
     {
-        await SetTenantContextAsync(command, cancellationToken);
-        return result;
+        await SetTenantContextAsync(connection, cancellationToken);
+        await base.ConnectionOpenedAsync(connection, eventData, cancellationToken);
     }
 
-    public override async ValueTask<InterceptionResult<object>> ScalarExecutingAsync(
-        DbCommand command,
-        CommandEventData eventData,
-        InterceptionResult<object> result,
-        CancellationToken cancellationToken = default)
-    {
-        await SetTenantContextAsync(command, cancellationToken);
-        return result;
-    }
-
-    private async Task SetTenantContextAsync(DbCommand command, CancellationToken cancellationToken)
+    private void SetTenantContext(DbConnection connection)
     {
         var tenantId = _tenantProvider.GetTenantId();
         if (tenantId == Guid.Empty)
             return;
 
-        using var setTenantCommand = command.Connection!.CreateCommand();
-        setTenantCommand.Transaction = command.Transaction;
-        setTenantCommand.CommandText = $"SET app.current_tenant_id = '{tenantId}'";
-        await setTenantCommand.ExecuteNonQueryAsync(cancellationToken);
+        using var command = CreateSetTenantCommand(connection, tenantId);
+        command.ExecuteNonQuery();
+    }
+
+    private async Task SetTenantContextAsync(DbConnection connection, CancellationToken cancellationToken)
+    {
+        var tenantId = _tenantProvider.GetTenantId();
+        if (tenantId == Guid.Empty)
+            return;
+
+        using var command = CreateSetTenantCommand(connection, tenantId);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private static DbCommand CreateSetTenantCommand(DbConnection connection, Guid tenantId)
+    {
+        var command = connection.CreateCommand();
+        command.CommandText = "SELECT set_config('app.current_tenant_id', @tenantId, false)";
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "tenantId";
+        parameter.Value = tenantId.ToString();
+        command.Parameters.Add(parameter);
+        return command;
     }
 }

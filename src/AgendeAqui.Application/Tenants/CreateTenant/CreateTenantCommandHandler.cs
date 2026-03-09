@@ -18,7 +18,8 @@ public sealed class CreateTenantCommandHandler(
         if (existingTenant is not null)
             return Result.Failure<Guid>(TenantErrors.SlugAlreadyExists);
 
-        var plan = Enum.Parse<TenantPlan>(command.Plan, true);
+        if (!Enum.TryParse<TenantPlan>(command.Plan, true, out var plan))
+            return Result.Failure<Guid>(TenantErrors.InvalidPlan);
 
         var tenant = Tenant.Create(command.Name, command.Slug, plan);
 
@@ -27,10 +28,4 @@ public sealed class CreateTenantCommandHandler(
 
         return Result.Success(tenant.Id);
     }
-}
-
-public static class TenantErrors
-{
-    public static readonly Error SlugAlreadyExists = new("Tenant.SlugAlreadyExists", "A tenant with this slug already exists.");
-    public static readonly Error NotFound = new("Tenant.NotFound", "Tenant not found.");
 }

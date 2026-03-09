@@ -16,17 +16,18 @@ internal sealed class SqlConnectionFactory : ISqlConnectionFactory
         _tenantProvider = tenantProvider;
     }
 
-    public IDbConnection CreateConnection()
+    public async Task<IDbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default)
     {
         var connection = new NpgsqlConnection(_connectionString);
-        connection.Open();
+        await connection.OpenAsync(cancellationToken);
 
         var tenantId = _tenantProvider.GetTenantId();
         if (tenantId != Guid.Empty)
         {
-            using var command = connection.CreateCommand();
-            command.CommandText = $"SET app.current_tenant_id = '{tenantId}'";
-            command.ExecuteNonQuery();
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT set_config('app.current_tenant_id', @tenantId, false)";
+            command.Parameters.Add(new NpgsqlParameter("tenantId", tenantId.ToString()));
+            await command.ExecuteNonQueryAsync(cancellationToken);
         }
 
         return connection;

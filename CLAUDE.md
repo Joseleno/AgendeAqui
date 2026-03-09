@@ -60,6 +60,21 @@ dotnet test
 dotnet run --project src/AgendeAqui.Api
 ```
 
+## Migrations
+
+```bash
+# Create new migration
+dotnet ef migrations add MigrationName -p src/AgendeAqui.Infrastructure -s src/AgendeAqui.Api --output-dir Persistence/Migrations
+
+# Apply migrations (production)
+dotnet ef database update -p src/AgendeAqui.Infrastructure -s src/AgendeAqui.Api
+
+# Rollback last migration
+dotnet ef migrations remove -p src/AgendeAqui.Infrastructure -s src/AgendeAqui.Api
+```
+
+**Note:** Integration tests use `EnsureCreatedAsync()` (no migrations needed for tests).
+
 ## File Organization
 
 - Group by feature/aggregate (e.g., `Appointments/`, `Tenants/`)
