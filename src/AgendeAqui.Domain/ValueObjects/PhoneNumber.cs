@@ -15,6 +15,9 @@ public sealed class PhoneNumber : ValueObject
 
     private PhoneNumber(string value) => Value = value;
 
+    /// <summary>Reconstitutes from a trusted data store (no validation).</summary>
+    internal static PhoneNumber Hydrate(string value) => new(value);
+
     public static Result<PhoneNumber> Create(string phone)
     {
         if (string.IsNullOrWhiteSpace(phone))

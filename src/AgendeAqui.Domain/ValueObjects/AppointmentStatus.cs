@@ -16,8 +16,8 @@ public sealed class AppointmentStatus : ValueObject
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> ValidTransitions =
         new Dictionary<string, IReadOnlyList<string>>
         {
-            [Scheduled.Name] = ["Confirmed", "Cancelled"],
-            [Confirmed.Name] = ["InProgress", "Cancelled"],
+            [Scheduled.Name] = ["Scheduled", "Confirmed", "Cancelled"],
+            [Confirmed.Name] = ["Scheduled", "InProgress", "Cancelled"],
             [InProgress.Name] = ["Completed", "NoShow"],
             [Completed.Name] = [],
             [Cancelled.Name] = [],
@@ -30,6 +30,9 @@ public sealed class AppointmentStatus : ValueObject
 
     public bool CanTransitionTo(AppointmentStatus target) =>
         ValidTransitions.TryGetValue(Name, out var allowed) && allowed.Contains(target.Name);
+
+    /// <summary>Reconstitutes from a trusted data store (no validation).</summary>
+    internal static AppointmentStatus Hydrate(string name) => new(name);
 
     public static Result<AppointmentStatus> FromName(string name)
     {

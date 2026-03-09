@@ -14,7 +14,7 @@ internal sealed class ScheduleRepository : IScheduleRepository
     }
 
     public async Task<Schedule?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Schedules.FindAsync([id], ct);
+        await _context.Schedules.FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<Schedule>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Schedules.AsNoTracking().ToListAsync(ct);
@@ -26,6 +26,15 @@ internal sealed class ScheduleRepository : IScheduleRepository
             .AsNoTracking()
             .Where(s => s.ProfessionalId == professionalId)
             .ToListAsync(ct);
+
+    public async Task<Schedule?> GetByProfessionalAndDayAsync(
+        Guid professionalId,
+        DayOfWeek dayOfWeek,
+        CancellationToken ct = default) =>
+        await _context.Schedules
+            .AsNoTracking()
+            .Where(s => s.ProfessionalId == professionalId && s.DayOfWeek == dayOfWeek)
+            .FirstOrDefaultAsync(ct);
 
     public async Task AddAsync(Schedule entity, CancellationToken ct = default) =>
         await _context.Schedules.AddAsync(entity, ct);

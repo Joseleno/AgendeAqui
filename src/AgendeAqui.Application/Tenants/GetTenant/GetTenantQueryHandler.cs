@@ -1,7 +1,7 @@
 using AgendeAqui.Application.Abstractions.Data;
 using AgendeAqui.Application.Abstractions.Messaging;
-using AgendeAqui.Application.Tenants.CreateTenant;
 using AgendeAqui.Domain.Common;
+using AgendeAqui.Domain.Tenants;
 using Dapper;
 
 namespace AgendeAqui.Application.Tenants.GetTenant;
@@ -13,7 +13,7 @@ public sealed class GetTenantQueryHandler(
         GetTenantQuery query,
         CancellationToken cancellationToken)
     {
-        using var connection = sqlConnectionFactory.CreateConnection();
+        using var connection = await sqlConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         const string sql = """
             SELECT id AS Id,
@@ -26,13 +26,32 @@ public sealed class GetTenantQueryHandler(
             WHERE id = @TenantId
             """;
 
-        var tenant = await connection.QueryFirstOrDefaultAsync<TenantResponse>(
+        var command = new CommandDefinition(
             sql,
-            new { query.TenantId });
+            new { query.TenantId },
+            cancellationToken: cancellationToken);
 
-        if (tenant is null)
+        var row = await connection.QueryFirstOrDefaultAsync<TenantRow>(command);
+
+        if (row is null)
             return Result.Failure<TenantResponse>(TenantErrors.NotFound);
 
-        return Result.Success(tenant);
+        var response = new TenantResponse(
+            row.Id,
+            row.Name,
+            row.Slug,
+            ((TenantStatus)row.Status).ToString(),
+            ((TenantPlan)row.Plan).ToString(),
+            row.CreatedAt);
+
+        return Result.Success(response);
     }
+
+    private sealed record TenantRow(
+        Guid Id,
+        string Name,
+        string Slug,
+        int Status,
+        int Plan,
+        DateTime CreatedAt);
 }

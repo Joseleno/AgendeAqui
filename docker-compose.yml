@@ -3,15 +3,15 @@ services:
     image: postgres:16-alpine
     container_name: agendeaqui-postgres
     environment:
-      POSTGRES_DB: agendeaqui
-      POSTGRES_USER: agendeaqui
-      POSTGRES_PASSWORD: agendeaqui_dev
+      POSTGRES_DB: ${POSTGRES_DB:-agendeaqui}
+      POSTGRES_USER: ${POSTGRES_USER:-agendeaqui}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_password_change_me}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U agendeaqui"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-agendeaqui}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,8 +20,8 @@ services:
     image: rabbitmq:3.13-management-alpine
     container_name: agendeaqui-rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: agendeaqui
-      RABBITMQ_DEFAULT_PASS: agendeaqui_dev
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-agendeaqui}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-dev_password_change_me}
     ports:
       - "5672:5672"
       - "15672:15672"

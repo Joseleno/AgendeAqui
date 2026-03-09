@@ -15,7 +15,7 @@ internal sealed class ClientRepository : IClientRepository
     }
 
     public async Task<Client?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Clients.FindAsync([id], ct);
+        await _context.Clients.FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<Client>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Clients.AsNoTracking().ToListAsync(ct);
@@ -29,6 +29,18 @@ internal sealed class ClientRepository : IClientRepository
         await _context.Clients
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Email == email, ct);
+
+    public async Task<IReadOnlyList<Client>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+    {
+        var idList = ids.ToList();
+        if (idList.Count == 0)
+            return [];
+
+        return await _context.Clients
+            .AsNoTracking()
+            .Where(c => idList.Contains(c.Id))
+            .ToListAsync(ct);
+    }
 
     public async Task AddAsync(Client entity, CancellationToken ct = default) =>
         await _context.Clients.AddAsync(entity, ct);

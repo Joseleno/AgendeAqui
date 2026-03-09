@@ -30,7 +30,7 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
             .HasMaxLength(320)
             .HasConversion(
                 e => e.Value,
-                s => Email.Create(s).Value)
+                s => Email.Hydrate(s))
             .IsRequired();
 
         builder.Property(c => c.Phone)
@@ -38,7 +38,7 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
             .HasMaxLength(20)
             .HasConversion(
                 ph => ph.Value,
-                s => PhoneNumber.Create(s).Value)
+                s => PhoneNumber.Hydrate(s))
             .IsRequired();
 
         builder.Property(c => c.CreatedAt)
@@ -50,5 +50,9 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
 
         builder.HasIndex(c => c.TenantId)
             .HasDatabaseName("ix_clients_tenant_id");
+
+        builder.HasIndex(c => new { c.TenantId, c.Email })
+            .IsUnique()
+            .HasDatabaseName("ix_clients_tenant_email");
     }
 }

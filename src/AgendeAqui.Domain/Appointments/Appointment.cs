@@ -6,8 +6,6 @@ namespace AgendeAqui.Domain.Appointments;
 
 public sealed class Appointment : AggregateRoot
 {
-    public static readonly Error InvalidTransition = new("Appointment.InvalidTransition", "The requested status transition is not allowed.");
-
     public Guid ProfessionalId { get; private set; }
     public Guid ServiceId { get; private set; }
     public Guid ClientId { get; private set; }
@@ -18,7 +16,7 @@ public sealed class Appointment : AggregateRoot
 
     private Appointment() { }
 
-    public static Appointment Create(
+    public static Result<Appointment> Create(
         Guid tenantId,
         Guid professionalId,
         Guid serviceId,
@@ -27,6 +25,15 @@ public sealed class Appointment : AggregateRoot
         TimeSlot timeSlot,
         string? notes = null)
     {
+        if (tenantId == Guid.Empty)
+            return Result.Failure<Appointment>(AppointmentErrors.InvalidTenant);
+        if (professionalId == Guid.Empty)
+            return Result.Failure<Appointment>(AppointmentErrors.ProfessionalNotFound);
+        if (serviceId == Guid.Empty)
+            return Result.Failure<Appointment>(AppointmentErrors.ServiceNotFound);
+        if (clientId == Guid.Empty)
+            return Result.Failure<Appointment>(AppointmentErrors.ClientNotFound);
+
         var appointment = new Appointment
         {
             TenantId = tenantId,
@@ -41,13 +48,13 @@ public sealed class Appointment : AggregateRoot
 
         appointment.RaiseDomainEvent(new AppointmentCreatedEvent(appointment.Id));
 
-        return appointment;
+        return Result.Success(appointment);
     }
 
     public Result Cancel(string reason)
     {
         if (!Status.CanTransitionTo(AppointmentStatus.Cancelled))
-            return Result.Failure(InvalidTransition);
+            return Result.Failure(AppointmentErrors.InvalidTransition);
 
         Status = AppointmentStatus.Cancelled;
         UpdatedAt = DateTime.UtcNow;
@@ -59,9 +66,8 @@ public sealed class Appointment : AggregateRoot
 
     public Result Reschedule(DateOnly newDate, TimeSlot newTimeSlot)
     {
-        // Rescheduling is allowed from Scheduled or Confirmed states
-        if (Status != AppointmentStatus.Scheduled && Status != AppointmentStatus.Confirmed)
-            return Result.Failure(InvalidTransition);
+        if (!Status.CanTransitionTo(AppointmentStatus.Scheduled))
+            return Result.Failure(AppointmentErrors.InvalidTransition);
 
         Date = newDate;
         TimeSlot = newTimeSlot;
@@ -76,10 +82,12 @@ public sealed class Appointment : AggregateRoot
     public Result Confirm()
     {
         if (!Status.CanTransitionTo(AppointmentStatus.Confirmed))
-            return Result.Failure(InvalidTransition);
+            return Result.Failure(AppointmentErrors.InvalidTransition);
 
         Status = AppointmentStatus.Confirmed;
         UpdatedAt = DateTime.UtcNow;
+
+        RaiseDomainEvent(new AppointmentConfirmedEvent(Id));
 
         return Result.Success();
     }
@@ -87,10 +95,12 @@ public sealed class Appointment : AggregateRoot
     public Result Start()
     {
         if (!Status.CanTransitionTo(AppointmentStatus.InProgress))
-            return Result.Failure(InvalidTransition);
+            return Result.Failure(AppointmentErrors.InvalidTransition);
 
         Status = AppointmentStatus.InProgress;
         UpdatedAt = DateTime.UtcNow;
+
+        RaiseDomainEvent(new AppointmentStartedEvent(Id));
 
         return Result.Success();
     }
@@ -98,10 +108,12 @@ public sealed class Appointment : AggregateRoot
     public Result MarkNoShow()
     {
         if (!Status.CanTransitionTo(AppointmentStatus.NoShow))
-            return Result.Failure(InvalidTransition);
+            return Result.Failure(AppointmentErrors.InvalidTransition);
 
         Status = AppointmentStatus.NoShow;
         UpdatedAt = DateTime.UtcNow;
+
+        RaiseDomainEvent(new AppointmentNoShowEvent(Id));
 
         return Result.Success();
     }
@@ -109,10 +121,12 @@ public sealed class Appointment : AggregateRoot
     public Result Complete()
     {
         if (!Status.CanTransitionTo(AppointmentStatus.Completed))
-            return Result.Failure(InvalidTransition);
+            return Result.Failure(AppointmentErrors.InvalidTransition);
 
         Status = AppointmentStatus.Completed;
         UpdatedAt = DateTime.UtcNow;
+
+        RaiseDomainEvent(new AppointmentCompletedEvent(Id));
 
         return Result.Success();
     }

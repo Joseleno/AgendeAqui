@@ -1,3 +1,3 @@
-namespace AgendeAqui.Infrastructure.Messaging;
+namespace AgendeAqui.Application.Abstractions.Messaging;
 
 public abstract record IntegrationEvent(Guid Id, DateTime OccurredAt);

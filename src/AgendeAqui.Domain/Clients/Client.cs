@@ -13,6 +13,9 @@ public sealed class Client : TenantEntity
 
     public static Result<Client> Create(Guid tenantId, string name, Email email, PhoneNumber phone)
     {
+        if (tenantId == Guid.Empty)
+            return Result.Failure<Client>(ClientErrors.InvalidTenant);
+
         if (string.IsNullOrWhiteSpace(name))
             return Result.Failure<Client>(ClientErrors.InvalidName);
 
@@ -27,11 +30,33 @@ public sealed class Client : TenantEntity
         return Result.Success(client);
     }
 
-    public void UpdateContact(string name, Email email, PhoneNumber phone)
+    public Result UpdateContact(string name, Email email, PhoneNumber phone)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure(ClientErrors.InvalidName);
+
         Name = name.Trim();
         Email = email;
         Phone = phone;
+        UpdatedAt = DateTime.UtcNow;
+
+        return Result.Success();
+    }
+
+    private const string AnonymizedName = "***ANONYMIZED***";
+
+    // Anonymized placeholder values — must match PhoneNumber/Email validation rules.
+    // "5500000000000" is E.164 compliant (13 digits, stored as +5500000000000).
+    private static readonly Email AnonymizedEmail = Email.Create("anonymized@removed.com").Value;
+    private static readonly PhoneNumber AnonymizedPhone = PhoneNumber.Create("5500000000000").Value;
+
+    public bool IsAnonymized => Name == AnonymizedName;
+
+    public void Anonymize()
+    {
+        Name = AnonymizedName;
+        Email = AnonymizedEmail;
+        Phone = AnonymizedPhone;
         UpdatedAt = DateTime.UtcNow;
     }
 }

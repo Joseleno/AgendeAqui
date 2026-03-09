@@ -4,6 +4,8 @@ namespace AgendeAqui.Domain.Services;
 
 public sealed class Service : TenantEntity
 {
+    private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(8);
+
     public string Name { get; private set; } = default!;
     public TimeSpan Duration { get; private set; }
     public decimal Price { get; private set; }
@@ -16,7 +18,7 @@ public sealed class Service : TenantEntity
         if (string.IsNullOrWhiteSpace(name))
             return Result.Failure<Service>(ServiceErrors.InvalidName);
 
-        if (duration <= TimeSpan.Zero)
+        if (duration <= TimeSpan.Zero || duration > MaxDuration)
             return Result.Failure<Service>(ServiceErrors.InvalidDuration);
 
         if (price < 0)
@@ -46,11 +48,22 @@ public sealed class Service : TenantEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateDetails(string name, TimeSpan duration, decimal price)
+    public Result UpdateDetails(string name, TimeSpan duration, decimal price)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure(ServiceErrors.InvalidName);
+
+        if (duration <= TimeSpan.Zero || duration > MaxDuration)
+            return Result.Failure(ServiceErrors.InvalidDuration);
+
+        if (price < 0)
+            return Result.Failure(ServiceErrors.InvalidPrice);
+
         Name = name.Trim();
         Duration = duration;
         Price = price;
         UpdatedAt = DateTime.UtcNow;
+
+        return Result.Success();
     }
 }

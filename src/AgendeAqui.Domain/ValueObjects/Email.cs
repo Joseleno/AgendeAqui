@@ -15,6 +15,9 @@ public sealed class Email : ValueObject
 
     private Email(string value) => Value = value.ToLowerInvariant();
 
+    /// <summary>Reconstitutes from a trusted data store (no validation).</summary>
+    internal static Email Hydrate(string value) => new(value);
+
     public static Result<Email> Create(string email)
     {
         if (string.IsNullOrWhiteSpace(email))

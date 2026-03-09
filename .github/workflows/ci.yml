@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develope ]
   pull_request:
     branches: [ main ]
 
@@ -46,5 +46,14 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal
+      - name: Unit Tests
+        run: dotnet test --no-build --configuration Release --verbosity normal --filter "FullyQualifiedName!~Integration"
+
+      - name: Integration Tests
+        run: dotnet test --no-build --configuration Release --verbosity normal --filter "FullyQualifiedName~Integration"
+        env:
+          ConnectionStrings__Database: "Host=localhost;Port=5432;Database=agendeaqui;Username=agendeaqui;Password=agendeaqui_dev"
+          RabbitMq__HostName: localhost
+          RabbitMq__Port: "5672"
+          RabbitMq__UserName: guest
+          RabbitMq__Password: guest

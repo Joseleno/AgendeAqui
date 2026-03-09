@@ -1,4 +1,4 @@
-namespace AgendeAqui.Infrastructure.Messaging;
+namespace AgendeAqui.Application.Abstractions.Messaging;
 
 public interface IEventBus
 {

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AgendeAqui.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +12,11 @@ public sealed class ExceptionHandlingMiddleware(
         try
         {
             await next(context);
+        }
+        catch (ValidationException validationException)
+        {
+            logger.LogWarning("Validation error: {ErrorCount} failures", validationException.Errors.Count);
+            await HandleExceptionAsync(context, validationException);
         }
         catch (Exception exception)
         {

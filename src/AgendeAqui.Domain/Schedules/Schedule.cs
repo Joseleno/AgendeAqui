@@ -5,9 +5,6 @@ namespace AgendeAqui.Domain.Schedules;
 
 public sealed class Schedule : AggregateRoot
 {
-    public static readonly Error InvalidSchedule = new("Schedule.Invalid", "End time must be after start time.");
-    public static readonly Error InvalidSlotDuration = new("Schedule.InvalidSlotDuration", "Slot duration must be positive and fit within the schedule window.");
-
     private readonly List<BreakPeriod> _breaks = [];
 
     public Guid ProfessionalId { get; private set; }
@@ -29,10 +26,10 @@ public sealed class Schedule : AggregateRoot
         TimeSpan slotDuration)
     {
         if (startTime >= endTime)
-            return Result.Failure<Schedule>(InvalidSchedule);
+            return Result.Failure<Schedule>(ScheduleErrors.InvalidSchedule);
 
         if (slotDuration <= TimeSpan.Zero || slotDuration > (endTime - startTime))
-            return Result.Failure<Schedule>(InvalidSlotDuration);
+            return Result.Failure<Schedule>(ScheduleErrors.InvalidSlotDuration);
 
         var schedule = new Schedule
         {
@@ -70,6 +67,8 @@ public sealed class Schedule : AggregateRoot
 
     public IReadOnlyList<TimeSlot> GetAvailableSlots(TimeSpan serviceDuration)
     {
+        if (!IsActive || serviceDuration <= TimeSpan.Zero) return [];
+
         var slots = new List<TimeSlot>();
         var current = StartTime;
 
@@ -87,14 +86,32 @@ public sealed class Schedule : AggregateRoot
         return slots.AsReadOnly();
     }
 
-    public void AddBreak(TimeOnly breakStart, TimeOnly breakEnd)
+    public Result Update(TimeOnly startTime, TimeOnly endTime, TimeSpan slotDuration)
     {
+        if (startTime >= endTime)
+            return Result.Failure(ScheduleErrors.InvalidSchedule);
+
+        if (slotDuration <= TimeSpan.Zero || slotDuration > (endTime - startTime))
+            return Result.Failure(ScheduleErrors.InvalidSlotDuration);
+
+        StartTime = startTime;
+        EndTime = endTime;
+        SlotDuration = slotDuration;
+        UpdatedAt = DateTime.UtcNow;
+
+        return Result.Success();
+    }
+
+    public Result AddBreak(TimeOnly breakStart, TimeOnly breakEnd)
+    {
+        if (breakStart >= breakEnd || breakStart < StartTime || breakEnd > EndTime)
+            return Result.Failure(ScheduleErrors.InvalidBreak);
+
         _breaks.Add(new BreakPeriod(breakStart, breakEnd));
         UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
     }
 
     private bool IsBlockedByBreak(TimeOnly start, TimeOnly end) =>
         _breaks.Any(b => start < b.BreakEnd && end > b.BreakStart);
 }
-
-public sealed record BreakPeriod(TimeOnly BreakStart, TimeOnly BreakEnd);

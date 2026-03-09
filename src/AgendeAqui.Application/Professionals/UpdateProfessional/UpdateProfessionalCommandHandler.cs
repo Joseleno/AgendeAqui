@@ -26,7 +26,9 @@ public sealed class UpdateProfessionalCommandHandler(
         if (phoneResult.IsFailure)
             return Result.Failure<Mediator.Unit>(phoneResult.Error);
 
-        professional.UpdateContact(command.Name, emailResult.Value, phoneResult.Value);
+        var updateResult = professional.UpdateContact(command.Name, emailResult.Value, phoneResult.Value);
+        if (updateResult.IsFailure)
+            return Result.Failure<Mediator.Unit>(updateResult.Error);
 
         professionalRepository.Update(professional);
         await unitOfWork.SaveChangesAsync(cancellationToken);

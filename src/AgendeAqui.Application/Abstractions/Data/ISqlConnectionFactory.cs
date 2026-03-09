@@ -4,5 +4,5 @@ namespace AgendeAqui.Application.Abstractions.Data;
 
 public interface ISqlConnectionFactory
 {
-    IDbConnection CreateConnection();
+    Task<IDbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default);
 }

@@ -1,5 +1,7 @@
 <Solution>
-  <Folder Name="/Solution Items/" />
+  <Folder Name="/Solution Items/">
+    <File Path="../../../../.claude/projects/C--Users-josel-source-repos-CodeProcess-AgendeAqui/memory/architecture-complete-map.md" />
+  </Folder>
   <Folder Name="/Solution Items/docs/">
     <File Path="docs/AgendeAqui-Business-Intelligence_V1.pdf" />
     <File Path="docs/AgendeaquiArquitetura.pdf" />
@@ -11,8 +13,10 @@
     <Project Path="src/AgendeAqui.Infrastructure/AgendeAqui.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/AgendeAqui.Domain.UnitTests/AgendeAqui.Domain.UnitTests.csproj" />
+    <Project Path="tests/AgendeAqui.Api.UnitTests/AgendeAqui.Api.UnitTests.csproj" />
     <Project Path="tests/AgendeAqui.Application.UnitTests/AgendeAqui.Application.UnitTests.csproj" />
     <Project Path="tests/AgendeAqui.ArchTests/AgendeAqui.ArchTests.csproj" />
+    <Project Path="tests/AgendeAqui.Domain.UnitTests/AgendeAqui.Domain.UnitTests.csproj" />
+    <Project Path="tests/AgendeAqui.Integration.Tests/AgendeAqui.Integration.Tests.csproj" />
   </Folder>
 </Solution>

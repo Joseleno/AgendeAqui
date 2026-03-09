@@ -14,7 +14,7 @@ internal sealed class ServiceRepository : IServiceRepository
     }
 
     public async Task<Service?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Services.FindAsync([id], ct);
+        await _context.Services.FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public async Task<IReadOnlyList<Service>> GetAllAsync(CancellationToken ct = default) =>
         await _context.Services.AsNoTracking().ToListAsync(ct);

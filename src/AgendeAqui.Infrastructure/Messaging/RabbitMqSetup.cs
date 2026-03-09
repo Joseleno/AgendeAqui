@@ -75,7 +75,7 @@ internal sealed class RabbitMqSetup : IHostedService
         await channel.QueueBindAsync(
             queue: "appointment.created",
             exchange: "appointment.events",
-            routingKey: "appointmentcreatedevent",
+            routingKey: "appointmentcreated",
             cancellationToken: cancellationToken);
 
         await channel.QueueDeclareAsync(
@@ -89,7 +89,7 @@ internal sealed class RabbitMqSetup : IHostedService
         await channel.QueueBindAsync(
             queue: "appointment.cancelled",
             exchange: "appointment.events",
-            routingKey: "appointmentcancelledevent",
+            routingKey: "appointmentcancelled",
             cancellationToken: cancellationToken);
 
         await channel.QueueDeclareAsync(
@@ -103,7 +103,44 @@ internal sealed class RabbitMqSetup : IHostedService
         await channel.QueueBindAsync(
             queue: "appointment.rescheduled",
             exchange: "appointment.events",
-            routingKey: "appointmentreschedulededvent",
+            routingKey: "appointmentrescheduled",
+            cancellationToken: cancellationToken);
+
+        // Retry queues with TTL
+        await channel.QueueDeclareAsync(
+            queue: "appointment.retry.1s",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: new Dictionary<string, object?>
+            {
+                ["x-dead-letter-exchange"] = "appointment.events",
+                ["x-message-ttl"] = 1000
+            },
+            cancellationToken: cancellationToken);
+
+        await channel.QueueDeclareAsync(
+            queue: "appointment.retry.5s",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: new Dictionary<string, object?>
+            {
+                ["x-dead-letter-exchange"] = "appointment.events",
+                ["x-message-ttl"] = 5000
+            },
+            cancellationToken: cancellationToken);
+
+        await channel.QueueDeclareAsync(
+            queue: "appointment.retry.25s",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: new Dictionary<string, object?>
+            {
+                ["x-dead-letter-exchange"] = "appointment.events",
+                ["x-message-ttl"] = 25000
+            },
             cancellationToken: cancellationToken);
 
         // Notification queue
@@ -119,6 +156,28 @@ internal sealed class RabbitMqSetup : IHostedService
             queue: "notifications.whatsapp",
             exchange: "notification.events",
             routingKey: "whatsapp",
+            cancellationToken: cancellationToken);
+
+        // Integration events exchange and webhook delivery queue
+        await channel.ExchangeDeclareAsync(
+            exchange: "integration.events",
+            type: ExchangeType.Direct,
+            durable: true,
+            autoDelete: false,
+            cancellationToken: cancellationToken);
+
+        await channel.QueueDeclareAsync(
+            queue: "integrations.webhook",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: dlxArgs,
+            cancellationToken: cancellationToken);
+
+        await channel.QueueBindAsync(
+            queue: "integrations.webhook",
+            exchange: "integration.events",
+            routingKey: "webhookdelivery",
             cancellationToken: cancellationToken);
 
         _logger.LogInformation("RabbitMQ setup completed.");
