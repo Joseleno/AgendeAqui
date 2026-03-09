@@ -27,6 +27,7 @@ internal sealed class WebhookConfiguration : IEntityTypeConfiguration<Webhook>
                 c => c.Aggregate(0, (hash, item) => HashCode.Combine(hash, item.GetHashCode())),
                 c => c.ToList()));
         builder.Property(w => w.IsActive).HasColumnName("is_active").IsRequired();
+        builder.Property(w => w.IsDeleted).HasColumnName("is_deleted").HasDefaultValue(false);
         builder.Property(w => w.CreatedAt).HasColumnName("created_at").IsRequired();
         builder.Property(w => w.UpdatedAt).HasColumnName("updated_at");
 
