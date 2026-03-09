@@ -8,4 +8,5 @@ public sealed record CreateAppointmentCommand(
     Guid ClientId,
     DateOnly Date,
     TimeOnly StartTime,
-    string? Notes) : ICommand<Guid>;
+    string? Notes,
+    string? ExternalId = null) : ICommand<Guid>;

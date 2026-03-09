@@ -13,6 +13,7 @@ public sealed class Appointment : AggregateRoot
     public TimeSlot TimeSlot { get; private set; } = default!;
     public AppointmentStatus Status { get; private set; } = default!;
     public string? Notes { get; private set; }
+    public string? ExternalId { get; private set; }
 
     private Appointment() { }
 
@@ -129,5 +130,11 @@ public sealed class Appointment : AggregateRoot
         RaiseDomainEvent(new AppointmentCompletedEvent(Id));
 
         return Result.Success();
+    }
+
+    public void SetExternalId(string externalId)
+    {
+        ExternalId = externalId;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

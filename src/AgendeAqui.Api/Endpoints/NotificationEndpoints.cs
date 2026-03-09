@@ -13,9 +13,14 @@ public static class NotificationEndpoints
             .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated)
             .RequireRateLimiting("tenant");
 
-        group.MapGet("/", async (Guid appointmentId, IMediator mediator, CancellationToken cancellationToken) =>
+        group.MapGet("/", async (
+            Guid? appointmentId,
+            DateOnly? dateFrom,
+            DateOnly? dateTo,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
         {
-            var query = new ListNotificationsQuery(appointmentId);
+            var query = new ListNotificationsQuery(appointmentId, dateFrom, dateTo);
             var result = await mediator.Send(query, cancellationToken);
 
             return result.IsSuccess
@@ -27,7 +32,7 @@ public static class NotificationEndpoints
         })
         .WithName("ListNotifications")
         .WithSummary("List notifications")
-        .WithDescription("Lists notifications for a specific appointment.")
+        .WithDescription("Lists notifications with optional filters by appointment, date range. Includes tenant isolation.")
         .Produces<List<NotificationResponse>>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest);
     }

@@ -68,6 +68,10 @@ public sealed class CreateAppointmentCommandHandler(
             return Result.Failure<Guid>(appointmentResult.Error);
 
         var appointment = appointmentResult.Value;
+
+        if (!string.IsNullOrWhiteSpace(command.ExternalId))
+            appointment.SetExternalId(command.ExternalId);
+
         await appointmentRepository.AddAsync(appointment, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

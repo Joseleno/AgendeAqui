@@ -49,6 +49,12 @@ public sealed class ListAppointmentsQueryHandler(
             parameters.Add("ClientId", query.ClientId.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(query.ExternalId))
+        {
+            whereClause.Append(" AND a.external_id = @ExternalId");
+            parameters.Add("ExternalId", query.ExternalId);
+        }
+
         if (!string.IsNullOrWhiteSpace(query.Status))
         {
             whereClause.Append(" AND a.status = @Status");

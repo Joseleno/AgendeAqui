@@ -6,7 +6,8 @@ public sealed record CreateAppointmentRequest(
     Guid ClientId,
     DateOnly Date,
     TimeOnly StartTime,
-    string? Notes);
+    string? Notes,
+    string? ExternalId = null);
 
 public sealed record CancelAppointmentRequest(string Reason);
 

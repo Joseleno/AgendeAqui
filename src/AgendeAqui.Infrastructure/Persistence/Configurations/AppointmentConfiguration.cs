@@ -59,6 +59,10 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
             .HasColumnName("notes")
             .HasMaxLength(1000);
 
+        builder.Property(a => a.ExternalId)
+            .HasColumnName("external_id")
+            .HasMaxLength(256);
+
         builder.Property(a => a.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();
@@ -71,6 +75,10 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
 
         builder.HasIndex(a => new { a.ProfessionalId, a.Date })
             .HasDatabaseName("ix_appointments_professional_date");
+
+        builder.HasIndex(a => new { a.TenantId, a.ExternalId })
+            .HasDatabaseName("ix_appointments_tenant_external_id")
+            .HasFilter("external_id IS NOT NULL");
 
         builder.Ignore(a => a.DomainEvents);
     }

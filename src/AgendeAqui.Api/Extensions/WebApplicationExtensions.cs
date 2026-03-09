@@ -31,6 +31,8 @@ public static class WebApplicationExtensions
 
         app.UseAuthorization();
 
+        app.UseMiddleware<IdempotencyMiddleware>();
+
         app.UseHttpMetrics();
 
         app.MapHealthChecks("/health", new HealthCheckOptions
