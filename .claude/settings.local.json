@@ -14,7 +14,11 @@
       "Read(//c/Users/josel/.nuget/packages/aspnetcore.healthchecks.rabbitmq/**)",
       "Skill(clean-architecture-validator)",
       "Bash(xargs wc:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)"
     ]
   }
 }
