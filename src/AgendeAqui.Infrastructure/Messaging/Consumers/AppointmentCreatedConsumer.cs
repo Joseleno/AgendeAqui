@@ -1,6 +1,7 @@
 using AgendeAqui.Application.Abstractions.Notifications;
 using AgendeAqui.Application.Appointments.IntegrationEvents;
 using AgendeAqui.Domain.Abstractions;
+using AgendeAqui.Infrastructure.Observability;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -11,8 +12,9 @@ internal sealed class AppointmentCreatedConsumer : RabbitMqConsumerBase<Appointm
     public AppointmentCreatedConsumer(
         RabbitMqConnection connection,
         IServiceScopeFactory scopeFactory,
-        ILogger<AppointmentCreatedConsumer> logger)
-        : base(connection, scopeFactory, logger, "appointment.created") { }
+        ILogger<AppointmentCreatedConsumer> logger,
+        CustomMetrics metrics)
+        : base(connection, scopeFactory, logger, "appointment.created", metrics) { }
 
     protected override async Task ProcessAsync(
         AppointmentCreatedIntegrationEvent message,

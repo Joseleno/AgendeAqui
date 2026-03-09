@@ -11,8 +11,9 @@ internal sealed class AppointmentCancelledConsumer : RabbitMqConsumerBase<Appoin
     public AppointmentCancelledConsumer(
         RabbitMqConnection connection,
         IServiceScopeFactory scopeFactory,
-        ILogger<AppointmentCancelledConsumer> logger)
-        : base(connection, scopeFactory, logger, "appointment.cancelled") { }
+        ILogger<AppointmentCancelledConsumer> logger,
+        Observability.CustomMetrics metrics)
+        : base(connection, scopeFactory, logger, "appointment.cancelled", metrics) { }
 
     protected override async Task ProcessAsync(
         AppointmentCancelledIntegrationEvent message,

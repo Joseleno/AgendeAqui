@@ -11,8 +11,9 @@ internal sealed class AppointmentRescheduledConsumer : RabbitMqConsumerBase<Appo
     public AppointmentRescheduledConsumer(
         RabbitMqConnection connection,
         IServiceScopeFactory scopeFactory,
-        ILogger<AppointmentRescheduledConsumer> logger)
-        : base(connection, scopeFactory, logger, "appointment.rescheduled") { }
+        ILogger<AppointmentRescheduledConsumer> logger,
+        Observability.CustomMetrics metrics)
+        : base(connection, scopeFactory, logger, "appointment.rescheduled", metrics) { }
 
     protected override async Task ProcessAsync(
         AppointmentRescheduledIntegrationEvent message,

@@ -10,8 +10,9 @@ internal sealed class WebhookDeliveryConsumer : RabbitMqConsumerBase<WebhookDeli
     public WebhookDeliveryConsumer(
         RabbitMqConnection connection,
         IServiceScopeFactory scopeFactory,
-        ILogger<WebhookDeliveryConsumer> logger)
-        : base(connection, scopeFactory, logger, "integrations.webhook") { }
+        ILogger<WebhookDeliveryConsumer> logger,
+        Observability.CustomMetrics metrics)
+        : base(connection, scopeFactory, logger, "integrations.webhook", metrics) { }
 
     protected override async Task ProcessAsync(
         WebhookDeliveryIntegrationEvent message,

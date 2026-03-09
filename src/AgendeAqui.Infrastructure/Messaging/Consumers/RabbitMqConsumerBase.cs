@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using AgendeAqui.Infrastructure.Observability;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,17 +18,20 @@ internal abstract class RabbitMqConsumerBase<T> : BackgroundService where T : cl
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger _logger;
     private readonly string _queueName;
+    private readonly CustomMetrics _metrics;
 
     protected RabbitMqConsumerBase(
         RabbitMqConnection connection,
         IServiceScopeFactory scopeFactory,
         ILogger logger,
-        string queueName)
+        string queueName,
+        CustomMetrics metrics)
     {
         _connection = connection;
         _scopeFactory = scopeFactory;
         _logger = logger;
         _queueName = queueName;
+        _metrics = metrics;
     }
 
     protected abstract Task ProcessAsync(T message, IServiceScope scope, CancellationToken ct);
@@ -41,6 +46,7 @@ internal abstract class RabbitMqConsumerBase<T> : BackgroundService where T : cl
         {
             var retryCount = GetRetryCount(ea.BasicProperties);
 
+            var sw = Stopwatch.StartNew();
             try
             {
                 var body = Encoding.UTF8.GetString(ea.Body.Span);
@@ -49,6 +55,7 @@ internal abstract class RabbitMqConsumerBase<T> : BackgroundService where T : cl
                 if (message is null)
                 {
                     _logger.LogWarning("Failed to deserialize message from {Queue}", _queueName);
+                    _metrics.RecordMessageFailed(_queueName);
                     await channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
                     return;
                 }
@@ -57,10 +64,18 @@ internal abstract class RabbitMqConsumerBase<T> : BackgroundService where T : cl
                 await ProcessAsync(message, scope, stoppingToken);
                 await channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
 
+                sw.Stop();
+                _metrics.RecordMessageProcessed(_queueName);
+                _metrics.RecordMessageProcessingDuration(_queueName, sw.Elapsed.TotalSeconds);
+
                 _logger.LogInformation("Processed message from {Queue}", _queueName);
             }
             catch (Exception ex)
             {
+                sw.Stop();
+                _metrics.RecordMessageFailed(_queueName);
+                _metrics.RecordMessageProcessingDuration(_queueName, sw.Elapsed.TotalSeconds);
+
                 _logger.LogError(ex, "Error processing message from {Queue}, retry {RetryCount}/{MaxRetries}",
                     _queueName, retryCount + 1, MaxRetries);
 
