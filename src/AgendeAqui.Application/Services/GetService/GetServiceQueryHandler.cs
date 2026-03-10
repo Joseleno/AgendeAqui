@@ -20,7 +20,7 @@ public sealed class GetServiceQueryHandler(
         const string sql = """
             SELECT id AS Id,
                    name AS Name,
-                   EXTRACT(EPOCH FROM duration) / 60 AS DurationMinutes,
+                   CAST(EXTRACT(EPOCH FROM duration) / 60 AS integer) AS DurationMinutes,
                    price AS Price,
                    is_active AS IsActive,
                    created_at AS CreatedAt

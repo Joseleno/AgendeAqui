@@ -38,7 +38,16 @@ internal abstract class RabbitMqConsumerBase<T> : BackgroundService where T : cl
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var channel = await _connection.CreateChannelAsync(stoppingToken);
+        IChannel channel;
+        try
+        {
+            channel = await _connection.CreateChannelAsync(stoppingToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "RabbitMQ not available. Consumer for {Queue} will not start.", _queueName);
+            return;
+        }
         await channel.BasicQosAsync(0, 1, false, stoppingToken);
 
         var consumer = new AsyncEventingBasicConsumer(channel);

@@ -29,6 +29,11 @@ export function useLogin() {
       api.post<LoginResponse>('/auth/login', credentials),
     onSuccess: (data) => {
       authStore.setTokens(data.accessToken, data.refreshToken)
+      // Extract tenant_id from JWT payload
+      try {
+        const payload = JSON.parse(atob(data.accessToken.split('.')[1]))
+        if (payload.tenant_id) authStore.setTenantId(payload.tenant_id)
+      } catch { /* ignore malformed token */ }
       navigate('/')
     },
   })

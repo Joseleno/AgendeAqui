@@ -53,7 +53,7 @@ public sealed class ListSchedulesQueryHandler(
                    s.day_of_week                             AS DayOfWeek,
                    s.start_time                              AS StartTime,
                    s.end_time                                AS EndTime,
-                   EXTRACT(EPOCH FROM s.slot_duration) / 60  AS SlotDurationMinutes,
+                   CAST(EXTRACT(EPOCH FROM s.slot_duration) / 60 AS integer) AS SlotDurationMinutes,
                    s.is_active                               AS IsActive,
                    s.created_at                              AS CreatedAt
             FROM schedules s

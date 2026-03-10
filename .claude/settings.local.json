@@ -18,7 +18,27 @@
       "Bash(npm create:*)",
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npx vitest:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(docker compose:*)",
+      "Bash(python3:*)",
+      "Bash(timeout 60 bash:*)",
+      "Bash(docker exec:*)",
+      "Bash(netstat:*)",
+      "Bash(sc query:*)",
+      "Bash(powershell:*)",
+      "Bash(tasklist:*)",
+      "Bash(curl:*)",
+      "Bash(/tmp/route_analysis.txt:*)",
+      "Read(//tmp/**)"
     ]
   }
 }

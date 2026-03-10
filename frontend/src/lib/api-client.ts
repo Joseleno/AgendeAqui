@@ -36,8 +36,12 @@ async function request<T>(
   })
 
   if (response.status === 401) {
-    authStore.clear()
-    window.location.href = '/login'
+    // Only clear auth and redirect if we had a token (session expired).
+    // Avoid redirect loops when login itself returns 401.
+    if (accessToken) {
+      authStore.clear()
+      window.location.href = '/login'
+    }
     throw new ApiError(401, 'Unauthorized', 'Session expired')
   }
 

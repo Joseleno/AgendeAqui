@@ -12,7 +12,8 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
     [
         "/health",
         "/openapi",
-        "/metrics"
+        "/metrics",
+        "/api/v1/auth/login"
     ];
 
     public async Task InvokeAsync(HttpContext context, ITenantProvider tenantProvider)

@@ -19,6 +19,19 @@ internal sealed class RabbitMqSetup : IHostedService
     {
         _logger.LogInformation("Setting up RabbitMQ exchanges and queues...");
 
+        try
+        {
+            await SetupAsync(cancellationToken);
+            _logger.LogInformation("RabbitMQ setup completed.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "RabbitMQ is not available. Messaging features will be unavailable.");
+        }
+    }
+
+    private async Task SetupAsync(CancellationToken cancellationToken)
+    {
         await using var channel = await _connection.CreateChannelAsync(cancellationToken);
 
         // Declare dead-letter exchange first
@@ -180,7 +193,6 @@ internal sealed class RabbitMqSetup : IHostedService
             routingKey: "webhookdelivery",
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("RabbitMQ setup completed.");
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

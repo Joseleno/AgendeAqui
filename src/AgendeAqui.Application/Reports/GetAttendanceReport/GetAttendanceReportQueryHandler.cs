@@ -21,10 +21,10 @@ public sealed class GetAttendanceReportQueryHandler(
         const string sql = """
             SELECT p.id   AS ProfessionalId,
                    p.name AS ProfessionalName,
-                   COUNT(*) FILTER (WHERE a.status IN ('Completed','Cancelled','NoShow')) AS Total,
-                   COUNT(*) FILTER (WHERE a.status = 'Completed') AS Completed,
-                   COUNT(*) FILTER (WHERE a.status = 'Cancelled') AS Cancelled,
-                   COUNT(*) FILTER (WHERE a.status = 'NoShow')    AS NoShow
+                   CAST(COUNT(*) FILTER (WHERE a.status IN ('Completed','Cancelled','NoShow')) AS integer) AS Total,
+                   CAST(COUNT(*) FILTER (WHERE a.status = 'Completed') AS integer) AS Completed,
+                   CAST(COUNT(*) FILTER (WHERE a.status = 'Cancelled') AS integer) AS Cancelled,
+                   CAST(COUNT(*) FILTER (WHERE a.status = 'NoShow') AS integer)    AS NoShow
             FROM appointments a
             INNER JOIN professionals p ON p.id = a.professional_id AND p.tenant_id = @TenantId
             WHERE a.tenant_id = @TenantId AND a.date BETWEEN @From AND @To
@@ -32,9 +32,14 @@ public sealed class GetAttendanceReportQueryHandler(
             ORDER BY p.name
             """;
 
+        var parameters = new DynamicParameters();
+        parameters.Add("TenantId", tenantId);
+        parameters.Add("From", query.From.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
+        parameters.Add("To", query.To.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
+
         var command = new CommandDefinition(
             sql,
-            new { TenantId = tenantId, query.From, query.To },
+            parameters,
             cancellationToken: cancellationToken);
 
         var rows = await connection.QueryAsync<ProfessionalAttendance>(command);

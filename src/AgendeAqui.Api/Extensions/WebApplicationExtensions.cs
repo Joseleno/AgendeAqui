@@ -21,7 +21,8 @@ public static class WebApplicationExtensions
 
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-        app.UseHttpsRedirection();
+        if (!app.Environment.IsDevelopment())
+            app.UseHttpsRedirection();
 
         app.UseRateLimiter();
 

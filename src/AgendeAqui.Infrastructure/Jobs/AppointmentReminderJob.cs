@@ -32,12 +32,23 @@ internal sealed class AppointmentReminderJob : BackgroundService
             {
                 await ProcessRemindersAsync(stoppingToken);
             }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing appointment reminders");
             }
 
-            await Task.Delay(TimeSpan.FromMinutes(_settings.IntervalMinutes), stoppingToken);
+            try
+            {
+                await Task.Delay(TimeSpan.FromMinutes(_settings.IntervalMinutes), stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
         }
     }
 

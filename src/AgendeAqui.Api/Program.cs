@@ -1,3 +1,4 @@
+using AgendeAqui.Api;
 using AgendeAqui.Api.Extensions;
 using Serilog;
 
@@ -22,6 +23,9 @@ try
 
     app.UseSerilogRequestLogging();
     app.UseAgendeAqui();
+
+    if (app.Environment.IsDevelopment())
+        await SeedData.InitializeAsync(app);
 
     app.Run();
 }

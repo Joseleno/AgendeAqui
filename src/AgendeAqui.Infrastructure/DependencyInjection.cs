@@ -26,6 +26,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        DapperTypeHandlers.Register();
+
         services
             .AddPersistence(configuration)
             .AddMessaging(configuration)

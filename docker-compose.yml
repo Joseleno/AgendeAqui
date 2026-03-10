@@ -23,8 +23,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-agendeaqui}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-dev_password_change_me}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5673:5672"
+      - "15673:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:

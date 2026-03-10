@@ -22,7 +22,7 @@ public sealed class GetRevenueReportQueryHandler(
             SELECT s.id    AS ServiceId,
                    s.name  AS ServiceName,
                    s.price AS UnitPrice,
-                   COUNT(*) AS AppointmentCount,
+                   CAST(COUNT(*) AS integer) AS AppointmentCount,
                    SUM(s.price) AS TotalRevenue
             FROM appointments a
             INNER JOIN services s ON s.id = a.service_id AND s.tenant_id = @TenantId
@@ -31,9 +31,14 @@ public sealed class GetRevenueReportQueryHandler(
             ORDER BY TotalRevenue DESC
             """;
 
+        var parameters = new DynamicParameters();
+        parameters.Add("TenantId", tenantId);
+        parameters.Add("From", query.From.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
+        parameters.Add("To", query.To.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
+
         var command = new CommandDefinition(
             sql,
-            new { TenantId = tenantId, query.From, query.To },
+            parameters,
             cancellationToken: cancellationToken);
 
         var rows = await connection.QueryAsync<ServiceRevenue>(command);
