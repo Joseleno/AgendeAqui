@@ -11,13 +11,17 @@ public class CancelAppointmentCommandHandlerTests
 {
     private readonly IAppointmentRepository _appointmentRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUser _currentUser;
     private readonly CancelAppointmentCommandHandler _handler;
 
     public CancelAppointmentCommandHandlerTests()
     {
         _appointmentRepository = Substitute.For<IAppointmentRepository>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _handler = new CancelAppointmentCommandHandler(_appointmentRepository, _unitOfWork);
+        _currentUser = Substitute.For<ICurrentUser>();
+        _currentUser.Role.Returns("Admin");
+        _currentUser.IsAdmin.Returns(true);
+        _handler = new CancelAppointmentCommandHandler(_appointmentRepository, _unitOfWork, _currentUser);
     }
 
     private static Appointment CreateAppointment() =>

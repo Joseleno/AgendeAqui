@@ -37,6 +37,10 @@ public sealed class CreateAppointmentCommandHandler(
         if (!service.IsActive)
             return Result.Failure<Guid>(AppointmentErrors.ServiceInactive);
 
+        // Enforce client scoping: Client role can only create appointments for themselves
+        if (currentUser.Role == "Client" && command.ClientId != currentUser.ClientId)
+            return Result.Failure<Guid>(AppointmentErrors.NotAuthorized);
+
         var client = await clientRepository.GetByIdAsync(command.ClientId, cancellationToken);
         if (client is null)
             return Result.Failure<Guid>(AppointmentErrors.ClientNotFound);

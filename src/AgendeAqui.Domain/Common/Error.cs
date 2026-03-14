@@ -8,4 +8,5 @@ public sealed record Error(string Code, string Message)
     public bool IsNotFound => Code.EndsWith(".NotFound", StringComparison.Ordinal);
     public bool IsConflict => Code.EndsWith(".Conflict", StringComparison.Ordinal)
         || Code.EndsWith(".InvalidTransition", StringComparison.Ordinal);
+    public bool IsNotAuthorized => Code.EndsWith(".NotAuthorized", StringComparison.Ordinal);
 }

@@ -5,6 +5,7 @@ using AgendeAqui.Application.Professionals.GetProfessional;
 using AgendeAqui.Application.Professionals.LinkService;
 using AgendeAqui.Application.Professionals.ListProfessionals;
 using AgendeAqui.Application.Professionals.GetProfessionalServices;
+using AgendeAqui.Application.Professionals.SearchProfessionals;
 using AgendeAqui.Application.Professionals.UnlinkService;
 using AgendeAqui.Application.Professionals.UpdateProfessional;
 using Mediator;
@@ -73,6 +74,25 @@ public static class ProfessionalEndpoints
         .WithName("ListProfessionals")
         .WithSummary("List professionals")
         .WithDescription("Lists active professionals for the current tenant. Supports pagination.")
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
+
+        group.MapGet("/search", async (string? name, string? specialty, Guid? serviceId, int? page, int? pageSize, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var query = new SearchProfessionalsQuery(name, specialty, serviceId, page ?? 1, pageSize ?? 10);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
+        })
+        .WithName("SearchProfessionals")
+        .WithSummary("Search professionals")
+        .WithDescription("Searches active professionals by name, specialty, or linked service. Supports pagination.")
         .Produces(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);

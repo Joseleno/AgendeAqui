@@ -19,4 +19,6 @@ public static class AppointmentErrors
     public static readonly Error InvalidTenant = new("Appointment.InvalidTenant", "A valid tenant identifier is required.");
     public static readonly Error ProfessionalDoesNotProvideService = new("Appointment.ProfessionalDoesNotProvideService", "The professional does not provide this service.");
     public static readonly Error ProfessionalAbsent = new("Appointment.ProfessionalAbsent", "The professional is absent during the requested time slot.");
+    public static readonly Error NotAuthorized = new("Appointment.NotAuthorized", "You are not authorized to manage this appointment.");
+    public static readonly Error NotClientProfile = new("Appointment.NotClientProfile", "Your account does not have a client profile.");
 }

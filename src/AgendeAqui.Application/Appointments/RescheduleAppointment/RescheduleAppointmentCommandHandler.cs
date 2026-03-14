@@ -10,7 +10,8 @@ public sealed class RescheduleAppointmentCommandHandler(
     IAppointmentRepository appointmentRepository,
     IServiceRepository serviceRepository,
     IScheduleRepository scheduleRepository,
-    IUnitOfWork unitOfWork) : ICommandHandler<RescheduleAppointmentCommand>
+    IUnitOfWork unitOfWork,
+    ICurrentUser currentUser) : ICommandHandler<RescheduleAppointmentCommand>
 {
     public async ValueTask<Result<Mediator.Unit>> Handle(
         RescheduleAppointmentCommand command,
@@ -19,6 +20,14 @@ public sealed class RescheduleAppointmentCommandHandler(
         var appointment = await appointmentRepository.GetByIdAsync(command.AppointmentId, cancellationToken);
         if (appointment is null)
             return Result.Failure<Mediator.Unit>(AppointmentErrors.NotFound);
+
+        // Enforce ownership: Client can only reschedule their own appointments
+        if (currentUser.Role == "Client" && appointment.ClientId != currentUser.ClientId)
+            return Result.Failure<Mediator.Unit>(AppointmentErrors.NotAuthorized);
+
+        // Enforce ownership: Professional can only reschedule their own appointments
+        if (currentUser.Role == "Professional" && appointment.ProfessionalId != currentUser.ProfessionalId)
+            return Result.Failure<Mediator.Unit>(AppointmentErrors.NotAuthorized);
 
         var service = await serviceRepository.GetByIdAsync(appointment.ServiceId, cancellationToken);
         if (service is null)

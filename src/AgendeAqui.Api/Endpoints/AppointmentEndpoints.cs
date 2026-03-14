@@ -4,6 +4,7 @@ using AgendeAqui.Application.Appointments.CancelAppointment;
 using AgendeAqui.Application.Appointments.CreateAppointment;
 using AgendeAqui.Application.Appointments.GetAppointment;
 using AgendeAqui.Application.Appointments.ListAppointments;
+using AgendeAqui.Application.Appointments.ListMyAppointments;
 using AgendeAqui.Application.Appointments.RescheduleAppointment;
 using AgendeAqui.Application.Appointments.UpdateAttendance;
 using AgendeAqui.Application.Common;
@@ -35,6 +36,12 @@ public static class AppointmentEndpoints
             if (result.IsSuccess)
                 return Results.Created($"/api/v1/appointments/{result.Value}", new { id = result.Value });
 
+            if (result.Error.IsNotAuthorized)
+                return Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status403Forbidden,
+                    title: result.Error.Code);
+
             if (result.Error.IsNotFound)
                 return Results.Problem(
                     detail: result.Error.Message,
@@ -57,6 +64,7 @@ public static class AppointmentEndpoints
         .WithDescription("Creates a new appointment for the specified professional, service, and client.")
         .Produces(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireAuthorization(AuthorizationPolicies.RequireClient);
@@ -106,6 +114,33 @@ public static class AppointmentEndpoints
         .Produces<PagedResponse<AppointmentResponse>>(StatusCodes.Status200OK)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
 
+        group.MapGet("/mine", async (
+            int? page, int? pageSize, string? status,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            var query = new ListMyAppointmentsQuery(page ?? 1, pageSize ?? 10, status);
+            var result = await mediator.Send(query, cancellationToken);
+
+            if (result.IsSuccess)
+                return Results.Ok(result.Value);
+
+            var statusCode = result.Error.IsNotAuthorized ? StatusCodes.Status403Forbidden
+                : StatusCodes.Status400BadRequest;
+
+            return Results.Problem(
+                detail: result.Error.Message,
+                statusCode: statusCode,
+                title: result.Error.Code);
+        })
+        .WithName("ListMyAppointments")
+        .WithSummary("List my appointments")
+        .WithDescription("Lists the authenticated client's appointments with optional status filter. Supports pagination.")
+        .Produces<PagedResponse<MyAppointmentResponse>>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
+
         group.MapPost("/{id:guid}/cancel", async (Guid id, CancelAppointmentRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var command = new CancelAppointmentCommand(id, request.Reason);
@@ -114,7 +149,8 @@ public static class AppointmentEndpoints
             if (result.IsSuccess)
                 return Results.NoContent();
 
-            var statusCode = result.Error.IsNotFound ? StatusCodes.Status404NotFound
+            var statusCode = result.Error.IsNotAuthorized ? StatusCodes.Status403Forbidden
+                : result.Error.IsNotFound ? StatusCodes.Status404NotFound
                 : result.Error.IsConflict ? StatusCodes.Status409Conflict
                 : StatusCodes.Status400BadRequest;
 
@@ -128,6 +164,7 @@ public static class AppointmentEndpoints
         .WithDescription("Cancels an existing appointment with a required reason.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireAuthorization(AuthorizationPolicies.RequireClient);
@@ -140,7 +177,8 @@ public static class AppointmentEndpoints
             if (result.IsSuccess)
                 return Results.NoContent();
 
-            var statusCode = result.Error.IsNotFound ? StatusCodes.Status404NotFound
+            var statusCode = result.Error.IsNotAuthorized ? StatusCodes.Status403Forbidden
+                : result.Error.IsNotFound ? StatusCodes.Status404NotFound
                 : result.Error.IsConflict ? StatusCodes.Status409Conflict
                 : StatusCodes.Status400BadRequest;
 
@@ -154,6 +192,7 @@ public static class AppointmentEndpoints
         .WithDescription("Reschedules an appointment to a new date and time.")
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .RequireAuthorization(AuthorizationPolicies.RequireClient);

@@ -15,6 +15,7 @@ public class RescheduleAppointmentCommandHandlerTests
     private readonly IServiceRepository _serviceRepository;
     private readonly IScheduleRepository _scheduleRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUser _currentUser;
     private readonly RescheduleAppointmentCommandHandler _handler;
     private readonly Guid _tenantId = Guid.NewGuid();
 
@@ -24,7 +25,10 @@ public class RescheduleAppointmentCommandHandlerTests
         _serviceRepository = Substitute.For<IServiceRepository>();
         _scheduleRepository = Substitute.For<IScheduleRepository>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _handler = new RescheduleAppointmentCommandHandler(_appointmentRepository, _serviceRepository, _scheduleRepository, _unitOfWork);
+        _currentUser = Substitute.For<ICurrentUser>();
+        _currentUser.Role.Returns("Admin");
+        _currentUser.IsAdmin.Returns(true);
+        _handler = new RescheduleAppointmentCommandHandler(_appointmentRepository, _serviceRepository, _scheduleRepository, _unitOfWork, _currentUser);
     }
 
     private Appointment CreateAppointment(Guid? professionalId = null) =>

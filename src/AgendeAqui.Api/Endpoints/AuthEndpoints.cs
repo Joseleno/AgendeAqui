@@ -1,4 +1,6 @@
 using AgendeAqui.Application.Auth.Login;
+using AgendeAqui.Application.Auth.Register;
+using AgendeAqui.Domain.Users;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +34,42 @@ public static class AuthEndpoints
         .WithDescription("Returns a JWT access token and refresh token for authenticated users.")
         .Produces<LoginResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
+
+        group.MapPost("/register", async (
+            [FromBody] RegisterRequest request,
+            IMediator mediator,
+            CancellationToken ct) =>
+        {
+            var command = new RegisterPatientCommand(
+                request.Name, request.Email, request.Phone, request.Password);
+
+            var result = await mediator.Send(command, ct);
+
+            if (result.IsSuccess)
+                return Results.Created("/api/v1/auth/register", result.Value);
+
+            if (result.Error == UserErrors.EmailAlreadyExists)
+                return Results.Conflict(new ProblemDetails
+                {
+                    Title = result.Error.Code,
+                    Detail = result.Error.Message,
+                    Status = StatusCodes.Status409Conflict
+                });
+
+            return Results.Problem(
+                title: result.Error.Code,
+                detail: result.Error.Message,
+                statusCode: StatusCodes.Status400BadRequest);
+        })
+        .AllowAnonymous()
+        .WithName("RegisterPatient")
+        .WithSummary("Self-register as a patient (client)")
+        .WithDescription("Creates a new client and user account, returning a JWT access token. Requires X-Tenant-Id header.")
+        .Produces<LoginResponse>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status400BadRequest);
     }
 
     private sealed record LoginRequest(string Email, string Password);
+    private sealed record RegisterRequest(string Name, string Email, string Phone, string Password);
 }

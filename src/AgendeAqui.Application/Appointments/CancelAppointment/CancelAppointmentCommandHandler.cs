@@ -7,7 +7,8 @@ namespace AgendeAqui.Application.Appointments.CancelAppointment;
 
 public sealed class CancelAppointmentCommandHandler(
     IAppointmentRepository appointmentRepository,
-    IUnitOfWork unitOfWork) : ICommandHandler<CancelAppointmentCommand>
+    IUnitOfWork unitOfWork,
+    ICurrentUser currentUser) : ICommandHandler<CancelAppointmentCommand>
 {
     public async ValueTask<Result<Mediator.Unit>> Handle(
         CancelAppointmentCommand command,
@@ -16,6 +17,14 @@ public sealed class CancelAppointmentCommandHandler(
         var appointment = await appointmentRepository.GetByIdAsync(command.AppointmentId, cancellationToken);
         if (appointment is null)
             return Result.Failure<Mediator.Unit>(AppointmentErrors.NotFound);
+
+        // Enforce ownership: Client can only cancel their own appointments
+        if (currentUser.Role == "Client" && appointment.ClientId != currentUser.ClientId)
+            return Result.Failure<Mediator.Unit>(AppointmentErrors.NotAuthorized);
+
+        // Enforce ownership: Professional can only cancel their own appointments
+        if (currentUser.Role == "Professional" && appointment.ProfessionalId != currentUser.ProfessionalId)
+            return Result.Failure<Mediator.Unit>(AppointmentErrors.NotAuthorized);
 
         var result = appointment.Cancel(command.Reason);
         if (result.IsFailure)
