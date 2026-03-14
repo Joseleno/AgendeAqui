@@ -47,7 +47,10 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* Public routes */}
+          {/* Public routes (with tenant slug) */}
+          <Route path="/:slug/login" element={<LoginPage />} />
+          <Route path="/:slug/register" element={<RegisterPage />} />
+          {/* Legacy routes without slug */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 

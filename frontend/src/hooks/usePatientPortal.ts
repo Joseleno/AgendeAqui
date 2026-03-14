@@ -54,7 +54,14 @@ export function useRegisterPatient() {
       toast('success', 'Cadastro realizado com sucesso!')
       navigate('/meus-agendamentos')
     },
-    onError: () => toast('error', 'Erro ao realizar cadastro'),
+    onError: (err) => {
+      const detail = err instanceof Error && 'detail' in err ? (err as { detail: string }).detail : ''
+      if (detail.includes('already')) {
+        toast('error', 'Este email já está cadastrado')
+      } else {
+        toast('error', detail || 'Erro ao realizar cadastro')
+      }
+    },
   })
 }
 

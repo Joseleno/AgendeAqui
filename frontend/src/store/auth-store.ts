@@ -13,9 +13,12 @@ function decodeToken(token: string): Partial<AuthState> {
   try {
     const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
     const payload = JSON.parse(atob(base64))
+    const role = payload.role
+      ?? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+      ?? null
     return {
       tenantId: payload.tenant_id ?? null,
-      role: payload.role ?? null,
+      role,
       professionalId: payload.professional_id ?? null,
       clientId: payload.client_id ?? null,
     }
@@ -27,7 +30,15 @@ function decodeToken(token: string): Partial<AuthState> {
 function load(): AuthState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const stored = JSON.parse(raw) as AuthState
+      // Re-decode token to pick up any claim extraction fixes
+      if (stored.accessToken) {
+        const decoded = decodeToken(stored.accessToken)
+        return { ...stored, ...decoded }
+      }
+      return stored
+    }
   } catch { /* ignore */ }
   return {
     accessToken: null,
@@ -54,6 +65,13 @@ export const authStore = {
   getState: () => state,
 
   isAuthenticated: () => !!state.accessToken,
+
+  setTenantId(tenantId: string) {
+    if (state.tenantId === tenantId) return
+    state = { ...state, tenantId }
+    persist()
+    notify()
+  },
 
   setTokens(accessToken: string, refreshToken: string) {
     const decoded = decodeToken(accessToken)

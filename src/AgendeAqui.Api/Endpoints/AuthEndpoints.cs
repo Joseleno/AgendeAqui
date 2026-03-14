@@ -1,5 +1,6 @@
 using AgendeAqui.Application.Auth.Login;
 using AgendeAqui.Application.Auth.Register;
+using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Users;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,20 @@ public static class AuthEndpoints
     {
         var group = app.MapGroup("/api/v1/auth")
             .WithTags("Auth");
+
+        group.MapGet("/tenant/{slug}", async (string slug, ITenantRepository tenantRepository, CancellationToken ct) =>
+        {
+            var tenant = await tenantRepository.GetBySlugAsync(slug, ct);
+            return tenant is null
+                ? Results.NotFound()
+                : Results.Ok(new { tenant.Id, tenant.Name });
+        })
+        .AllowAnonymous()
+        .WithName("ResolveTenantBySlug")
+        .WithSummary("Resolve tenant by slug")
+        .WithDescription("Public endpoint to resolve a tenant slug to its ID and name. Used by the frontend before login/register.")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/login", async (
             [FromBody] LoginRequest request,
