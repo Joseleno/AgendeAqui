@@ -41,8 +41,11 @@ export function HomePage() {
   const appointments = data?.items ?? []
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-1">Visao geral dos agendamentos de hoje</p>
+      </div>
       <MetricCards appointments={appointments} isLoading={isLoading} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <UpcomingList appointments={appointments} isLoading={isLoading} />

@@ -27,7 +27,7 @@ export function WeekView({ currentDate, appointments, onSelect }: WeekViewProps)
           <div key={day.toISOString()} className="min-h-[200px]">
             <div
               className={`text-center text-xs font-medium py-1 rounded-t-lg ${
-                isToday ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'
+                isToday ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600'
               }`}
             >
               <div>{format(day, 'EEE', { locale: ptBR })}</div>

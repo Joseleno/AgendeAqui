@@ -31,6 +31,15 @@ public sealed class CreateProfessionalCommandHandler(
 
         var professional = professionalResult.Value;
 
+        if (!string.IsNullOrWhiteSpace(command.Specialty))
+        {
+            var specialtyResult = Specialty.Create(command.Specialty);
+            if (specialtyResult.IsFailure)
+                return Result.Failure<Guid>(specialtyResult.Error);
+
+            professional.SetSpecialty(specialtyResult.Value);
+        }
+
         await professionalRepository.AddAsync(professional, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

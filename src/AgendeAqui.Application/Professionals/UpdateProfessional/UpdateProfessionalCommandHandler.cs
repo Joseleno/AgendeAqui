@@ -30,6 +30,15 @@ public sealed class UpdateProfessionalCommandHandler(
         if (updateResult.IsFailure)
             return Result.Failure<Mediator.Unit>(updateResult.Error);
 
+        if (command.Specialty is not null)
+        {
+            var specialtyResult = Specialty.Create(command.Specialty);
+            if (specialtyResult.IsFailure)
+                return Result.Failure<Mediator.Unit>(specialtyResult.Error);
+
+            professional.SetSpecialty(specialtyResult.Value);
+        }
+
         professionalRepository.Update(professional);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

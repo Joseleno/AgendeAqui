@@ -17,7 +17,7 @@ export function ConfigPage() {
             className={({ isActive }) =>
               `px-3 py-2 text-sm font-medium rounded-t-lg transition-colors ${
                 isActive
-                  ? 'bg-white border border-b-white border-gray-200 text-indigo-600 -mb-px'
+                  ? 'bg-white border border-b-white border-gray-200 text-brand-600 -mb-px'
                   : 'text-gray-500 hover:text-gray-700'
               }`
             }

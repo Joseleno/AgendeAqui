@@ -25,7 +25,7 @@ export function ClientesPage() {
         <h1 className="text-xl font-bold text-gray-800">Clientes</h1>
         <button
           onClick={() => setShowCreate(true)}
-          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+          className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700"
         >
           + Novo
         </button>
@@ -57,7 +57,7 @@ export function ClientesPage() {
                   <td className="px-4 py-3">
                     <button
                       onClick={() => setEditClient(c)}
-                      className="text-xs text-indigo-600 hover:text-indigo-800"
+                      className="text-xs text-brand-600 hover:text-brand-800"
                     >
                       Editar
                     </button>
@@ -116,15 +116,15 @@ function ClientFormModal({
     <FormModal title={title} onClose={onClose} isPending={isPending} onSubmit={(e) => { e.preventDefault(); onSubmit({ name, email, phone }) }}>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-        <input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+        <input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-        <input required value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+        <input required value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
       </div>
     </FormModal>
   )

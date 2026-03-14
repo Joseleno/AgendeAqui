@@ -95,7 +95,7 @@ export function AgendaPage() {
           </button>
           <button
             onClick={() => setCurrentDate(new Date())}
-            className="text-xs text-indigo-600 hover:text-indigo-800 font-medium ml-2"
+            className="text-xs text-brand-600 hover:text-brand-800 font-medium ml-2"
           >
             Hoje
           </button>
@@ -109,7 +109,7 @@ export function AgendaPage() {
                 onClick={() => setViewMode(v.key)}
                 className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                   viewMode === v.key
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -119,7 +119,7 @@ export function AgendaPage() {
           </div>
           <button
             onClick={() => setShowNewModal(true)}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors"
+            className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 transition-colors"
           >
             + Novo
           </button>

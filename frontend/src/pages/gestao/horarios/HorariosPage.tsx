@@ -38,7 +38,7 @@ export function HorariosPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-800">Horarios</h1>
-        <button onClick={() => setShowCreate(true)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700">
+        <button onClick={() => setShowCreate(true)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">
           + Novo
         </button>
       </div>
@@ -46,7 +46,7 @@ export function HorariosPage() {
       <select
         value={filterProfId}
         onChange={(e) => { setFilterProfId(e.target.value); setPage(1) }}
-        className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 max-w-xs"
+        className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500 max-w-xs"
       >
         <option value="">Todos profissionais</option>
         {professionals.map((p) => (
@@ -150,30 +150,30 @@ function ScheduleCreateModal({
     >
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Profissional</label>
-        <select required value={professionalId} onChange={(e) => setProfessionalId(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500">
+        <select required value={professionalId} onChange={(e) => setProfessionalId(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500">
           <option value="">Selecione...</option>
           {professionals.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Dia da semana</label>
-        <select value={dayOfWeek} onChange={(e) => setDayOfWeek(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500">
+        <select value={dayOfWeek} onChange={(e) => setDayOfWeek(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500">
           {DAY_NAMES.map((name, i) => <option key={i} value={i}>{name}</option>)}
         </select>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Inicio</label>
-          <input type="time" required value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+          <input type="time" required value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Fim</label>
-          <input type="time" required value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+          <input type="time" required value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
         </div>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Duracao do slot (min)</label>
-        <input type="number" required min={5} value={slotDuration} onChange={(e) => setSlotDuration(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+        <input type="number" required min={5} value={slotDuration} onChange={(e) => setSlotDuration(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
       </div>
     </FormModal>
   )

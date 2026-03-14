@@ -6,4 +6,5 @@ public sealed record UpdateProfessionalCommand(
     Guid ProfessionalId,
     string Name,
     string Email,
-    string Phone) : ICommand;
+    string Phone,
+    string? Specialty = null) : ICommand;

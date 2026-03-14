@@ -33,7 +33,7 @@ public class ListProfessionalsQueryHandlerTests
         // Arrange
         var query = new ListProfessionalsQuery(1, 10);
         var cachedResponse = new PagedResponse<ProfessionalResponse>(
-            [new ProfessionalResponse(Guid.NewGuid(), "Ana Lima", "ana@example.com", "+5511999990001", true, DateTime.UtcNow)],
+            [new ProfessionalResponse(Guid.NewGuid(), "Ana Lima", "ana@example.com", "+5511999990001", true, null, DateTime.UtcNow)],
             1, 10, 1);
 
         _cache.GetOrCreateAsync<PagedResponse<ProfessionalResponse>>(

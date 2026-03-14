@@ -19,7 +19,7 @@ export function ServicosPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-800">Servicos</h1>
-        <button onClick={() => setShowCreate(true)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700">
+        <button onClick={() => setShowCreate(true)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">
           + Novo
         </button>
       </div>
@@ -46,7 +46,7 @@ export function ServicosPage() {
                   <td className="px-4 py-3 text-gray-600">{s.durationMinutes} min</td>
                   <td className="px-4 py-3 text-gray-600">R$ {s.price.toFixed(2)}</td>
                   <td className="px-4 py-3">
-                    <button onClick={() => setEditItem(s)} className="text-xs text-indigo-600 hover:text-indigo-800">
+                    <button onClick={() => setEditItem(s)} className="text-xs text-brand-600 hover:text-brand-800">
                       Editar
                     </button>
                   </td>
@@ -102,15 +102,15 @@ function ServiceFormModal({
     <FormModal title={title} onClose={onClose} isPending={isPending} onSubmit={(e) => { e.preventDefault(); onSubmit({ name, durationMinutes: Number(duration), price: Number(price) }) }}>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-        <input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+        <input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Duracao (min)</label>
-        <input type="number" required min={5} value={duration} onChange={(e) => setDuration(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+        <input type="number" required min={5} value={duration} onChange={(e) => setDuration(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Preco (R$)</label>
-        <input type="number" required min={0} step={0.01} value={price} onChange={(e) => setPrice(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+        <input type="number" required min={0} step={0.01} value={price} onChange={(e) => setPrice(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
       </div>
     </FormModal>
   )

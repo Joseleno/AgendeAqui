@@ -85,7 +85,7 @@ export function NewAppointmentModal({ initialDate, onClose }: NewAppointmentModa
               required
               value={professionalId}
               onChange={(e) => { setProfessionalId(e.target.value); setStartTime('') }}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
             >
               <option value="">Selecione...</option>
               {professionals.map((p) => (
@@ -100,7 +100,7 @@ export function NewAppointmentModal({ initialDate, onClose }: NewAppointmentModa
               required
               value={serviceId}
               onChange={(e) => { setServiceId(e.target.value); setStartTime('') }}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
             >
               <option value="">Selecione...</option>
               {services.map((s) => (
@@ -117,7 +117,7 @@ export function NewAppointmentModal({ initialDate, onClose }: NewAppointmentModa
               required
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
             >
               <option value="">Selecione...</option>
               {clients.map((c) => (
@@ -133,7 +133,7 @@ export function NewAppointmentModal({ initialDate, onClose }: NewAppointmentModa
               required
               value={date}
               onChange={(e) => { setDate(e.target.value); setStartTime('') }}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
             />
           </div>
 
@@ -149,8 +149,8 @@ export function NewAppointmentModal({ initialDate, onClose }: NewAppointmentModa
                       onClick={() => setStartTime(slot.start)}
                       className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
                         startTime === slot.start
-                          ? 'bg-indigo-600 text-white border-indigo-600'
-                          : 'border-gray-300 text-gray-700 hover:border-indigo-400'
+                          ? 'bg-brand-600 text-white border-brand-600'
+                          : 'border-gray-300 text-gray-700 hover:border-brand-400'
                       }`}
                     >
                       {slot.start.slice(0, 5)}
@@ -170,7 +170,7 @@ export function NewAppointmentModal({ initialDate, onClose }: NewAppointmentModa
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
               rows={2}
             />
           </div>
@@ -178,7 +178,7 @@ export function NewAppointmentModal({ initialDate, onClose }: NewAppointmentModa
           <button
             type="submit"
             disabled={createMutation.isPending || !startTime}
-            className="w-full rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="w-full rounded-lg bg-brand-600 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
             {createMutation.isPending ? 'Criando...' : 'Criar agendamento'}
           </button>

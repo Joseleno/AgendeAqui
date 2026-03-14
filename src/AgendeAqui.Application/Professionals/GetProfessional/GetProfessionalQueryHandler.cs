@@ -23,6 +23,7 @@ public sealed class GetProfessionalQueryHandler(
                    email       AS Email,
                    phone       AS Phone,
                    is_active   AS IsActive,
+                   specialty   AS Specialty,
                    created_at  AS CreatedAt
             FROM professionals
             WHERE id = @ProfessionalId AND tenant_id = @TenantId

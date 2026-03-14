@@ -28,7 +28,7 @@ export function ClienteDetailPage() {
 
   return (
     <div className="space-y-6">
-      <button onClick={() => navigate(-1)} className="text-sm text-indigo-600 hover:text-indigo-800">
+      <button onClick={() => navigate(-1)} className="text-sm text-brand-600 hover:text-brand-800">
         &larr; Voltar
       </button>
 

@@ -17,7 +17,7 @@ internal sealed class LoginCommandHandler(
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return Result.Failure<LoginResponse>(UserErrors.InvalidCredentials);
 
-        var accessToken = tokenGenerator.GenerateToken(user.Id, user.TenantId, user.Email, user.Role);
+        var accessToken = tokenGenerator.GenerateToken(user.Id, user.TenantId, user.Email, user.Role, user.ProfessionalId, user.ClientId);
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 
         return Result.Success(new LoginResponse(accessToken, refreshToken, 60));

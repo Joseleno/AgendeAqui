@@ -4,6 +4,7 @@ using AgendeAqui.Domain.Appointments;
 using AgendeAqui.Domain.Schedules;
 using AgendeAqui.Domain.Services;
 using AgendeAqui.Domain.ValueObjects;
+using Absence = AgendeAqui.Domain.Schedules.Absence;
 using FluentAssertions;
 using NSubstitute;
 
@@ -14,6 +15,7 @@ public class GetAvailabilityQueryHandlerTests
     private readonly IScheduleRepository _scheduleRepository;
     private readonly IAppointmentRepository _appointmentRepository;
     private readonly IServiceRepository _serviceRepository;
+    private readonly IAbsenceRepository _absenceRepository;
     private readonly GetAvailabilityQueryHandler _handler;
     private readonly Guid _tenantId = Guid.NewGuid();
 
@@ -22,7 +24,10 @@ public class GetAvailabilityQueryHandlerTests
         _scheduleRepository = Substitute.For<IScheduleRepository>();
         _appointmentRepository = Substitute.For<IAppointmentRepository>();
         _serviceRepository = Substitute.For<IServiceRepository>();
-        _handler = new GetAvailabilityQueryHandler(_scheduleRepository, _appointmentRepository, _serviceRepository);
+        _absenceRepository = Substitute.For<IAbsenceRepository>();
+        _absenceRepository.GetByProfessionalAndDateAsync(Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Absence>());
+        _handler = new GetAvailabilityQueryHandler(_scheduleRepository, _appointmentRepository, _serviceRepository, _absenceRepository);
     }
 
     [Fact]

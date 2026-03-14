@@ -27,7 +27,7 @@ export function AtendimentosPage() {
       ) : data ? (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <MetricCard label="Total" value={data.totalAppointments} color="text-indigo-600" bg="bg-indigo-50" />
+            <MetricCard label="Total" value={data.totalAppointments} color="text-brand-600" bg="bg-brand-50" />
             <MetricCard label="Concluidos" value={data.totalCompleted} color="text-green-600" bg="bg-green-50" />
             <MetricCard label="Cancelados" value={data.totalCancelled} color="text-red-600" bg="bg-red-50" />
             <MetricCard label="Faltaram" value={data.totalNoShow} color="text-gray-600" bg="bg-gray-100" />

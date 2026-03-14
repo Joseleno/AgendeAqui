@@ -6,6 +6,7 @@ using AgendeAqui.Domain.Clients;
 using AgendeAqui.Domain.Common;
 using AgendeAqui.Domain.Professionals;
 using AgendeAqui.Domain.Schedules;
+using ProfessionalServiceEntity = AgendeAqui.Domain.Professionals.ProfessionalService;
 using AgendeAqui.Domain.Services;
 using AgendeAqui.Domain.Tenants;
 using AgendeAqui.Domain.Webhooks;
@@ -32,6 +33,8 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
     public DbSet<Webhook> Webhooks => Set<Webhook>();
     public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
+    public DbSet<ProfessionalServiceEntity> ProfessionalServices => Set<ProfessionalServiceEntity>();
+    public DbSet<Absence> Absences => Set<Absence>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,

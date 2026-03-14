@@ -24,7 +24,7 @@ public class GetProfessionalQueryHandlerTests
         var createdAt = DateTime.UtcNow;
         var response = new ProfessionalResponse(
             id, "Maria Silva", "maria@example.com", "+5511999990000",
-            true, createdAt);
+            true, "Dermatologia", createdAt);
 
         response.Id.Should().Be(id);
         response.Name.Should().Be("Maria Silva");

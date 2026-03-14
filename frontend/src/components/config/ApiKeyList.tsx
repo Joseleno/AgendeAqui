@@ -16,7 +16,7 @@ export function ApiKeyList() {
         <h3 className="text-sm font-semibold text-gray-700">API Keys</h3>
         <button
           onClick={() => setShowCreate(true)}
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+          className="text-xs font-semibold text-brand-600 hover:text-brand-800"
         >
           + Nova
         </button>

@@ -12,16 +12,22 @@ internal sealed class JwtTokenGenerator(IOptions<JwtSettings> jwtSettings) : IJw
 {
     private readonly JwtSettings _settings = jwtSettings.Value;
 
-    public string GenerateToken(Guid userId, Guid tenantId, string email, string role)
+    public string GenerateToken(Guid userId, Guid tenantId, string email, string role, Guid? professionalId = null, Guid? clientId = null)
     {
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, email),
-            new Claim("tenant_id", tenantId.ToString()),
-            new Claim(ClaimTypes.Role, role),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Sub, userId.ToString()),
+            new(JwtRegisteredClaimNames.Email, email),
+            new("tenant_id", tenantId.ToString()),
+            new(ClaimTypes.Role, role),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        if (professionalId.HasValue)
+            claims.Add(new Claim("professional_id", professionalId.Value.ToString()));
+
+        if (clientId.HasValue)
+            claims.Add(new Claim("client_id", clientId.Value.ToString()));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

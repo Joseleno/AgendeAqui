@@ -9,4 +9,7 @@ public static class UserErrors
     public static readonly Error EmptyName = new("User.EmptyName", "Name is required.");
     public static readonly Error InvalidCredentials = new("User.InvalidCredentials", "Invalid email or password.");
     public static readonly Error NotFound = new("User.NotFound", "User not found.");
+    public static readonly Error AlreadyLinkedToProfessional = new("User.AlreadyLinked", "User is already linked to a professional.");
+    public static readonly Error AlreadyLinkedToClient = new("User.AlreadyLinked", "User is already linked to a client.");
+    public static readonly Error EmailAlreadyExists = new("User.EmailAlreadyExists", "A user with this email already exists.");
 }

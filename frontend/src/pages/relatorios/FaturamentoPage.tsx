@@ -26,9 +26,9 @@ export function FaturamentoPage() {
         <p className="text-sm text-gray-400">Carregando...</p>
       ) : data ? (
         <>
-          <div className="bg-indigo-50 rounded-xl p-4 border border-gray-100">
+          <div className="bg-brand-50 rounded-xl p-4 border border-gray-100">
             <p className="text-sm text-gray-600">Faturamento total</p>
-            <p className="text-2xl font-bold text-indigo-600 mt-1">
+            <p className="text-2xl font-bold text-brand-600 mt-1">
               R$ {data.totalRevenue.toFixed(2)}
             </p>
           </div>

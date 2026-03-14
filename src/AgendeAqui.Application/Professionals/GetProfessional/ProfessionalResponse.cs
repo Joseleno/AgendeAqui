@@ -6,4 +6,5 @@ public sealed record ProfessionalResponse(
     string Email,
     string Phone,
     bool IsActive,
+    string? Specialty,
     DateTime CreatedAt);

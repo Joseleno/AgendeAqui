@@ -45,6 +45,13 @@ internal sealed class ProfessionalConfiguration : IEntityTypeConfiguration<Profe
             .HasColumnName("is_active")
             .IsRequired();
 
+        builder.Property(p => p.Specialty)
+            .HasColumnName("specialty")
+            .HasMaxLength(Specialty.MaxLength)
+            .HasConversion(
+                s => s != null ? s.Value : null,
+                s => s != null ? Specialty.Hydrate(s) : null);
+
         builder.Property(p => p.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();

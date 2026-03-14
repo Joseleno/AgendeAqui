@@ -1,3 +1,5 @@
+import { AlertTriangle, XCircle, Bell } from 'lucide-react'
+
 interface Appointment {
   id: string
   clientName: string
@@ -32,22 +34,33 @@ export function AlertsList({ appointments }: AlertsListProps) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4">
-      <h2 className="text-sm font-semibold text-gray-700 mb-3">Alertas</h2>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <Bell className="w-4.5 h-4.5 text-amber-500" />
+        <h2 className="text-sm font-semibold text-gray-800">Alertas</h2>
+      </div>
       {alerts.length === 0 ? (
-        <p className="text-sm text-gray-400">Nenhum alerta</p>
+        <div className="text-center py-6">
+          <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+          <p className="text-sm text-gray-400">Nenhum alerta</p>
+        </div>
       ) : (
         <ul className="space-y-2">
           {alerts.map((alert) => (
             <li
               key={alert.id}
-              className={`text-sm px-3 py-2 rounded-lg ${
+              className={`flex items-center gap-2.5 text-sm px-3.5 py-2.5 rounded-xl ${
                 alert.type === 'error'
-                  ? 'bg-red-50 text-red-700'
-                  : 'bg-yellow-50 text-yellow-700'
+                  ? 'bg-red-50 text-red-700 border border-red-100'
+                  : 'bg-amber-50 text-amber-700 border border-amber-100'
               }`}
             >
-              {alert.message}
+              {alert.type === 'error' ? (
+                <XCircle className="w-4 h-4 shrink-0" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+              )}
+              <span>{alert.message}</span>
             </li>
           ))}
         </ul>

@@ -17,4 +17,5 @@ public static class AppointmentErrors
     public static readonly Error OutsideSchedule = new("Appointment.OutsideSchedule", "The requested time is outside the professional's working hours.");
     public static readonly Error CancelReasonRequired = new("Appointment.CancelReasonRequired", "A reason is required to cancel an appointment.");
     public static readonly Error InvalidTenant = new("Appointment.InvalidTenant", "A valid tenant identifier is required.");
+    public static readonly Error ProfessionalDoesNotProvideService = new("Appointment.ProfessionalDoesNotProvideService", "The professional does not provide this service.");
 }

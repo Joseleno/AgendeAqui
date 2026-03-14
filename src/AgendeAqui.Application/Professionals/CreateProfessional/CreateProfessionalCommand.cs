@@ -5,4 +5,5 @@ namespace AgendeAqui.Application.Professionals.CreateProfessional;
 public sealed record CreateProfessionalCommand(
     string Name,
     string Email,
-    string Phone) : ICommand<Guid>;
+    string Phone,
+    string? Specialty = null) : ICommand<Guid>;

@@ -31,7 +31,7 @@ public class LoginCommandHandlerTests
         var user = userResult.Value;
 
         _userRepository.GetByEmailAsync(email, Arg.Any<CancellationToken>()).Returns(user);
-        _tokenGenerator.GenerateToken(user.Id, tenantId, email, "Admin").Returns("test-access-token");
+        _tokenGenerator.GenerateToken(user.Id, tenantId, email, "Admin", null, null).Returns("test-access-token");
         _tokenGenerator.GenerateRefreshToken().Returns("test-refresh-token");
 
         var command = new LoginCommand(email, password);
@@ -72,6 +72,6 @@ public class LoginCommandHandlerTests
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(UserErrors.InvalidCredentials);
         _tokenGenerator.DidNotReceive().GenerateToken(
-            Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>());
+            Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Guid?>(), Arg.Any<Guid?>());
     }
 }

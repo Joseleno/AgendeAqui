@@ -12,6 +12,7 @@ public sealed class CreateAppointmentCommandHandler(
     IServiceRepository serviceRepository,
     IClientRepository clientRepository,
     IScheduleRepository scheduleRepository,
+    IProfessionalServiceRepository professionalServiceRepository,
     IUnitOfWork unitOfWork,
     ITenantProvider tenantProvider,
     ICurrentUser currentUser) : ICommandHandler<CreateAppointmentCommand, Guid>
@@ -37,6 +38,15 @@ public sealed class CreateAppointmentCommandHandler(
         var client = await clientRepository.GetByIdAsync(command.ClientId, cancellationToken);
         if (client is null)
             return Result.Failure<Guid>(AppointmentErrors.ClientNotFound);
+
+        // Validate professional provides this service (if any links exist)
+        var hasLinks = await professionalServiceRepository.HasAnyLinksAsync(command.ProfessionalId, cancellationToken);
+        if (hasLinks)
+        {
+            var isLinked = await professionalServiceRepository.ExistsAsync(command.ProfessionalId, command.ServiceId, cancellationToken);
+            if (!isLinked)
+                return Result.Failure<Guid>(AppointmentErrors.ProfessionalDoesNotProvideService);
+        }
 
         var endTime = command.StartTime.Add(service.Duration);
         var timeSlotResult = TimeSlot.Create(command.StartTime, endTime);

@@ -10,6 +10,8 @@ public sealed class User : TenantEntity
     public string PasswordHash { get; private set; } = default!;
     public string Name { get; private set; } = default!;
     public string Role { get; private set; } = default!;
+    public Guid? ProfessionalId { get; private set; }
+    public Guid? ClientId { get; private set; }
 
     public static Result<User> Create(Guid tenantId, string email, string passwordHash, string name, string role)
     {
@@ -32,5 +34,25 @@ public sealed class User : TenantEntity
         };
 
         return Result.Success(user);
+    }
+
+    public Result LinkToProfessional(Guid professionalId)
+    {
+        if (ProfessionalId is not null)
+            return Result.Failure(UserErrors.AlreadyLinkedToProfessional);
+
+        ProfessionalId = professionalId;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public Result LinkToClient(Guid clientId)
+    {
+        if (ClientId is not null)
+            return Result.Failure(UserErrors.AlreadyLinkedToClient);
+
+        ClientId = clientId;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
     }
 }

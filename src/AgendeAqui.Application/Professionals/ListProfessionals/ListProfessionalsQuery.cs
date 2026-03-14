@@ -4,4 +4,4 @@ using AgendeAqui.Application.Professionals.GetProfessional;
 
 namespace AgendeAqui.Application.Professionals.ListProfessionals;
 
-public sealed record ListProfessionalsQuery(int Page, int PageSize) : IQuery<PagedResponse<ProfessionalResponse>>;
+public sealed record ListProfessionalsQuery(int Page, int PageSize, string? Specialty = null) : IQuery<PagedResponse<ProfessionalResponse>>;

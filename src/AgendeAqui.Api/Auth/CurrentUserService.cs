@@ -45,4 +45,22 @@ internal sealed class CurrentUserService : ICurrentUser
 
     public bool IsClient => Role.Equals("Client", StringComparison.OrdinalIgnoreCase)
         || IsProfessional;
+
+    public Guid? ProfessionalId
+    {
+        get
+        {
+            var value = User?.FindFirstValue("professional_id");
+            return Guid.TryParse(value, out var id) ? id : null;
+        }
+    }
+
+    public Guid? ClientId
+    {
+        get
+        {
+            var value = User?.FindFirstValue("client_id");
+            return Guid.TryParse(value, out var id) ? id : null;
+        }
+    }
 }

@@ -9,6 +9,7 @@ public sealed class Professional : TenantEntity
     public Email Email { get; private set; } = default!;
     public PhoneNumber Phone { get; private set; } = default!;
     public bool IsActive { get; private set; }
+    public Specialty? Specialty { get; private set; }
 
     private Professional() { }
 
@@ -51,6 +52,13 @@ public sealed class Professional : TenantEntity
         Phone = phone;
         UpdatedAt = DateTime.UtcNow;
 
+        return Result.Success();
+    }
+
+    public Result SetSpecialty(Specialty? specialty)
+    {
+        Specialty = specialty;
+        UpdatedAt = DateTime.UtcNow;
         return Result.Success();
     }
 }

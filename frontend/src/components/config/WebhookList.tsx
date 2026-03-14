@@ -22,7 +22,7 @@ export function WebhookList() {
         <h3 className="text-sm font-semibold text-gray-700">Webhooks</h3>
         <button
           onClick={() => setShowCreate(true)}
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+          className="text-xs font-semibold text-brand-600 hover:text-brand-800"
         >
           + Novo
         </button>
@@ -52,7 +52,7 @@ export function WebhookList() {
               </div>
               <div className="flex flex-wrap gap-1 mt-1">
                 {wh.events.map((ev) => (
-                  <span key={ev} className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">
+                  <span key={ev} className="text-[10px] bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded">
                     {ev}
                   </span>
                 ))}
@@ -109,7 +109,7 @@ function WebhookCreateModal({ onClose }: { onClose: () => void }) {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://..."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
         />
       </div>
       <div>
@@ -119,7 +119,7 @@ function WebhookCreateModal({ onClose }: { onClose: () => void }) {
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
           placeholder="whsec_..."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
         />
       </div>
       <div>

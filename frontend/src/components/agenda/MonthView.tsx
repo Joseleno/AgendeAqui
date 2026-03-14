@@ -67,7 +67,7 @@ export function MonthView({ currentDate, appointments, onDayClick }: MonthViewPr
             >
               <span
                 className={`text-xs font-medium inline-block w-6 h-6 leading-6 text-center rounded-full ${
-                  isToday ? 'bg-indigo-600 text-white' : 'text-gray-700'
+                  isToday ? 'bg-brand-600 text-white' : 'text-gray-700'
                 }`}
               >
                 {format(d, 'd')}

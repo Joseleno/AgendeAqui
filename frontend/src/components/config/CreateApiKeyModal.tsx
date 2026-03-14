@@ -28,7 +28,7 @@ export function CreateApiKeyModal({ onClose }: CreateApiKeyModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="mt-4 w-full rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="mt-4 w-full rounded-lg bg-brand-600 py-2 text-sm font-semibold text-white hover:bg-brand-700"
           >
             Fechar
           </button>
@@ -57,7 +57,7 @@ export function CreateApiKeyModal({ onClose }: CreateApiKeyModalProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Ex: Integracao WhatsApp"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
         />
       </div>
       <div>
@@ -66,7 +66,7 @@ export function CreateApiKeyModal({ onClose }: CreateApiKeyModalProps) {
           type="datetime-local"
           value={expiresAt}
           onChange={(e) => setExpiresAt(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
         />
       </div>
     </FormModal>

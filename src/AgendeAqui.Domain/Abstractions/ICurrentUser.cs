@@ -8,4 +8,6 @@ public interface ICurrentUser
     bool IsAdmin { get; }
     bool IsProfessional { get; }
     bool IsClient { get; }
+    Guid? ProfessionalId { get; }
+    Guid? ClientId { get; }
 }
