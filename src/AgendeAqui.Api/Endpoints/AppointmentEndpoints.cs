@@ -3,6 +3,8 @@ using AgendeAqui.Api.Endpoints.Requests;
 using AgendeAqui.Application.Appointments.CancelAppointment;
 using AgendeAqui.Application.Appointments.CreateAppointment;
 using AgendeAqui.Application.Appointments.GetAppointment;
+using AgendeAqui.Application.Appointments.GetMyCalendar;
+using AgendeAqui.Application.Appointments.GetMyFilledSlots;
 using AgendeAqui.Application.Appointments.ListAppointments;
 using AgendeAqui.Application.Appointments.ListMyAppointments;
 using AgendeAqui.Application.Appointments.RescheduleAppointment;
@@ -227,6 +229,66 @@ public static class AppointmentEndpoints
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status409Conflict)
+        .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
+
+        group.MapGet("/calendar", async (
+            DateOnly? dateFrom,
+            DateOnly? dateTo,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            var query = new GetMyCalendarQuery(
+                dateFrom ?? DateOnly.FromDateTime(DateTime.UtcNow),
+                dateTo ?? DateOnly.FromDateTime(DateTime.UtcNow));
+
+            var result = await mediator.Send(query, cancellationToken);
+
+            if (result.IsSuccess)
+                return Results.Ok(result.Value);
+
+            var statusCode = result.Error.IsNotAuthorized
+                ? StatusCodes.Status403Forbidden
+                : StatusCodes.Status400BadRequest;
+
+            return Results.Problem(
+                detail: result.Error.Message,
+                statusCode: statusCode,
+                title: result.Error.Code);
+        })
+        .WithName("GetMyCalendar")
+        .WithSummary("Get professional's calendar")
+        .WithDescription("Returns the authenticated professional's appointments and absences grouped by day for the specified date range (max 31 days).")
+        .Produces<CalendarResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
+
+        group.MapGet("/filled-slots", async (
+            DateOnly? date,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            var query = new GetMyFilledSlotsQuery(date ?? DateOnly.FromDateTime(DateTime.UtcNow));
+            var result = await mediator.Send(query, cancellationToken);
+
+            if (result.IsSuccess)
+                return Results.Ok(result.Value);
+
+            var statusCode = result.Error.IsNotAuthorized
+                ? StatusCodes.Status403Forbidden
+                : StatusCodes.Status400BadRequest;
+
+            return Results.Problem(
+                detail: result.Error.Message,
+                statusCode: statusCode,
+                title: result.Error.Code);
+        })
+        .WithName("GetMyFilledSlots")
+        .WithSummary("Get professional's filled slots")
+        .WithDescription("Returns the authenticated professional's filled appointment slots for a specific date, including total, filled, and available slot counts.")
+        .Produces<FilledSlotsResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
         .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
     }
 }

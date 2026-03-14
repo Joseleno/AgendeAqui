@@ -14,6 +14,7 @@ public class CreateAbsenceCommandHandlerTests
     private readonly IProfessionalRepository _professionalRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITenantProvider _tenantProvider;
+    private readonly ICurrentUser _currentUser;
     private readonly CreateAbsenceCommandHandler _handler;
     private readonly Guid _tenantId = Guid.NewGuid();
 
@@ -23,14 +24,19 @@ public class CreateAbsenceCommandHandlerTests
         _professionalRepository = Substitute.For<IProfessionalRepository>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _tenantProvider = Substitute.For<ITenantProvider>();
+        _currentUser = Substitute.For<ICurrentUser>();
         _tenantProvider.GetTenantId().Returns(_tenantId);
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
+
+        // Default to admin so existing tests pass without hitting authorization logic
+        _currentUser.IsAdmin.Returns(true);
 
         _handler = new CreateAbsenceCommandHandler(
             _absenceRepository,
             _professionalRepository,
             _unitOfWork,
-            _tenantProvider);
+            _tenantProvider,
+            _currentUser);
     }
 
     private Professional CreateProfessional() =>

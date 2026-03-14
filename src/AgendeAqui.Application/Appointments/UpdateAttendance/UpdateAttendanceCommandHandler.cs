@@ -7,7 +7,8 @@ namespace AgendeAqui.Application.Appointments.UpdateAttendance;
 
 public sealed class UpdateAttendanceCommandHandler(
     IAppointmentRepository appointmentRepository,
-    IUnitOfWork unitOfWork) : ICommandHandler<UpdateAttendanceCommand>
+    IUnitOfWork unitOfWork,
+    ICurrentUser currentUser) : ICommandHandler<UpdateAttendanceCommand>
 {
     public async ValueTask<Result<Mediator.Unit>> Handle(
         UpdateAttendanceCommand command,
@@ -16,6 +17,9 @@ public sealed class UpdateAttendanceCommandHandler(
         var appointment = await appointmentRepository.GetByIdAsync(command.AppointmentId, cancellationToken);
         if (appointment is null)
             return Result.Failure<Mediator.Unit>(AppointmentErrors.NotFound);
+
+        if (!currentUser.IsAdmin && currentUser.ProfessionalId != appointment.ProfessionalId)
+            return Result.Failure<Mediator.Unit>(AppointmentErrors.NotAuthorized);
 
         var result = command.Action switch
         {

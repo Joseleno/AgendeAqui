@@ -10,12 +10,16 @@ public sealed class CreateAbsenceCommandHandler(
     IAbsenceRepository absenceRepository,
     IProfessionalRepository professionalRepository,
     IUnitOfWork unitOfWork,
-    ITenantProvider tenantProvider) : ICommandHandler<CreateAbsenceCommand, Guid>
+    ITenantProvider tenantProvider,
+    ICurrentUser currentUser) : ICommandHandler<CreateAbsenceCommand, Guid>
 {
     public async ValueTask<Result<Guid>> Handle(
         CreateAbsenceCommand command,
         CancellationToken cancellationToken)
     {
+        if (!currentUser.IsAdmin && currentUser.ProfessionalId != command.ProfessionalId)
+            return Result.Failure<Guid>(AbsenceErrors.NotAuthorized);
+
         var professional = await professionalRepository.GetByIdAsync(command.ProfessionalId, cancellationToken);
         if (professional is null)
             return Result.Failure<Guid>(ProfessionalErrors.NotFound);

@@ -11,13 +11,19 @@ public class UpdateAttendanceCommandHandlerTests
 {
     private readonly IAppointmentRepository _appointmentRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUser _currentUser;
     private readonly UpdateAttendanceCommandHandler _handler;
 
     public UpdateAttendanceCommandHandlerTests()
     {
         _appointmentRepository = Substitute.For<IAppointmentRepository>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _handler = new UpdateAttendanceCommandHandler(_appointmentRepository, _unitOfWork);
+        _currentUser = Substitute.For<ICurrentUser>();
+
+        // Default to admin so existing tests pass without hitting authorization logic
+        _currentUser.IsAdmin.Returns(true);
+
+        _handler = new UpdateAttendanceCommandHandler(_appointmentRepository, _unitOfWork, _currentUser);
     }
 
     private static Appointment CreateAppointment() =>

@@ -1,8 +1,10 @@
 using AgendeAqui.Api.Auth;
 using AgendeAqui.Api.Endpoints.Requests;
+using AgendeAqui.Application.Common;
 using AgendeAqui.Application.Professionals.CreateProfessional;
 using AgendeAqui.Application.Professionals.GetProfessional;
 using AgendeAqui.Application.Professionals.LinkService;
+using AgendeAqui.Application.Professionals.ListMyPatients;
 using AgendeAqui.Application.Professionals.ListProfessionals;
 using AgendeAqui.Application.Professionals.GetProfessionalServices;
 using AgendeAqui.Application.Professionals.SearchProfessionals;
@@ -189,5 +191,24 @@ public static class ProfessionalEndpoints
         .WithDescription("Returns the list of service IDs linked to a professional.")
         .Produces<IReadOnlyList<Guid>>()
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated);
+
+        group.MapGet("/my-patients", async (int? page, int? pageSize, string? search, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var query = new ListMyPatientsQuery(page ?? 1, pageSize ?? 10, search);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
+        })
+        .WithName("ListMyPatients")
+        .WithSummary("List professional's patients")
+        .WithDescription("Returns a paginated list of distinct clients who have had appointments with the authenticated professional. Supports optional name search.")
+        .Produces<PagedResponse<PatientSummaryResponse>>()
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
     }
 }
