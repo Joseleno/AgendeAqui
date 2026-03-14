@@ -19,7 +19,7 @@ public sealed class ListProfessionalsQueryHandler(
         CancellationToken cancellationToken)
     {
         var tenantId = tenantProvider.GetTenantId();
-        var specialtySuffix = query.Specialty is not null ? $":sp{query.Specialty}" : "";
+        var specialtySuffix = query.Specialty is not null ? $":sp{query.Specialty.ToLowerInvariant().Replace(":", "_")}" : "";
         var cacheKey = $"professionals:{tenantId}:p{query.Page}:s{query.PageSize}{specialtySuffix}";
 
         var cached = await cache.GetOrCreateAsync(

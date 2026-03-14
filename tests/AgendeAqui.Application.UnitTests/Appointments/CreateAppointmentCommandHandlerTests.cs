@@ -19,6 +19,7 @@ public class CreateAppointmentCommandHandlerTests
     private readonly IClientRepository _clientRepository;
     private readonly IScheduleRepository _scheduleRepository;
     private readonly IProfessionalServiceRepository _professionalServiceRepository;
+    private readonly IAbsenceRepository _absenceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITenantProvider _tenantProvider;
     private readonly ICurrentUser _currentUser;
@@ -34,6 +35,9 @@ public class CreateAppointmentCommandHandlerTests
         _scheduleRepository = Substitute.For<IScheduleRepository>();
         _professionalServiceRepository = Substitute.For<IProfessionalServiceRepository>();
         _professionalServiceRepository.HasAnyLinksAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(false);
+        _absenceRepository = Substitute.For<IAbsenceRepository>();
+        _absenceRepository.GetByProfessionalAndDateAsync(Arg.Any<Guid>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<Absence>());
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _tenantProvider = Substitute.For<ITenantProvider>();
         _tenantProvider.GetTenantId().Returns(_tenantId);
@@ -47,6 +51,7 @@ public class CreateAppointmentCommandHandlerTests
             _clientRepository,
             _scheduleRepository,
             _professionalServiceRepository,
+            _absenceRepository,
             _unitOfWork,
             _tenantProvider,
             _currentUser);

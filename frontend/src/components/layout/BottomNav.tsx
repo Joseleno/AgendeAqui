@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react'
 const navItems: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/',           label: 'Home',    icon: LayoutDashboard },
   { to: '/agenda',     label: 'Agenda',  icon: CalendarDays },
-  { to: '/gestao',     label: 'Gestao',  icon: Users },
+  { to: '/gestao',     label: 'Gestão',  icon: Users },
   { to: '/relatorios', label: 'Relat.',  icon: BarChart3 },
   { to: '/config',     label: 'Config',  icon: Settings },
 ]

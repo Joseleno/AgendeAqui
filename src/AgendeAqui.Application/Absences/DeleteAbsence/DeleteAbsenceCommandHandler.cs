@@ -7,7 +7,8 @@ namespace AgendeAqui.Application.Absences.DeleteAbsence;
 
 public sealed class DeleteAbsenceCommandHandler(
     IAbsenceRepository absenceRepository,
-    IUnitOfWork unitOfWork) : ICommandHandler<DeleteAbsenceCommand>
+    IUnitOfWork unitOfWork,
+    ICurrentUser currentUser) : ICommandHandler<DeleteAbsenceCommand>
 {
     public async ValueTask<Result<Mediator.Unit>> Handle(
         DeleteAbsenceCommand command,
@@ -16,6 +17,9 @@ public sealed class DeleteAbsenceCommandHandler(
         var absence = await absenceRepository.GetByIdAsync(command.AbsenceId, cancellationToken);
         if (absence is null)
             return Result.Failure<Mediator.Unit>(AbsenceErrors.NotFound);
+
+        if (!currentUser.IsAdmin && currentUser.ProfessionalId != absence.ProfessionalId)
+            return Result.Failure<Mediator.Unit>(AbsenceErrors.NotAuthorized);
 
         absenceRepository.Remove(absence);
         await unitOfWork.SaveChangesAsync(cancellationToken);

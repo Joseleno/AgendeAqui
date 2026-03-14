@@ -37,6 +37,8 @@ public sealed class Absence : TenantEntity
 
         var absence = new Absence
         {
+            Id = Guid.NewGuid(),
+            CreatedAt = DateTime.UtcNow,
             TenantId = tenantId,
             ProfessionalId = professionalId,
             Date = date,

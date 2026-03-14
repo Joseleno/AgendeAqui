@@ -36,6 +36,7 @@ export function ToastContainer() {
         setToasts((prev) => prev.filter((t) => t.id !== id))
       }, 4000)
     }
+    return () => { addToast = () => {} }
   }, [])
 
   return (
@@ -52,6 +53,7 @@ export function ToastContainer() {
             <button
               onClick={() => setToasts((prev) => prev.filter((tt) => tt.id !== t.id))}
               className="text-current opacity-50 hover:opacity-100 transition-opacity"
+              aria-label="Fechar"
             >
               <X className="w-3.5 h-3.5" />
             </button>

@@ -4,9 +4,9 @@ using AgendeAqui.Application.Professionals.CreateProfessional;
 using AgendeAqui.Application.Professionals.GetProfessional;
 using AgendeAqui.Application.Professionals.LinkService;
 using AgendeAqui.Application.Professionals.ListProfessionals;
+using AgendeAqui.Application.Professionals.GetProfessionalServices;
 using AgendeAqui.Application.Professionals.UnlinkService;
 using AgendeAqui.Application.Professionals.UpdateProfessional;
-using AgendeAqui.Domain.Abstractions;
 using Mediator;
 
 namespace AgendeAqui.Api.Endpoints;
@@ -152,10 +152,17 @@ public static class ProfessionalEndpoints
         .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireAdmin);
 
-        group.MapGet("/{id:guid}/services", async (Guid id, IProfessionalServiceRepository repository, CancellationToken cancellationToken) =>
+        group.MapGet("/{id:guid}/services", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
         {
-            var serviceIds = await repository.GetServiceIdsByProfessionalAsync(id, cancellationToken);
-            return Results.Ok(serviceIds);
+            var query = new GetProfessionalServicesQuery(id);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
         })
         .WithName("GetProfessionalServices")
         .WithSummary("Get services linked to a professional")

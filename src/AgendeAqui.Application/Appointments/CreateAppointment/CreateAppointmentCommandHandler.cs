@@ -2,6 +2,7 @@ using AgendeAqui.Application.Abstractions.Messaging;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Appointments;
 using AgendeAqui.Domain.Common;
+using AgendeAqui.Domain.Schedules;
 using AgendeAqui.Domain.ValueObjects;
 
 namespace AgendeAqui.Application.Appointments.CreateAppointment;
@@ -13,6 +14,7 @@ public sealed class CreateAppointmentCommandHandler(
     IClientRepository clientRepository,
     IScheduleRepository scheduleRepository,
     IProfessionalServiceRepository professionalServiceRepository,
+    IAbsenceRepository absenceRepository,
     IUnitOfWork unitOfWork,
     ITenantProvider tenantProvider,
     ICurrentUser currentUser) : ICommandHandler<CreateAppointmentCommand, Guid>
@@ -65,6 +67,11 @@ public sealed class CreateAppointmentCommandHandler(
             command.ProfessionalId, command.Date, command.StartTime, endTime, ct: cancellationToken);
         if (hasConflict)
             return Result.Failure<Guid>(AppointmentErrors.Conflict);
+
+        var absences = await absenceRepository.GetByProfessionalAndDateAsync(
+            command.ProfessionalId, command.Date, cancellationToken);
+        if (absences.Any(a => a.Blocks(command.StartTime, endTime)))
+            return Result.Failure<Guid>(AppointmentErrors.ProfessionalAbsent);
 
         Guid? sourceApiKeyId = currentUser.Role.Equals("ApiKey", StringComparison.OrdinalIgnoreCase)
             ? currentUser.UserId

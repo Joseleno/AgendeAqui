@@ -19,6 +19,8 @@ public sealed class ProfessionalService : TenantEntity
 
         var link = new ProfessionalService
         {
+            Id = Guid.NewGuid(),
+            CreatedAt = DateTime.UtcNow,
             TenantId = tenantId,
             ProfessionalId = professionalId,
             ServiceId = serviceId

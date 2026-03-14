@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Search } from 'lucide-react'
 
 interface SearchInputProps {
@@ -10,6 +10,11 @@ interface SearchInputProps {
 
 export function SearchInput({ value, onChange, placeholder = 'Buscar...', debounceMs = 300 }: SearchInputProps) {
   const [local, setLocal] = useState(value)
+  const onChangeRef = useRef(onChange)
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  })
 
   useEffect(() => {
     setLocal(value)
@@ -17,10 +22,10 @@ export function SearchInput({ value, onChange, placeholder = 'Buscar...', deboun
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (local !== value) onChange(local)
+      if (local !== value) onChangeRef.current(local)
     }, debounceMs)
     return () => clearTimeout(timer)
-  }, [local, debounceMs, onChange, value])
+  }, [local, debounceMs, value])
 
   return (
     <div className="relative w-full max-w-xs">

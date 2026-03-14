@@ -33,7 +33,24 @@ public sealed class CreateAbsenceCommandHandler(
         if (absenceResult.IsFailure)
             return Result.Failure<Guid>(absenceResult.Error);
 
-        await absenceRepository.AddAsync(absenceResult.Value, cancellationToken);
+        var newAbsence = absenceResult.Value;
+        var existingAbsences = await absenceRepository.GetByProfessionalAndDateAsync(
+            command.ProfessionalId, command.Date, cancellationToken);
+
+        foreach (var existing in existingAbsences)
+        {
+            if (existing.IsFullDay)
+                return Result.Failure<Guid>(AbsenceErrors.Overlap);
+
+            if (newAbsence.IsFullDay)
+                return Result.Failure<Guid>(AbsenceErrors.Overlap);
+
+            if (newAbsence.StartTime.HasValue && newAbsence.EndTime.HasValue
+                && existing.Blocks(newAbsence.StartTime.Value, newAbsence.EndTime.Value))
+                return Result.Failure<Guid>(AbsenceErrors.Overlap);
+        }
+
+        await absenceRepository.AddAsync(newAbsence, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success(absenceResult.Value.Id);

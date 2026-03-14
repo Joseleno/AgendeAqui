@@ -11,7 +11,8 @@ export function Header() {
       <div className="flex items-center gap-2">
         <button
           className="relative p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-          title="Notificacoes"
+          title="Notificações"
+          aria-label="Notificações"
         >
           <Bell className="w-[18px] h-[18px]" />
         </button>

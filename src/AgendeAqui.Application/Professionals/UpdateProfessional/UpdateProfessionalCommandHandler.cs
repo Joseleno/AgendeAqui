@@ -30,7 +30,7 @@ public sealed class UpdateProfessionalCommandHandler(
         if (updateResult.IsFailure)
             return Result.Failure<Mediator.Unit>(updateResult.Error);
 
-        if (command.Specialty is not null)
+        if (!string.IsNullOrWhiteSpace(command.Specialty))
         {
             var specialtyResult = Specialty.Create(command.Specialty);
             if (specialtyResult.IsFailure)

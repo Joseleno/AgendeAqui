@@ -20,6 +20,6 @@ internal sealed class LoginCommandHandler(
         var accessToken = tokenGenerator.GenerateToken(user.Id, user.TenantId, user.Email, user.Role, user.ProfessionalId, user.ClientId);
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 
-        return Result.Success(new LoginResponse(accessToken, refreshToken, 60));
+        return Result.Success(new LoginResponse(accessToken, refreshToken, tokenGenerator.ExpirationMinutes));
     }
 }

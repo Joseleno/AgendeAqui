@@ -9,9 +9,10 @@ interface Appointment {
 
 interface AlertsListProps {
   appointments: Appointment[]
+  isLoading: boolean
 }
 
-export function AlertsList({ appointments }: AlertsListProps) {
+export function AlertsList({ appointments, isLoading }: AlertsListProps) {
   const noShows = appointments.filter((a) => a.status === 'NoShow')
   const cancelled = appointments.filter((a) => a.status === 'Cancelled')
 
@@ -39,7 +40,13 @@ export function AlertsList({ appointments }: AlertsListProps) {
         <Bell className="w-4.5 h-4.5 text-amber-500" />
         <h2 className="text-sm font-semibold text-gray-800">Alertas</h2>
       </div>
-      {alerts.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : alerts.length === 0 ? (
         <div className="text-center py-6">
           <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
           <p className="text-sm text-gray-400">Nenhum alerta</p>

@@ -24,7 +24,7 @@ interface PagedResponse<T> {
 }
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10)
+  return new Date().toLocaleDateString('sv-SE')
 }
 
 export function HomePage() {
@@ -44,12 +44,12 @@ export function HomePage() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">Visao geral dos agendamentos de hoje</p>
+        <p className="text-sm text-gray-500 mt-1">Visão geral dos agendamentos de hoje</p>
       </div>
       <MetricCards appointments={appointments} isLoading={isLoading} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <UpcomingList appointments={appointments} isLoading={isLoading} />
-        <AlertsList appointments={appointments} />
+        <AlertsList appointments={appointments} isLoading={isLoading} />
       </div>
     </div>
   )

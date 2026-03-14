@@ -33,6 +33,7 @@ public class LoginCommandHandlerTests
         _userRepository.GetByEmailAsync(email, Arg.Any<CancellationToken>()).Returns(user);
         _tokenGenerator.GenerateToken(user.Id, tenantId, email, "Admin", null, null).Returns("test-access-token");
         _tokenGenerator.GenerateRefreshToken().Returns("test-refresh-token");
+        _tokenGenerator.ExpirationMinutes.Returns(60);
 
         var command = new LoginCommand(email, password);
         var result = await _handler.Handle(command, CancellationToken.None);

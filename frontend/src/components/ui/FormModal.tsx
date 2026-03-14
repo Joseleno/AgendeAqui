@@ -19,13 +19,14 @@ export function FormModal({
   children,
 }: FormModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="form-modal-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white w-full md:max-w-md md:rounded-2xl rounded-t-2xl shadow-modal p-6 max-h-[85vh] overflow-auto animate-slide-up">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 id="form-modal-title" className="text-lg font-semibold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
+            aria-label="Fechar"
             className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <X className="w-5 h-5" />

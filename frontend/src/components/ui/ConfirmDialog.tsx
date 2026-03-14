@@ -18,7 +18,7 @@ export function ConfirmDialog({
   isPending = false,
 }: ConfirmDialogProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') onCancel() }}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
       <div className="relative bg-white rounded-2xl shadow-modal p-6 max-w-sm w-full mx-4 animate-scale-in">
         <div className="flex items-start gap-3">
@@ -26,7 +26,7 @@ export function ConfirmDialog({
             <AlertTriangle className="w-5 h-5 text-red-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <h3 id="confirm-dialog-title" className="text-lg font-semibold text-gray-900">{title}</h3>
             <p className="text-sm text-gray-500 mt-1">{message}</p>
           </div>
         </div>

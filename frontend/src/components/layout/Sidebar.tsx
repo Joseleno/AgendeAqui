@@ -5,9 +5,9 @@ import type { LucideIcon } from 'lucide-react'
 const navItems: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/',           label: 'Dashboard',   icon: LayoutDashboard },
   { to: '/agenda',     label: 'Agenda',      icon: CalendarDays },
-  { to: '/gestao',     label: 'Gestao',      icon: Users },
-  { to: '/relatorios', label: 'Relatorios',  icon: BarChart3 },
-  { to: '/config',     label: 'Configuracoes', icon: Settings },
+  { to: '/gestao',     label: 'Gestão',      icon: Users },
+  { to: '/relatorios', label: 'Relatórios',  icon: BarChart3 },
+  { to: '/config',     label: 'Configurações', icon: Settings },
 ]
 
 export function Sidebar() {

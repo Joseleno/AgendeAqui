@@ -25,7 +25,7 @@ export function UpcomingList({ appointments, isLoading }: UpcomingListProps) {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-5">
       <div className="flex items-center gap-2 mb-4">
         <CalendarDays className="w-4.5 h-4.5 text-brand-600" />
-        <h2 className="text-sm font-semibold text-gray-800">Proximos agendamentos</h2>
+        <h2 className="text-sm font-semibold text-gray-800">Próximos agendamentos</h2>
       </div>
       {isLoading ? (
         <div className="space-y-3">

@@ -12,6 +12,8 @@ internal sealed class JwtTokenGenerator(IOptions<JwtSettings> jwtSettings) : IJw
 {
     private readonly JwtSettings _settings = jwtSettings.Value;
 
+    public int ExpirationMinutes => _settings.ExpirationMinutes;
+
     public string GenerateToken(Guid userId, Guid tenantId, string email, string role, Guid? professionalId = null, Guid? clientId = null)
     {
         var claims = new List<Claim>
