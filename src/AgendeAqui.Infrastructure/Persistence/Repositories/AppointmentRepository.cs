@@ -81,10 +81,10 @@ internal sealed class AppointmentRepository : IAppointmentRepository
         IEnumerable<AppointmentStatus> statuses,
         CancellationToken ct = default)
     {
-        var statusNames = statuses.Select(s => s.Name).ToList();
+        var statusList = statuses.ToList();
         return await _context.Appointments
             .AsNoTracking()
-            .Where(a => a.Date >= from && a.Date <= to && statusNames.Contains(a.Status.Name))
+            .Where(a => a.Date >= from && a.Date <= to && statusList.Contains(a.Status))
             .ToListAsync(ct);
     }
 
