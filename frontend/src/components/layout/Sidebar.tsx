@@ -1,16 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, CalendarDays, Users, BarChart3, Settings } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-
-const navItems: { to: string; label: string; icon: LucideIcon }[] = [
-  { to: '/',           label: 'Dashboard',   icon: LayoutDashboard },
-  { to: '/agenda',     label: 'Agenda',      icon: CalendarDays },
-  { to: '/gestao',     label: 'Gestão',      icon: Users },
-  { to: '/relatorios', label: 'Relatórios',  icon: BarChart3 },
-  { to: '/config',     label: 'Configurações', icon: Settings },
-]
+import { CalendarDays } from 'lucide-react'
+import { useAuthState } from '../../hooks/useAuth'
+import { adminNav, professionalNav, clientNav } from '../../lib/navigation'
 
 export function Sidebar() {
+  const { isAdmin, isProfessional } = useAuthState()
+  const navItems = isAdmin ? adminNav : isProfessional ? professionalNav : clientNav
+
   return (
     <aside className="hidden md:flex md:w-60 flex-col bg-brand-950 min-h-screen">
       <div className="p-5 border-b border-brand-800/50">
@@ -26,7 +22,6 @@ export function Sidebar() {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === '/'}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive

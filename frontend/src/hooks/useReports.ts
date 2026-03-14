@@ -31,10 +31,13 @@ export interface RevenueReport {
   byService: ServiceRevenue[]
 }
 
-export function useAttendanceReport(from: string, to: string) {
+export function useAttendanceReport(from: string, to: string, professionalId?: string) {
+  const params = new URLSearchParams({ from, to })
+  if (professionalId) params.set('professionalId', professionalId)
+
   return useQuery({
-    queryKey: ['reports', 'attendance', from, to],
-    queryFn: () => api.get<AttendanceReport>(`/reports/attendance?from=${from}&to=${to}`),
+    queryKey: ['reports', 'attendance', from, to, professionalId],
+    queryFn: () => api.get<AttendanceReport>(`/reports/attendance?${params}`),
     enabled: !!from && !!to,
   })
 }

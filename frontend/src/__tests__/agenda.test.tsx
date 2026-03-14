@@ -45,10 +45,16 @@ function renderAgenda() {
   )
 }
 
+function fakeJwt(payload: Record<string, string>) {
+  const header = btoa(JSON.stringify({ alg: 'HS256' }))
+  const body = btoa(JSON.stringify(payload))
+  return `${header}.${body}.sig`
+}
+
 describe('AgendaPage', () => {
   beforeEach(() => {
-    authStore.setTokens('fake-jwt-token', 'fake-refresh-token')
-    authStore.setTenantId('tenant-1')
+    const token = fakeJwt({ tenant_id: 'tenant-1', role: 'Admin' })
+    authStore.setTokens(token, 'fake-refresh-token')
   })
 
   it('renders day view by default with appointments', async () => {

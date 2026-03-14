@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../lib/api-client'
+import { useDashboardOverview } from '../../hooks/useDashboard'
 import { MetricCards } from './MetricCards'
 import { UpcomingList } from './UpcomingList'
 import { AlertsList } from './AlertsList'
@@ -30,6 +31,8 @@ function todayISO() {
 export function HomePage() {
   const today = todayISO()
 
+  const { data: overview, isLoading: overviewLoading } = useDashboardOverview()
+
   const { data, isLoading } = useQuery({
     queryKey: ['appointments', 'today', today],
     queryFn: () =>
@@ -46,7 +49,7 @@ export function HomePage() {
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-sm text-gray-500 mt-1">Visão geral dos agendamentos de hoje</p>
       </div>
-      <MetricCards appointments={appointments} isLoading={isLoading} />
+      <MetricCards overview={overview} isLoading={overviewLoading} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <UpcomingList appointments={appointments} isLoading={isLoading} />
         <AlertsList appointments={appointments} isLoading={isLoading} />

@@ -3,6 +3,9 @@ import { NavLink, Outlet } from 'react-router-dom'
 const tabs = [
   { to: '/relatorios/atendimentos', label: 'Atendimentos' },
   { to: '/relatorios/faturamento', label: 'Faturamento' },
+  { to: '/relatorios/ranking', label: 'Ranking' },
+  { to: '/relatorios/conflitos', label: 'Conflitos' },
+  { to: '/relatorios/exportar', label: 'Exportar' },
 ]
 
 export function RelatoriosPage() {

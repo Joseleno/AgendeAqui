@@ -19,6 +19,7 @@ export class ApiError extends Error {
 async function request<T>(
   path: string,
   options: RequestInit = {},
+  responseType: 'json' | 'text' = 'json',
 ): Promise<T> {
   const { accessToken, tenantId } = authStore.getState()
 
@@ -55,12 +56,14 @@ async function request<T>(
   }
 
   if (response.status === 204) return undefined as T
+  if (responseType === 'text') return response.text() as T
 
   return response.json()
 }
 
 export const api = {
   get: <T>(path: string) => request<T>(path),
+  getText: (path: string) => request<string>(path, {}, 'text'),
 
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, {

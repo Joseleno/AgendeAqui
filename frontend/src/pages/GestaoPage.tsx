@@ -3,8 +3,9 @@ import { NavLink, Outlet } from 'react-router-dom'
 const tabs = [
   { to: '/gestao/clientes', label: 'Clientes' },
   { to: '/gestao/profissionais', label: 'Profissionais' },
-  { to: '/gestao/servicos', label: 'Servicos' },
-  { to: '/gestao/horarios', label: 'Horarios' },
+  { to: '/gestao/servicos', label: 'Serviços' },
+  { to: '/gestao/horarios', label: 'Horários' },
+  { to: '/gestao/ausencias', label: 'Ausências' },
 ]
 
 export function GestaoPage() {

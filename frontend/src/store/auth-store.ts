@@ -2,16 +2,41 @@ interface AuthState {
   accessToken: string | null
   refreshToken: string | null
   tenantId: string | null
+  role: string | null
+  professionalId: string | null
+  clientId: string | null
 }
 
 const STORAGE_KEY = 'agendeaqui_auth'
+
+function decodeToken(token: string): Partial<AuthState> {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(base64))
+    return {
+      tenantId: payload.tenant_id ?? null,
+      role: payload.role ?? null,
+      professionalId: payload.professional_id ?? null,
+      clientId: payload.client_id ?? null,
+    }
+  } catch {
+    return { tenantId: null, role: null, professionalId: null, clientId: null }
+  }
+}
 
 function load(): AuthState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return JSON.parse(raw)
   } catch { /* ignore */ }
-  return { accessToken: null, refreshToken: null, tenantId: null }
+  return {
+    accessToken: null,
+    refreshToken: null,
+    tenantId: null,
+    role: null,
+    professionalId: null,
+    clientId: null,
+  }
 }
 
 let state = load()
@@ -31,19 +56,21 @@ export const authStore = {
   isAuthenticated: () => !!state.accessToken,
 
   setTokens(accessToken: string, refreshToken: string) {
-    state = { ...state, accessToken, refreshToken }
-    persist()
-    notify()
-  },
-
-  setTenantId(tenantId: string) {
-    state = { ...state, tenantId }
+    const decoded = decodeToken(accessToken)
+    state = { ...state, accessToken, refreshToken, ...decoded }
     persist()
     notify()
   },
 
   clear() {
-    state = { accessToken: null, refreshToken: null, tenantId: null }
+    state = {
+      accessToken: null,
+      refreshToken: null,
+      tenantId: null,
+      role: null,
+      professionalId: null,
+      clientId: null,
+    }
     localStorage.removeItem(STORAGE_KEY)
     notify()
   },
