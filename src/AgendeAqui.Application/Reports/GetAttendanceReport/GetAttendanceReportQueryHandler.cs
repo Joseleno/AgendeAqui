@@ -28,6 +28,7 @@ public sealed class GetAttendanceReportQueryHandler(
             FROM appointments a
             INNER JOIN professionals p ON p.id = a.professional_id AND p.tenant_id = @TenantId
             WHERE a.tenant_id = @TenantId AND a.date BETWEEN @From AND @To
+                AND (@ProfessionalId IS NULL OR a.professional_id = @ProfessionalId)
             GROUP BY p.id, p.name
             ORDER BY p.name
             """;
@@ -36,6 +37,7 @@ public sealed class GetAttendanceReportQueryHandler(
         parameters.Add("TenantId", tenantId);
         parameters.Add("From", query.From.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
         parameters.Add("To", query.To.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
+        parameters.Add("ProfessionalId", query.ProfessionalId);
 
         var command = new CommandDefinition(
             sql,

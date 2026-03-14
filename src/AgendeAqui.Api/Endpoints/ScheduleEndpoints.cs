@@ -3,6 +3,7 @@ using AgendeAqui.Api.Endpoints.Requests;
 using AgendeAqui.Application.Common;
 using AgendeAqui.Application.Schedules.CreateSchedule;
 using AgendeAqui.Application.Schedules.DeactivateSchedule;
+using AgendeAqui.Application.Schedules.DetectConflicts;
 using AgendeAqui.Application.Schedules.GetSchedule;
 using AgendeAqui.Application.Schedules.ListSchedules;
 using AgendeAqui.Application.Schedules.UpdateSchedule;
@@ -149,5 +150,27 @@ public static class ScheduleEndpoints
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
+
+        group.MapGet("/conflicts", async (
+            DateOnly? date,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            var query = new DetectScheduleConflictsQuery(date ?? DateOnly.FromDateTime(DateTime.UtcNow));
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
+        })
+        .WithName("DetectScheduleConflicts")
+        .WithSummary("Detect schedule conflicts")
+        .WithDescription("Returns all overlapping appointments for every professional on the given date.")
+        .Produces<List<ScheduleConflictResponse>>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(AuthorizationPolicies.RequireAdmin);
     }
 }

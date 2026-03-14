@@ -3,6 +3,7 @@ using AgendeAqui.Api.Endpoints.Requests;
 using AgendeAqui.Application.Appointments.CancelAppointment;
 using AgendeAqui.Application.Appointments.CreateAppointment;
 using AgendeAqui.Application.Appointments.GetAppointment;
+using AgendeAqui.Application.Appointments.GetClinicCalendar;
 using AgendeAqui.Application.Appointments.GetMyCalendar;
 using AgendeAqui.Application.Appointments.GetMyFilledSlots;
 using AgendeAqui.Application.Appointments.ListAppointments;
@@ -290,5 +291,27 @@ public static class AppointmentEndpoints
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
+
+        group.MapGet("/clinic-calendar", async (
+            DateOnly? date,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            var query = new GetClinicCalendarQuery(date ?? DateOnly.FromDateTime(DateTime.UtcNow));
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: result.Error.Code);
+        })
+        .WithName("GetClinicCalendar")
+        .WithSummary("Get clinic calendar")
+        .WithDescription("Returns all appointments for every professional on the given date, grouped by professional.")
+        .Produces<ClinicCalendarResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(AuthorizationPolicies.RequireAdmin);
     }
 }
