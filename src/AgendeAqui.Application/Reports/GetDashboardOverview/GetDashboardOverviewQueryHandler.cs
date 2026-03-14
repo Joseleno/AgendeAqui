@@ -3,19 +3,19 @@ using AgendeAqui.Application.Abstractions.Messaging;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Common;
 using Dapper;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace AgendeAqui.Application.Reports.GetDashboardOverview;
 
 public sealed class GetDashboardOverviewQueryHandler(
     ISqlConnectionFactory sqlConnectionFactory,
-    ITenantProvider tenantProvider) : IQueryHandler<GetDashboardOverviewQuery, DashboardOverviewResponse>
+    ITenantProvider tenantProvider,
+    HybridCache cache) : IQueryHandler<GetDashboardOverviewQuery, DashboardOverviewResponse>
 {
     public async ValueTask<Result<DashboardOverviewResponse>> Handle(
         GetDashboardOverviewQuery query,
         CancellationToken cancellationToken)
     {
-        using var connection = await sqlConnectionFactory.CreateConnectionAsync(cancellationToken);
-
         var tenantId = tenantProvider.GetTenantId();
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -24,38 +24,47 @@ public sealed class GetDashboardOverviewQueryHandler(
         var weekStart = today.AddDays(-daysToMonday);
         var weekEnd = weekStart.AddDays(6);
 
-        const string sql = """
-            SELECT
-                CAST((SELECT COUNT(*) FROM appointments WHERE tenant_id = @TenantId AND date = @Today) AS integer) AS AppointmentsToday,
-                CAST((SELECT COUNT(*) FROM appointments WHERE tenant_id = @TenantId AND date BETWEEN @WeekStart AND @WeekEnd) AS integer) AS AppointmentsThisWeek,
-                CAST((SELECT COUNT(*) FROM professionals WHERE tenant_id = @TenantId AND is_active = true) AS integer) AS ActiveProfessionals,
-                CAST((SELECT COUNT(*) FROM clients WHERE tenant_id = @TenantId) AS integer) AS RegisteredClients,
-                CAST((SELECT COUNT(*) FROM appointments WHERE tenant_id = @TenantId AND date = @Today AND status = 'Cancelled') AS integer) AS CancelledToday,
-                CAST((SELECT COUNT(*) FROM appointments WHERE tenant_id = @TenantId AND date = @Today AND status = 'NoShow') AS integer) AS NoShowToday
-            """;
+        var response = await cache.GetOrCreateAsync(
+            $"dashboard:{tenantId}:{today}",
+            async ct =>
+            {
+                using var connection = await sqlConnectionFactory.CreateConnectionAsync(ct);
 
-        var parameters = new DynamicParameters();
-        parameters.Add("TenantId", tenantId);
-        parameters.Add("Today", today.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
-        parameters.Add("WeekStart", weekStart.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
-        parameters.Add("WeekEnd", weekEnd.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
+                const string sql = """
+                    SELECT
+                        CAST((SELECT COUNT(*) FROM appointments WHERE tenant_id = @TenantId AND date = @Today) AS integer) AS AppointmentsToday,
+                        CAST((SELECT COUNT(*) FROM appointments WHERE tenant_id = @TenantId AND date BETWEEN @WeekStart AND @WeekEnd) AS integer) AS AppointmentsThisWeek,
+                        CAST((SELECT COUNT(*) FROM professionals WHERE tenant_id = @TenantId AND is_active = true) AS integer) AS ActiveProfessionals,
+                        CAST((SELECT COUNT(*) FROM clients WHERE tenant_id = @TenantId) AS integer) AS RegisteredClients,
+                        CAST((SELECT COUNT(*) FROM appointments WHERE tenant_id = @TenantId AND date = @Today AND status = 'Cancelled') AS integer) AS CancelledToday,
+                        CAST((SELECT COUNT(*) FROM appointments WHERE tenant_id = @TenantId AND date = @Today AND status = 'NoShow') AS integer) AS NoShowToday
+                    """;
 
-        var command = new CommandDefinition(
-            sql,
-            parameters,
+                var parameters = new DynamicParameters();
+                parameters.Add("TenantId", tenantId);
+                parameters.Add("Today", today.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
+                parameters.Add("WeekStart", weekStart.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
+                parameters.Add("WeekEnd", weekEnd.ToDateTime(TimeOnly.MinValue), System.Data.DbType.Date);
+
+                var command = new CommandDefinition(
+                    sql,
+                    parameters,
+                    cancellationToken: ct);
+
+                var row = await connection.QuerySingleAsync<DashboardOverviewRow>(command);
+
+                return new DashboardOverviewResponse(
+                    AppointmentsToday: row.AppointmentsToday,
+                    AppointmentsThisWeek: row.AppointmentsThisWeek,
+                    ActiveProfessionals: row.ActiveProfessionals,
+                    RegisteredClients: row.RegisteredClients,
+                    CancelledToday: row.CancelledToday,
+                    NoShowToday: row.NoShowToday);
+            },
+            tags: [$"tenant:{tenantId}", "dashboard"],
             cancellationToken: cancellationToken);
 
-        var row = await connection.QuerySingleAsync<DashboardOverviewRow>(command);
-
-        var response = new DashboardOverviewResponse(
-            AppointmentsToday: row.AppointmentsToday,
-            AppointmentsThisWeek: row.AppointmentsThisWeek,
-            ActiveProfessionals: row.ActiveProfessionals,
-            RegisteredClients: row.RegisteredClients,
-            CancelledToday: row.CancelledToday,
-            NoShowToday: row.NoShowToday);
-
-        return Result.Success(response);
+        return Result.Success(response!);
     }
 
     private sealed record DashboardOverviewRow(

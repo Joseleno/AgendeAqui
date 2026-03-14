@@ -80,9 +80,9 @@ public sealed class ExportAppointmentsCsvQueryHandler(
             sb.Append(';');
             sb.Append(EscapeCsvField(row.ClientName));
             sb.Append(';');
-            sb.Append(EscapeCsvField(row.ClientEmail));
+            sb.Append(EscapeCsvField(MaskEmail(row.ClientEmail)));
             sb.Append(';');
-            sb.Append(EscapeCsvField(row.ClientPhone));
+            sb.Append(EscapeCsvField(MaskPhone(row.ClientPhone)));
             sb.Append(';');
             sb.Append(EscapeCsvField(row.ServiceName));
             sb.Append(';');
@@ -98,12 +98,36 @@ public sealed class ExportAppointmentsCsvQueryHandler(
     private static string FormatTime(TimeSpan time) =>
         $"{(int)time.TotalHours:D2}:{time.Minutes:D2}";
 
+    private static string MaskEmail(string? email)
+    {
+        if (string.IsNullOrEmpty(email))
+            return string.Empty;
+
+        var atIndex = email.IndexOf('@');
+        if (atIndex <= 1)
+            return email;
+
+        return $"{email[0]}***{email[(atIndex - 1)..]}";
+    }
+
+    private static string MaskPhone(string? phone)
+    {
+        if (string.IsNullOrEmpty(phone) || phone.Length < 4)
+            return string.Empty;
+
+        return $"{new string('*', phone.Length - 4)}{phone[^4..]}";
+    }
+
     private static string EscapeCsvField(string? value)
     {
         if (string.IsNullOrEmpty(value))
             return string.Empty;
 
-        return value.Contains(';') ? $"\"{value}\"" : value;
+        if (value.StartsWith('=') || value.StartsWith('+') || value.StartsWith('-') ||
+            value.StartsWith('@') || value.StartsWith('|'))
+            value = $"'{value}";
+
+        return value.Contains(';') || value.Contains('"') ? $"\"{value.Replace("\"", "\"\"")}\"" : value;
     }
 
     private sealed record AppointmentRow(

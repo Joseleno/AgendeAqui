@@ -23,15 +23,15 @@ public sealed class GetClinicCalendarQueryHandler(
                 a.id              AS Id,
                 a.professional_id AS ProfessionalId,
                 p.name            AS ProfessionalName,
-                c.name            AS ClientName,
-                s.name            AS ServiceName,
+                COALESCE(c.name, 'Cliente removido')  AS ClientName,
+                COALESCE(s.name, 'Serviço removido') AS ServiceName,
                 a.start_time      AS StartTime,
                 a.end_time        AS EndTime,
                 a.status          AS Status
             FROM appointments a
             INNER JOIN professionals p ON p.id = a.professional_id
-            INNER JOIN clients       c ON c.id = a.client_id
-            INNER JOIN services      s ON s.id = a.service_id
+            LEFT JOIN clients       c ON c.id = a.client_id
+            LEFT JOIN services      s ON s.id = a.service_id
             WHERE a.tenant_id = @TenantId
               AND a.date      = @Date
             ORDER BY p.name, a.start_time
