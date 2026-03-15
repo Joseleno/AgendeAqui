@@ -99,6 +99,12 @@ public sealed class CreateAppointmentCommandHandler(
         if (!string.IsNullOrWhiteSpace(command.ExternalId))
             appointment.SetExternalId(command.ExternalId);
 
+        if (command.IsTeleconsultation)
+        {
+            appointment.SetTeleconsultation(true);
+            appointment.GenerateMeetingLink();
+        }
+
         await appointmentRepository.AddAsync(appointment, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

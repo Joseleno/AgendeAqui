@@ -1,9 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
+import { subDays, format } from 'date-fns'
 import { api } from '../../lib/api-client'
 import { useDashboardOverview } from '../../hooks/useDashboard'
+import { useAppointmentsByStatus, useAppointmentsTimeline, useBusiestHours, usePatientGrowth } from '../../hooks/useAdvancedReports'
 import { MetricCards } from './MetricCards'
 import { UpcomingList } from './UpcomingList'
 import { AlertsList } from './AlertsList'
+import { ChartCard } from '../../components/charts/ChartCard'
+import { StatusDonutChart } from '../../components/charts/StatusDonutChart'
+import { AppointmentsTimelineChart } from '../../components/charts/AppointmentsTimelineChart'
+import { BusiestHoursHeatmap } from '../../components/charts/BusiestHoursHeatmap'
+import { PatientGrowthChart } from '../../components/charts/PatientGrowthChart'
 
 interface Appointment {
   id: string
@@ -30,6 +37,7 @@ function todayISO() {
 
 export function HomePage() {
   const today = todayISO()
+  const thirtyDaysAgo = format(subDays(new Date(), 30), 'yyyy-MM-dd')
 
   const { data: overview, isLoading: overviewLoading } = useDashboardOverview()
 
@@ -40,6 +48,11 @@ export function HomePage() {
         `/appointments?dateFrom=${today}&dateTo=${today}&pageSize=50`,
       ),
   })
+
+  const { data: statusData, isLoading: statusLoading } = useAppointmentsByStatus(thirtyDaysAgo, today)
+  const { data: timelineData, isLoading: timelineLoading } = useAppointmentsTimeline(thirtyDaysAgo, today)
+  const { data: heatmapData, isLoading: heatmapLoading } = useBusiestHours(thirtyDaysAgo, today)
+  const { data: growthData, isLoading: growthLoading } = usePatientGrowth(6)
 
   const appointments = data?.items ?? []
 
@@ -53,6 +66,25 @@ export function HomePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <UpcomingList appointments={appointments} isLoading={isLoading} />
         <AlertsList appointments={appointments} isLoading={isLoading} />
+      </div>
+
+      {/* Advanced Charts Section */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Análise dos últimos 30 dias</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ChartCard title="Agendamentos por status" isLoading={statusLoading}>
+            {statusData?.items && <StatusDonutChart data={statusData.items} />}
+          </ChartCard>
+          <ChartCard title="Crescimento de pacientes" isLoading={growthLoading}>
+            {growthData?.points && <PatientGrowthChart data={growthData.points} />}
+          </ChartCard>
+          <ChartCard title="Linha do tempo de agendamentos" isLoading={timelineLoading} className="lg:col-span-2">
+            {timelineData?.points && <AppointmentsTimelineChart data={timelineData.points} />}
+          </ChartCard>
+          <ChartCard title="Horários mais movimentados" isLoading={heatmapLoading} className="lg:col-span-2">
+            {heatmapData?.slots && <BusiestHoursHeatmap data={heatmapData.slots} />}
+          </ChartCard>
+        </div>
       </div>
     </div>
   )

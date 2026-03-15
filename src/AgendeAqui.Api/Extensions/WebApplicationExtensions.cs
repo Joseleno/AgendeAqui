@@ -59,6 +59,9 @@ public static class WebApplicationExtensions
         app.MapApiKeyEndpoints();
         app.MapAbsenceEndpoints();
         app.MapReportEndpoints();
+        app.MapClinicalNoteEndpoints();
+        app.MapInAppNotificationEndpoints();
+        app.MapPaymentEndpoints();
         app.MapHub<AppointmentHub>("/hubs/appointments");
 
         return app;

@@ -3,7 +3,10 @@ using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.ApiKeys;
 using AgendeAqui.Domain.Appointments;
 using AgendeAqui.Domain.Clients;
+using AgendeAqui.Domain.ClinicalNotes;
 using AgendeAqui.Domain.Common;
+using AgendeAqui.Domain.InAppNotifications;
+using AgendeAqui.Domain.Payments;
 using AgendeAqui.Domain.Professionals;
 using AgendeAqui.Domain.Schedules;
 using ProfessionalServiceEntity = AgendeAqui.Domain.Professionals.ProfessionalService;
@@ -35,6 +38,9 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
     public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
     public DbSet<ProfessionalServiceEntity> ProfessionalServices => Set<ProfessionalServiceEntity>();
     public DbSet<Absence> Absences => Set<Absence>();
+    public DbSet<ClinicalNote> ClinicalNotes => Set<ClinicalNote>();
+    public DbSet<InAppNotification> InAppNotifications => Set<InAppNotification>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,

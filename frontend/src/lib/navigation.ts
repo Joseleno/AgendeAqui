@@ -1,4 +1,4 @@
-import { LayoutDashboard, CalendarDays, Users, BarChart3, Settings, Calendar, Search, CalendarPlus, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, CalendarDays, Users, BarChart3, Settings, Calendar, Search, CalendarPlus, ClipboardList, DollarSign } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface NavItem {
@@ -13,6 +13,7 @@ export const adminNav: NavItem[] = [
   { to: '/agenda',     label: 'Agenda',          shortLabel: 'Agenda',  icon: CalendarDays },
   { to: '/gestao',     label: 'Gestão',          shortLabel: 'Gestão',  icon: Users },
   { to: '/relatorios', label: 'Relatórios',      shortLabel: 'Relat.',  icon: BarChart3 },
+  { to: '/financeiro', label: 'Financeiro',       shortLabel: 'Financ.', icon: DollarSign },
   { to: '/config',     label: 'Configurações',   shortLabel: 'Config',  icon: Settings },
 ]
 

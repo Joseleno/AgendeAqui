@@ -63,6 +63,15 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
             .HasColumnName("external_id")
             .HasMaxLength(256);
 
+        builder.Property(a => a.IsTeleconsultation)
+            .HasColumnName("is_teleconsultation")
+            .HasDefaultValue(false)
+            .IsRequired();
+
+        builder.Property(a => a.MeetingUrl)
+            .HasColumnName("meeting_url")
+            .HasMaxLength(500);
+
         builder.Property(a => a.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();

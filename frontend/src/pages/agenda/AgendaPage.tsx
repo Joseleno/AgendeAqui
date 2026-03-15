@@ -127,7 +127,11 @@ export function AgendaPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-400 text-center py-8">Carregando...</p>
+        <div className="space-y-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" style={{ animationDelay: `${i * 50}ms` }} />
+          ))}
+        </div>
       ) : (
         <>
           {viewMode === 'day' && (

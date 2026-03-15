@@ -1,5 +1,7 @@
-import { Clock, CalendarDays } from 'lucide-react'
+import { CalendarDays } from 'lucide-react'
 import { getStatusStyle } from '../../lib/status-colors'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { SkeletonText } from '../../components/ui/Skeleton'
 
 interface Appointment {
   id: string
@@ -28,16 +30,17 @@ export function UpcomingList({ appointments, isLoading }: UpcomingListProps) {
         <h2 className="text-sm font-semibold text-gray-800">Próximos agendamentos</h2>
       </div>
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="space-y-4 py-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+            <SkeletonText key={i} lines={2} />
           ))}
         </div>
       ) : upcoming.length === 0 ? (
-        <div className="text-center py-6">
-          <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm text-gray-400">Nenhum agendamento pendente hoje</p>
-        </div>
+        <EmptyState
+          icon={CalendarDays}
+          title="Nenhum agendamento pendente"
+          subtitle="Não há agendamentos pendentes para hoje"
+        />
       ) : (
         <ul className="space-y-2">
           {upcoming.slice(0, 8).map((a) => {

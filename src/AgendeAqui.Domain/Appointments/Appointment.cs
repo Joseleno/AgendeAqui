@@ -14,6 +14,8 @@ public sealed class Appointment : AggregateRoot
     public AppointmentStatus Status { get; private set; } = default!;
     public string? Notes { get; private set; }
     public string? ExternalId { get; private set; }
+    public bool IsTeleconsultation { get; private set; }
+    public string? MeetingUrl { get; private set; }
 
     private Appointment() { }
 
@@ -136,6 +138,21 @@ public sealed class Appointment : AggregateRoot
     public void SetExternalId(string externalId)
     {
         ExternalId = externalId;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetTeleconsultation(bool isTeleconsultation)
+    {
+        IsTeleconsultation = isTeleconsultation;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void GenerateMeetingLink()
+    {
+        if (!IsTeleconsultation)
+            return;
+
+        MeetingUrl = $"https://meet.jit.si/agendeaqui-{TenantId:N}-{Guid.NewGuid():N}";
         UpdatedAt = DateTime.UtcNow;
     }
 }

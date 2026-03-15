@@ -1,6 +1,7 @@
 import { CalendarCheck, CalendarDays, Stethoscope, Users, XCircle, AlertTriangle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { DashboardOverview } from '../../hooks/useDashboard'
+import { SkeletonCard } from '../../components/ui/Skeleton'
 
 interface MetricCardsProps {
   overview?: DashboardOverview
@@ -53,8 +54,18 @@ export function MetricCards({ overview, isLoading }: MetricCardsProps) {
     },
   ]
 
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 stagger-children">
       {cards.map((card) => (
         <div
           key={card.label}
@@ -65,11 +76,7 @@ export function MetricCards({ overview, isLoading }: MetricCardsProps) {
             <card.icon className={`w-4.5 h-4.5 ${card.iconColor}`} />
           </div>
           <p className="text-2xl font-bold text-gray-900 mt-2 tabular-nums">
-            {isLoading ? (
-              <span className="inline-block w-8 h-7 bg-gray-200 rounded-lg animate-pulse" />
-            ) : (
-              card.value
-            )}
+            {card.value}
           </p>
         </div>
       ))}

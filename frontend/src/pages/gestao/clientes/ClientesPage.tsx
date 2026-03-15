@@ -1,9 +1,14 @@
 import { useState } from 'react'
+import { Users } from 'lucide-react'
 import { useClients, useCreateClient, useUpdateClient } from '../../../hooks/useClients'
 import type { Client } from '../../../hooks/useClients'
 import { SearchInput } from '../../../components/ui/SearchInput'
 import { PagedList } from '../../../components/ui/PagedList'
 import { FormModal } from '../../../components/ui/FormModal'
+import { MaskedPhoneInput } from '../../../components/ui/MaskedPhoneInput'
+import { EmptyState } from '../../../components/ui/EmptyState'
+import { SkeletonTable } from '../../../components/ui/Skeleton'
+import { formatPhone } from '../../../lib/format'
 
 export function ClientesPage() {
   const [page, setPage] = useState(1)
@@ -34,9 +39,14 @@ export function ClientesPage() {
       <SearchInput value={search} onChange={setSearch} placeholder="Buscar cliente..." />
 
       {isLoading ? (
-        <p className="text-sm text-gray-400">Carregando...</p>
+        <SkeletonTable rows={5} cols={4} />
       ) : clients.length === 0 ? (
-        <p className="text-sm text-gray-400">Nenhum cliente encontrado</p>
+        <EmptyState
+          icon={Users}
+          title="Nenhum cliente encontrado"
+          subtitle="Cadastre seu primeiro cliente para começar"
+          action={{ label: '+ Novo cliente', onClick: () => setShowCreate(true) }}
+        />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
@@ -53,7 +63,7 @@ export function ClientesPage() {
                 <tr key={c.id} className="border-t border-gray-100 hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-800">{c.name}</td>
                   <td className="px-4 py-3 text-gray-600 hidden sm:table-cell">{c.email}</td>
-                  <td className="px-4 py-3 text-gray-600 hidden sm:table-cell">{c.phone}</td>
+                  <td className="px-4 py-3 text-gray-600 hidden sm:table-cell">{formatPhone(c.phone)}</td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => setEditClient(c)}
@@ -124,7 +134,12 @@ function ClientFormModal({
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-        <input required value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500" />
+        <MaskedPhoneInput
+          required
+          value={phone}
+          onChange={(raw) => setPhone(raw)}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+        />
       </div>
     </FormModal>
   )

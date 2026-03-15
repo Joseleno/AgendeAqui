@@ -1,5 +1,6 @@
-import { LogOut, Bell } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { useLogout } from '../../hooks/useAuth'
+import { NotificationBell } from '../notifications/NotificationBell'
 
 export function Header() {
   const logout = useLogout()
@@ -9,13 +10,7 @@ export function Header() {
       <h2 className="text-base font-semibold text-gray-800 md:hidden">AgendeAqui</h2>
       <div className="hidden md:block" />
       <div className="flex items-center gap-2">
-        <button
-          className="relative p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-          title="Notificações"
-          aria-label="Notificações"
-        >
-          <Bell className="w-[18px] h-[18px]" />
-        </button>
+        <NotificationBell />
         <div className="w-px h-6 bg-gray-200 mx-1" />
         <button
           onClick={logout}

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { format } from 'date-fns'
 import { CalendarDays, CheckCircle, AlertTriangle } from 'lucide-react'
 import { useScheduleConflicts } from '../../hooks/useDashboard'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { SkeletonCard } from '../../components/ui/Skeleton'
 
 export function ConflitosPage() {
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -24,13 +26,17 @@ export function ConflitosPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-400">Carregando...</p>
-      ) : !data || data.length === 0 ? (
-        <div className="text-center py-12">
-          <CheckCircle className="w-10 h-10 text-green-400 mx-auto mb-2" />
-          <p className="text-sm text-gray-500 font-medium">Nenhum conflito detectado</p>
-          <p className="text-xs text-gray-400 mt-1">Todas as agendas estão livres de sobreposições</p>
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
+      ) : !data || data.length === 0 ? (
+        <EmptyState
+          icon={CheckCircle}
+          title="Nenhum conflito detectado"
+          subtitle="Todas as agendas estão livres de sobreposições"
+        />
       ) : (
         <div className="space-y-3">
           {data.map((c, i) => (

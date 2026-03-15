@@ -16,6 +16,8 @@ export interface Appointment {
   endTime: string
   status: string
   notes: string | null
+  isTeleconsultation: boolean
+  meetingUrl: string | null
   createdAt: string
 }
 

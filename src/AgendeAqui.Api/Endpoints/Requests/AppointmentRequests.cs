@@ -7,7 +7,8 @@ public sealed record CreateAppointmentRequest(
     DateOnly Date,
     TimeOnly StartTime,
     string? Notes,
-    string? ExternalId = null);
+    string? ExternalId = null,
+    bool IsTeleconsultation = false);
 
 public sealed record CancelAppointmentRequest(string Reason);
 

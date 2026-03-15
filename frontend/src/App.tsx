@@ -32,6 +32,8 @@ import { MeusPacientesPage } from './pages/profissional/MeusPacientesPage'
 import { BuscarProfissionalPage } from './pages/paciente/BuscarProfissionalPage'
 import { AgendarPage } from './pages/paciente/AgendarPage'
 import { MeusAgendamentosPage } from './pages/paciente/MeusAgendamentosPage'
+import { FinanceiroPage } from './pages/financeiro/FinanceiroPage'
+import { TeleconsultaPage } from './pages/teleconsulta/TeleconsultaPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,6 +81,7 @@ export default function App() {
                 <Route path="conflitos" element={<ConflitosPage />} />
                 <Route path="exportar" element={<ExportarPage />} />
               </Route>
+              <Route path="financeiro" element={<FinanceiroPage />} />
               <Route path="config" element={<ConfigPage />}>
                 <Route index element={<Navigate to="integracoes" replace />} />
                 <Route path="integracoes" element={<IntegracoesPage />} />
@@ -92,6 +95,7 @@ export default function App() {
               <Route path="meu-calendario" element={<MeuCalendarioPage />} />
               <Route path="minhas-stats" element={<MinhasStatsPage />} />
               <Route path="meus-pacientes" element={<MeusPacientesPage />} />
+              <Route path="teleconsulta" element={<TeleconsultaPage />} />
             </Route>
 
             {/* Client routes */}

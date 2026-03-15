@@ -9,4 +9,5 @@ public sealed record CreateAppointmentCommand(
     DateOnly Date,
     TimeOnly StartTime,
     string? Notes,
-    string? ExternalId = null) : ICommand<Guid>;
+    string? ExternalId = null,
+    bool IsTeleconsultation = false) : ICommand<Guid>;

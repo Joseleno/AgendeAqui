@@ -1,4 +1,6 @@
-import { AlertTriangle, XCircle, Bell } from 'lucide-react'
+import { AlertTriangle, XCircle, Bell, CheckCircle } from 'lucide-react'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { SkeletonText } from '../../components/ui/Skeleton'
 
 interface Appointment {
   id: string
@@ -21,7 +23,7 @@ export function AlertsList({ appointments, isLoading }: AlertsListProps) {
   for (const a of noShows) {
     alerts.push({
       id: a.id,
-      message: `${a.clientName} faltou as ${a.startTime.slice(0, 5)}`,
+      message: `${a.clientName} faltou às ${a.startTime.slice(0, 5)}`,
       type: 'warning',
     })
   }
@@ -29,7 +31,7 @@ export function AlertsList({ appointments, isLoading }: AlertsListProps) {
   for (const a of cancelled) {
     alerts.push({
       id: a.id,
-      message: `${a.clientName} cancelou as ${a.startTime.slice(0, 5)}`,
+      message: `${a.clientName} cancelou às ${a.startTime.slice(0, 5)}`,
       type: 'error',
     })
   }
@@ -41,16 +43,17 @@ export function AlertsList({ appointments, isLoading }: AlertsListProps) {
         <h2 className="text-sm font-semibold text-gray-800">Alertas</h2>
       </div>
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="space-y-4 py-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+            <SkeletonText key={i} lines={1} />
           ))}
         </div>
       ) : alerts.length === 0 ? (
-        <div className="text-center py-6">
-          <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm text-gray-400">Nenhum alerta</p>
-        </div>
+        <EmptyState
+          icon={CheckCircle}
+          title="Nenhum alerta"
+          subtitle="Tudo certo por aqui! Sem faltas ou cancelamentos hoje"
+        />
       ) : (
         <ul className="space-y-2">
           {alerts.map((alert) => (

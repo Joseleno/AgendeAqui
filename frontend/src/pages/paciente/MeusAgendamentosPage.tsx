@@ -4,7 +4,10 @@ import { useMyAppointments } from '../../hooks/usePatientPortal'
 import { useCancelAppointment } from '../../hooks/useAppointments'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { PagedList } from '../../components/ui/PagedList'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { SkeletonCard } from '../../components/ui/Skeleton'
 import { getStatusStyle } from '../../lib/status-colors'
+import { formatDate, formatTime } from '../../lib/format'
 
 const statusTabs = [
   { value: '', label: 'Todos' },
@@ -54,28 +57,29 @@ export function MeusAgendamentosPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />
+            <SkeletonCard key={i} className="h-24" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12">
-          <CalendarDays className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm text-gray-400">Nenhum agendamento encontrado</p>
-        </div>
+        <EmptyState
+          icon={CalendarDays}
+          title="Nenhum agendamento encontrado"
+          subtitle="Você ainda não possui agendamentos nesta categoria"
+        />
       ) : (
         <div className="space-y-3">
           {items.map((apt) => {
             const style = getStatusStyle(apt.status)
             const canCancel = apt.status === 'Scheduled' || apt.status === 'Confirmed'
             return (
-              <div key={apt.id} className="bg-white rounded-xl border border-gray-200 p-4">
+              <div key={apt.id} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-card-hover transition-shadow">
                 <div className="flex items-start justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <CalendarDays className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-800">{apt.date}</span>
+                      <span className="text-sm font-medium text-gray-800">{formatDate(apt.date)}</span>
                       <Clock className="w-4 h-4 text-gray-400 ml-1" />
-                      <span className="text-sm text-gray-600">{apt.startTime} - {apt.endTime}</span>
+                      <span className="text-sm text-gray-600">{formatTime(apt.startTime)} - {formatTime(apt.endTime)}</span>
                     </div>
                     <p className="text-sm font-semibold text-gray-800">{apt.professionalName}</p>
                     <p className="text-xs text-gray-500">{apt.serviceName}</p>

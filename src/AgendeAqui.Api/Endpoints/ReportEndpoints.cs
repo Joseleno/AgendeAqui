@@ -4,8 +4,13 @@ using AgendeAqui.Application.Reports.ExportAppointmentsCsv;
 using AgendeAqui.Application.Reports.GetAttendanceReport;
 using AgendeAqui.Application.Reports.GetDashboardOverview;
 using AgendeAqui.Application.Reports.GetMyStats;
+using AgendeAqui.Application.Reports.GetAppointmentsByStatus;
+using AgendeAqui.Application.Reports.GetAppointmentsTimeline;
+using AgendeAqui.Application.Reports.GetBusiestHours;
+using AgendeAqui.Application.Reports.GetPatientGrowth;
 using AgendeAqui.Application.Reports.GetProfessionalRanking;
 using AgendeAqui.Application.Reports.GetRevenueReport;
+using AgendeAqui.Application.Reports.GetRevenueTimeline;
 using Mediator;
 
 namespace AgendeAqui.Api.Endpoints;
@@ -122,6 +127,81 @@ public static class ReportEndpoints
         .WithSummary("Export appointments CSV")
         .WithDescription("Exports appointments as a semicolon-delimited CSV file for the specified date range. Optionally filtered by professionalId.")
         .Produces<string>(StatusCodes.Status200OK, "text/csv")
+        .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/appointments-by-status", async (DateOnly from, DateOnly to, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var query = new GetAppointmentsByStatusQuery(from, to);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
+        })
+        .WithName("GetAppointmentsByStatus")
+        .WithSummary("Appointments by status")
+        .WithDescription("Returns appointment counts grouped by status within the specified date range. Useful for donut charts.")
+        .Produces<AppointmentsByStatusResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/appointments-timeline", async (DateOnly from, DateOnly to, string? groupBy, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var query = new GetAppointmentsTimelineQuery(from, to, groupBy ?? "day");
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
+        })
+        .WithName("GetAppointmentsTimeline")
+        .WithSummary("Appointments timeline")
+        .WithDescription("Returns appointment counts by status grouped by day, week, or month. Useful for area charts.")
+        .Produces<AppointmentsTimelineResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/busiest-hours", async (DateOnly from, DateOnly to, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var query = new GetBusiestHoursQuery(from, to);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
+        })
+        .WithName("GetBusiestHours")
+        .WithSummary("Busiest hours")
+        .WithDescription("Returns appointment counts by day of week and hour. Useful for heatmap visualizations.")
+        .Produces<BusiestHoursResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/patient-growth", async (int? months, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var query = new GetPatientGrowthQuery(months ?? 12);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
+        })
+        .WithName("GetPatientGrowth")
+        .WithSummary("Patient growth")
+        .WithDescription("Returns new and cumulative client counts by month. Useful for line charts.")
+        .Produces<PatientGrowthResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/revenue-timeline", async (DateOnly from, DateOnly to, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var query = new GetRevenueTimelineQuery(from, to);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
+        })
+        .WithName("GetRevenueTimeline")
+        .WithSummary("Revenue timeline")
+        .WithDescription("Returns monthly revenue and appointment counts for completed appointments. Useful for bar charts.")
+        .Produces<RevenueTimelineResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 }

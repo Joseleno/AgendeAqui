@@ -69,6 +69,9 @@ public static class DependencyInjection
         services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
         services.AddScoped<IProfessionalServiceRepository, ProfessionalServiceRepository>();
         services.AddScoped<IAbsenceRepository, AbsenceRepository>();
+        services.AddScoped<IClinicalNoteRepository, ClinicalNoteRepository>();
+        services.AddScoped<IInAppNotificationRepository, InAppNotificationRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
 
         services.AddScoped<ISqlConnectionFactory>(sp =>
         {

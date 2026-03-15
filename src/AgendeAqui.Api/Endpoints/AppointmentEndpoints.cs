@@ -2,6 +2,7 @@ using AgendeAqui.Api.Auth;
 using AgendeAqui.Api.Endpoints.Requests;
 using AgendeAqui.Application.Appointments.CancelAppointment;
 using AgendeAqui.Application.Appointments.CreateAppointment;
+using AgendeAqui.Application.Appointments.GenerateMeetingLink;
 using AgendeAqui.Application.Appointments.GetAppointment;
 using AgendeAqui.Application.Appointments.GetClinicCalendar;
 using AgendeAqui.Application.Appointments.GetMyCalendar;
@@ -32,7 +33,8 @@ public static class AppointmentEndpoints
                 request.Date,
                 request.StartTime,
                 request.Notes,
-                request.ExternalId);
+                request.ExternalId,
+                request.IsTeleconsultation);
 
             var result = await mediator.Send(command, cancellationToken);
 
@@ -290,6 +292,30 @@ public static class AppointmentEndpoints
         .Produces<FilledSlotsResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status403Forbidden)
+        .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
+
+        group.MapPost("/{id:guid}/generate-meeting-link", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var command = new GenerateMeetingLinkCommand(id);
+            var result = await mediator.Send(command, cancellationToken);
+
+            if (result.IsSuccess)
+                return Results.Ok(new { meetingUrl = result.Value });
+
+            var statusCode = result.Error.IsNotFound ? StatusCodes.Status404NotFound
+                : StatusCodes.Status400BadRequest;
+
+            return Results.Problem(
+                detail: result.Error.Message,
+                statusCode: statusCode,
+                title: result.Error.Code);
+        })
+        .WithName("GenerateMeetingLink")
+        .WithSummary("Generate meeting link")
+        .WithDescription("Generates a Jitsi meeting link for a teleconsultation appointment.")
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization(AuthorizationPolicies.RequireProfessional);
 
         group.MapGet("/clinic-calendar", async (

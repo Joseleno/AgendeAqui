@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Navigate, Link, useParams } from 'react-router-dom'
 import { CalendarDays, User, Mail, Phone, Lock, AlertCircle } from 'lucide-react'
 import { useAuthState } from '../../hooks/useAuth'
 import { useRegisterPatient } from '../../hooks/usePatientPortal'
 import { useTenantResolver } from '../../hooks/useTenant'
-import { toast } from '../../components/ui/Toast'
+import { FormField } from '../../components/ui/FormField'
+import { MaskedPhoneInput } from '../../components/ui/MaskedPhoneInput'
+import { useFormValidation } from '../../hooks/useFormValidation'
+import { validateRequired, validateEmail, validatePhone, validateMinLength } from '../../lib/validators'
 
 export function RegisterPage() {
   const { isAuthenticated, tenantId } = useAuthState()
@@ -17,6 +20,16 @@ export function RegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+
+  const rules = useMemo(() => ({
+    name: [validateRequired('Nome')],
+    email: [validateRequired('Email'), validateEmail()],
+    phone: [validateRequired('Telefone'), validatePhone()],
+    password: [validateRequired('Senha'), validateMinLength('Senha', 6)],
+    confirmPassword: [validateRequired('Confirmação')],
+  }), [])
+
+  const { onBlur, validateAll, getError } = useFormValidation(rules)
 
   if (isAuthenticated) return <Navigate to="/meus-agendamentos" replace />
 
@@ -33,8 +46,8 @@ export function RegisterPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 px-4">
         <div className="bg-white rounded-2xl shadow-modal p-6 max-w-sm w-full text-center">
           <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">Clinica nao encontrada</h2>
-          <p className="text-sm text-gray-500">O link que voce acessou nao corresponde a nenhuma clinica cadastrada.</p>
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">Clínica não encontrada</h2>
+          <p className="text-sm text-gray-500">O link que você acessou não corresponde a nenhuma clínica cadastrada.</p>
         </div>
       </div>
     )
@@ -45,8 +58,8 @@ export function RegisterPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 px-4">
         <div className="bg-white rounded-2xl shadow-modal p-6 max-w-sm w-full text-center">
           <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">Link necessario</h2>
-          <p className="text-sm text-gray-500">Para se cadastrar, acesse o link da sua clinica.</p>
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">Link necessário</h2>
+          <p className="text-sm text-gray-500">Para se cadastrar, acesse o link da sua clínica.</p>
           <p className="text-xs text-gray-400 mt-2">Ex: /mente-viva/register</p>
         </div>
       </div>
@@ -55,17 +68,10 @@ export function RegisterPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (password.length < 6) {
-      toast('error', 'A senha deve ter no minimo 6 caracteres')
-      return
-    }
-    if (password !== confirmPassword) {
-      toast('error', 'As senhas nao coincidem')
-      return
-    }
-    const digits = phone.replace(/\D/g, '')
-    const fullPhone = digits.startsWith('55') ? digits : `55${digits}`
-    register.mutate({ name: name.trim(), email: email.trim(), phone: fullPhone, password })
+    const valid = validateAll({ name, email, phone, password, confirmPassword })
+    if (!valid) return
+    if (password !== confirmPassword) return
+    register.mutate({ name: name.trim(), email: email.trim(), phone, password })
   }
 
   const inputClass = "w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-9 pr-3 py-2.5 text-sm focus:bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all duration-200"
@@ -87,26 +93,75 @@ export function RegisterPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-1">Criar conta</h2>
           <p className="text-sm text-gray-500 mb-5">Cadastre-se para agendar suas consultas</p>
           <form onSubmit={handleSubmit} className="space-y-3.5">
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="Nome completo" />
-            </div>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="seu@email.com" />
-            </div>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input required value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} placeholder="(11) 99999-9999" />
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} placeholder="Senha (min. 6 caracteres)" />
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="password" required minLength={6} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} placeholder="Confirmar senha" />
-            </div>
+            <FormField error={getError('name')}>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onBlur={() => onBlur('name', name)}
+                  className={inputClass}
+                  placeholder="Nome completo"
+                />
+              </div>
+            </FormField>
+            <FormField error={getError('email')}>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => onBlur('email', email)}
+                  className={inputClass}
+                  placeholder="seu@email.com"
+                />
+              </div>
+            </FormField>
+            <FormField error={getError('phone')}>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <MaskedPhoneInput
+                  required
+                  value={phone}
+                  onChange={(raw) => setPhone(raw)}
+                  onBlur={() => onBlur('phone', phone)}
+                  className={inputClass}
+                />
+              </div>
+            </FormField>
+            <FormField error={getError('password')}>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => onBlur('password', password)}
+                  className={inputClass}
+                  placeholder="Senha (min. 6 caracteres)"
+                />
+              </div>
+            </FormField>
+            <FormField error={password !== confirmPassword && confirmPassword ? 'As senhas não coincidem' : getError('confirmPassword')}>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onBlur={() => onBlur('confirmPassword', confirmPassword)}
+                  className={inputClass}
+                  placeholder="Confirmar senha"
+                />
+              </div>
+            </FormField>
             <button
               type="submit"
               disabled={register.isPending}
@@ -116,7 +171,7 @@ export function RegisterPage() {
             </button>
           </form>
           <p className="text-center text-sm text-gray-500 mt-4">
-            Ja tem conta?{' '}
+            Já tem conta?{' '}
             <Link to={loginPath} className="text-brand-600 hover:text-brand-700 font-medium">Entrar</Link>
           </p>
         </div>

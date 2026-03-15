@@ -2,8 +2,13 @@ import { useState } from 'react'
 import { subDays, format } from 'date-fns'
 import { DateRangePicker } from '../../components/ui/DateRangePicker'
 import { AttendanceChart } from '../../components/charts/AttendanceChart'
+import { StatusDonutChart } from '../../components/charts/StatusDonutChart'
+import { BusiestHoursHeatmap } from '../../components/charts/BusiestHoursHeatmap'
+import { ChartCard } from '../../components/charts/ChartCard'
 import { useAttendanceReport } from '../../hooks/useReports'
+import { useAppointmentsByStatus, useBusiestHours } from '../../hooks/useAdvancedReports'
 import { useProfessionals } from '../../hooks/useProfessionals'
+import { SkeletonCard, SkeletonChart } from '../../components/ui/Skeleton'
 
 export function AtendimentosPage() {
   const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'))
@@ -12,6 +17,8 @@ export function AtendimentosPage() {
 
   const { data: profData } = useProfessionals(1, 100)
   const { data, isLoading } = useAttendanceReport(dateFrom, dateTo, professionalId || undefined)
+  const { data: statusData, isLoading: statusLoading } = useAppointmentsByStatus(dateFrom, dateTo)
+  const { data: heatmapData, isLoading: heatmapLoading } = useBusiestHours(dateFrom, dateTo)
 
   return (
     <div className="space-y-4">
@@ -38,22 +45,37 @@ export function AtendimentosPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-400">Carregando...</p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+          <SkeletonChart />
+        </div>
       ) : data ? (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
             <MetricCard label="Total" value={data.totalAppointments} color="text-brand-600" bg="bg-brand-50" />
             <MetricCard label="Concluídos" value={data.totalCompleted} color="text-green-600" bg="bg-green-50" />
             <MetricCard label="Cancelados" value={data.totalCancelled} color="text-red-600" bg="bg-red-50" />
             <MetricCard label="Faltaram" value={data.totalNoShow} color="text-gray-600" bg="bg-gray-100" />
           </div>
 
-          {data.breakdown.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Por profissional</h3>
-              <AttendanceChart data={data.breakdown} />
-            </div>
-          )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {data.breakdown.length > 0 && (
+              <ChartCard title="Por profissional">
+                <AttendanceChart data={data.breakdown} />
+              </ChartCard>
+            )}
+            <ChartCard title="Por status" isLoading={statusLoading}>
+              {statusData?.items && <StatusDonutChart data={statusData.items} />}
+            </ChartCard>
+          </div>
+
+          <ChartCard title="Horários mais movimentados" isLoading={heatmapLoading}>
+            {heatmapData?.slots && <BusiestHoursHeatmap data={heatmapData.slots} />}
+          </ChartCard>
         </>
       ) : (
         <p className="text-sm text-gray-400">Selecione um período</p>
