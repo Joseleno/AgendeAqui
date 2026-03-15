@@ -1,3 +1,4 @@
+import { useMemo, useId } from 'react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { GrowthPoint } from '../../hooks/useAdvancedReports'
 
@@ -6,17 +7,18 @@ interface PatientGrowthChartProps {
 }
 
 export function PatientGrowthChart({ data }: PatientGrowthChartProps) {
-  const chartData = data.map((d) => ({
+  const uid = useId().replace(/:/g, '')
+  const chartData = useMemo(() => data.map((d) => ({
     month: d.month,
     'Total pacientes': d.totalClients,
     'Novos': d.newClients,
-  }))
+  })), [data])
 
   return (
     <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: -10 }}>
         <defs>
-          <linearGradient id="gradGrowth" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={`gradGrowth-${uid}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
             <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
           </linearGradient>
@@ -29,7 +31,7 @@ export function PatientGrowthChart({ data }: PatientGrowthChartProps) {
           type="monotone"
           dataKey="Total pacientes"
           stroke="#8b5cf6"
-          fill="url(#gradGrowth)"
+          fill={`url(#gradGrowth-${uid})`}
           strokeWidth={2}
           dot={{ fill: '#8b5cf6', r: 3 }}
         />

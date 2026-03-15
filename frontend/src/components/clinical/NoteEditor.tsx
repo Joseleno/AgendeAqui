@@ -29,11 +29,11 @@ export function NoteEditor({ initial, clientId, appointmentId, isPending, onSubm
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="note-editor-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}>
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="relative bg-white w-full md:max-w-lg md:rounded-xl rounded-t-xl shadow-xl p-5 max-h-[85vh] overflow-auto">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 id="note-editor-title" className="text-lg font-semibold text-gray-800">
             {initial ? 'Editar nota' : 'Nova nota clínica'}
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>

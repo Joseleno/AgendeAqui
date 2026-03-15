@@ -17,9 +17,10 @@ public sealed class GetAppointmentsByStatusQueryHandler(
         CancellationToken cancellationToken)
     {
         var tenantId = tenantProvider.GetTenantId();
+        var cacheKey = $"appointments-by-status:{tenantId}:{query.From}:{query.To}";
 
         var response = await cache.GetOrCreateAsync(
-            $"appointments-by-status:{tenantId}:{query.From}:{query.To}",
+            cacheKey,
             async ct =>
             {
                 using var connection = await sqlConnectionFactory.CreateConnectionAsync(ct);

@@ -17,9 +17,10 @@ public sealed class GetBusiestHoursQueryHandler(
         CancellationToken cancellationToken)
     {
         var tenantId = tenantProvider.GetTenantId();
+        var cacheKey = $"busiest-hours:{tenantId}:{query.From}:{query.To}";
 
         var response = await cache.GetOrCreateAsync(
-            $"busiest-hours:{tenantId}:{query.From}:{query.To}",
+            cacheKey,
             async ct =>
             {
                 using var connection = await sqlConnectionFactory.CreateConnectionAsync(ct);

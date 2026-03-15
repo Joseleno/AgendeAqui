@@ -17,9 +17,10 @@ public sealed class GetPatientGrowthQueryHandler(
         CancellationToken cancellationToken)
     {
         var tenantId = tenantProvider.GetTenantId();
+        var cacheKey = $"patient-growth:{tenantId}:{query.Months}";
 
         var response = await cache.GetOrCreateAsync(
-            $"patient-growth:{tenantId}:{query.Months}",
+            cacheKey,
             async ct =>
             {
                 using var connection = await sqlConnectionFactory.CreateConnectionAsync(ct);

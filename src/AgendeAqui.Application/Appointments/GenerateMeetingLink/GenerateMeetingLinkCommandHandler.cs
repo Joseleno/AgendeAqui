@@ -7,7 +7,8 @@ namespace AgendeAqui.Application.Appointments.GenerateMeetingLink;
 
 public sealed class GenerateMeetingLinkCommandHandler(
     IAppointmentRepository appointmentRepository,
-    IUnitOfWork unitOfWork) : ICommandHandler<GenerateMeetingLinkCommand, string>
+    IUnitOfWork unitOfWork,
+    ICurrentUser currentUser) : ICommandHandler<GenerateMeetingLinkCommand, string>
 {
     public async ValueTask<Result<string>> Handle(
         GenerateMeetingLinkCommand command,
@@ -16,6 +17,9 @@ public sealed class GenerateMeetingLinkCommandHandler(
         var appointment = await appointmentRepository.GetByIdAsync(command.AppointmentId, cancellationToken);
         if (appointment is null)
             return Result.Failure<string>(AppointmentErrors.NotFound);
+
+        if (!currentUser.IsAdmin && currentUser.ProfessionalId != appointment.ProfessionalId)
+            return Result.Failure<string>(AppointmentErrors.NotAuthorized);
 
         appointment.SetTeleconsultation(true);
         appointment.GenerateMeetingLink();

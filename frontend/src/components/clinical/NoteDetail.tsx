@@ -9,13 +9,13 @@ interface NoteDetailProps {
 
 export function NoteDetail({ note, onClose }: NoteDetailProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="note-detail-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}>
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="relative bg-white w-full md:max-w-lg md:rounded-xl rounded-t-xl shadow-xl p-5 max-h-[80vh] overflow-auto">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-brand-500" />
-            <h3 className="text-lg font-semibold text-gray-800">{note.title}</h3>
+            <h3 id="note-detail-title" className="text-lg font-semibold text-gray-800">{note.title}</h3>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
         </div>

@@ -17,9 +17,10 @@ public sealed class GetRevenueTimelineQueryHandler(
         CancellationToken cancellationToken)
     {
         var tenantId = tenantProvider.GetTenantId();
+        var cacheKey = $"revenue-timeline:{tenantId}:{query.From}:{query.To}";
 
         var response = await cache.GetOrCreateAsync(
-            $"revenue-timeline:{tenantId}:{query.From}:{query.To}",
+            cacheKey,
             async ct =>
             {
                 using var connection = await sqlConnectionFactory.CreateConnectionAsync(ct);

@@ -105,9 +105,10 @@ export function FinanceiroPage() {
                           {p.status === 'Pending' && (
                             <button
                               onClick={() => updateStatus.mutate({ id: p.id, status: 'Paid' })}
-                              className="text-xs text-green-600 hover:text-green-800 font-medium"
+                              disabled={updateStatus.isPending}
+                              className="text-xs text-green-600 hover:text-green-800 font-medium disabled:opacity-50"
                             >
-                              Confirmar
+                              {updateStatus.isPending ? '...' : 'Confirmar'}
                             </button>
                           )}
                         </td>

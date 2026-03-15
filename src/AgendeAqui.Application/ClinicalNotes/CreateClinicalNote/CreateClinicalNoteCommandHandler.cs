@@ -1,6 +1,5 @@
 using AgendeAqui.Application.Abstractions.Messaging;
 using AgendeAqui.Domain.Abstractions;
-using AgendeAqui.Domain.Appointments;
 using AgendeAqui.Domain.ClinicalNotes;
 using AgendeAqui.Domain.Common;
 
@@ -22,7 +21,7 @@ public sealed class CreateClinicalNoteCommandHandler(
 
         var client = await clientRepository.GetByIdAsync(command.ClientId, cancellationToken);
         if (client is null)
-            return Result.Failure<Guid>(AppointmentErrors.ClientNotFound);
+            return Result.Failure<Guid>(ClinicalNoteErrors.ClientNotFound);
 
         var tenantId = tenantProvider.GetTenantId();
 

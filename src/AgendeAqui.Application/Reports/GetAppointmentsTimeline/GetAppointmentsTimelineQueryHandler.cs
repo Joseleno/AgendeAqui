@@ -17,9 +17,10 @@ public sealed class GetAppointmentsTimelineQueryHandler(
         CancellationToken cancellationToken)
     {
         var tenantId = tenantProvider.GetTenantId();
+        var cacheKey = $"appointments-timeline:{tenantId}:{query.From}:{query.To}:{query.GroupBy}";
 
         var response = await cache.GetOrCreateAsync(
-            $"appointments-timeline:{tenantId}:{query.From}:{query.To}:{query.GroupBy}",
+            cacheKey,
             async ct =>
             {
                 using var connection = await sqlConnectionFactory.CreateConnectionAsync(ct);
