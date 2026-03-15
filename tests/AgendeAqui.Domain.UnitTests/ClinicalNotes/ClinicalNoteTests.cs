@@ -3,7 +3,7 @@ using FluentAssertions;
 
 namespace AgendeAqui.Domain.UnitTests.ClinicalNotes;
 
-public class ClinicalNoteTests
+public sealed class ClinicalNoteTests
 {
     private readonly Guid _tenantId = Guid.NewGuid();
     private readonly Guid _professionalId = Guid.NewGuid();

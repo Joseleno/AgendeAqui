@@ -8,7 +8,7 @@ using NSubstitute;
 
 namespace AgendeAqui.Application.UnitTests.ClinicalNotes;
 
-public class CreateClinicalNoteCommandHandlerTests
+public sealed class CreateClinicalNoteCommandHandlerTests
 {
     private readonly IClinicalNoteRepository _clinicalNoteRepository;
     private readonly IClientRepository _clientRepository;

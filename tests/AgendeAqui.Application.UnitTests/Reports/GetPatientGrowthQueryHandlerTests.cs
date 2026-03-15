@@ -58,7 +58,8 @@ public class GetPatientGrowthQueryHandlerTests
     {
         // Arrange
         var query = new GetPatientGrowthQuery(12);
-        var expectedKey = $"patient-growth:{_tenantId}:12";
+        var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+        var expectedKey = $"patient-growth:{_tenantId}:12:{today}";
         var emptyResponse = new PatientGrowthResponse([]);
 
         _cache.GetOrCreateAsync<PatientGrowthResponse>(
@@ -86,7 +87,8 @@ public class GetPatientGrowthQueryHandlerTests
     {
         // Arrange
         var query = new GetPatientGrowthQuery(3);
-        var expectedKey = $"patient-growth:{_tenantId}:3";
+        var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+        var expectedKey = $"patient-growth:{_tenantId}:3:{today}";
         var emptyResponse = new PatientGrowthResponse([]);
 
         _cache.GetOrCreateAsync<PatientGrowthResponse>(

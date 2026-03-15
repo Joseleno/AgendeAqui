@@ -31,6 +31,7 @@ export function useUnreadCount() {
     queryKey: ['notifications', 'unread-count'],
     queryFn: () => api.get<number>('/notifications/in-app/unread-count'),
     refetchInterval: 30_000,
+    staleTime: 30_000,
   })
 }
 

@@ -6,7 +6,7 @@ using NSubstitute;
 
 namespace AgendeAqui.Application.UnitTests.ClinicalNotes;
 
-public class UpdateClinicalNoteCommandHandlerTests
+public sealed class UpdateClinicalNoteCommandHandlerTests
 {
     private readonly IClinicalNoteRepository _clinicalNoteRepository;
     private readonly IUnitOfWork _unitOfWork;
