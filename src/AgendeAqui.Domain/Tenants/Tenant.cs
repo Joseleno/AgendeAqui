@@ -9,6 +9,8 @@ public sealed class Tenant : Entity
     public string? ConnectionString { get; private set; }
     public TenantStatus Status { get; private set; }
     public TenantPlan Plan { get; private set; }
+    public TenantLabels Labels { get; private set; } = TenantLabels.Default();
+    public TenantFeatures Features { get; private set; } = TenantFeatures.Default();
 
     private Tenant() { }
 
@@ -48,6 +50,18 @@ public sealed class Tenant : Entity
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         Name = name;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateLabels(TenantLabels labels)
+    {
+        Labels = labels;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateFeatures(TenantFeatures features)
+    {
+        Features = features;
         UpdatedAt = DateTime.UtcNow;
     }
 }

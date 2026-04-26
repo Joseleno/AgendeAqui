@@ -1,11 +1,14 @@
 using AgendeAqui.Domain.Tenants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Text.Json;
 
 namespace AgendeAqui.Infrastructure.Persistence.Configurations;
 
 internal sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
 {
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
     public void Configure(EntityTypeBuilder<Tenant> builder)
     {
         builder.ToTable("tenants");
@@ -45,6 +48,22 @@ internal sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
 
         builder.Property(t => t.UpdatedAt)
             .HasColumnName("updated_at");
+
+        builder.Property(t => t.Labels)
+            .HasColumnName("labels")
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, JsonOptions),
+                s => JsonSerializer.Deserialize<TenantLabels>(s, JsonOptions) ?? TenantLabels.Default())
+            .IsRequired();
+
+        builder.Property(t => t.Features)
+            .HasColumnName("features_enabled")
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, JsonOptions),
+                s => JsonSerializer.Deserialize<TenantFeatures>(s, JsonOptions) ?? TenantFeatures.Default())
+            .IsRequired();
 
         builder.HasIndex(t => t.Slug)
             .IsUnique()

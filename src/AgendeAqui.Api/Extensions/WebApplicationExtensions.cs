@@ -58,7 +58,10 @@ public static class WebApplicationExtensions
         app.MapWebhookEndpoints();
         app.MapApiKeyEndpoints();
         app.MapAbsenceEndpoints();
+        app.MapTeamEndpoints();
+        app.MapImportEndpoints();
         app.MapReportEndpoints();
+        app.MapPlatformEndpoints();
         app.MapClinicalNoteEndpoints();
         app.MapInAppNotificationEndpoints();
         app.MapPaymentEndpoints();

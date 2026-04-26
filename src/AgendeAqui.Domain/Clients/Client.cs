@@ -5,13 +5,16 @@ namespace AgendeAqui.Domain.Clients;
 
 public sealed class Client : TenantEntity
 {
+    public const int MaxNotesLength = 2000;
+
     public string Name { get; private set; } = default!;
     public Email Email { get; private set; } = default!;
     public PhoneNumber Phone { get; private set; } = default!;
+    public string? Notes { get; private set; }
 
     private Client() { }
 
-    public static Result<Client> Create(Guid tenantId, string name, Email email, PhoneNumber phone)
+    public static Result<Client> Create(Guid tenantId, string name, Email email, PhoneNumber phone, string? notes = null)
     {
         if (tenantId == Guid.Empty)
             return Result.Failure<Client>(ClientErrors.InvalidTenant);
@@ -24,7 +27,8 @@ public sealed class Client : TenantEntity
             TenantId = tenantId,
             Name = name.Trim(),
             Email = email,
-            Phone = phone
+            Phone = phone,
+            Notes = notes?.Trim()
         };
 
         return Result.Success(client);

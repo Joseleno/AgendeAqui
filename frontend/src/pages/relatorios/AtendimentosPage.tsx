@@ -9,8 +9,10 @@ import { useAttendanceReport } from '../../hooks/useReports'
 import { useAppointmentsByStatus, useBusiestHours } from '../../hooks/useAdvancedReports'
 import { useProfessionals } from '../../hooks/useProfessionals'
 import { SkeletonCard, SkeletonChart } from '../../components/ui/Skeleton'
+import { useTenantContext } from '../../context/TenantContext'
 
 export function AtendimentosPage() {
+  const { labels } = useTenantContext()
   const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'))
   const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [professionalId, setProfessionalId] = useState<string>('')
@@ -23,14 +25,14 @@ export function AtendimentosPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-gray-800">Relatório de Atendimentos</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Relatório de {labels.appointments}</h2>
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={professionalId}
             onChange={(e) => setProfessionalId(e.target.value)}
             className="rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm outline-none focus:bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all duration-200"
           >
-            <option value="">Todos profissionais</option>
+            <option value="">Todos {labels.professionals.toLowerCase()}</option>
             {(profData?.items ?? []).map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
@@ -64,7 +66,7 @@ export function AtendimentosPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {data.breakdown.length > 0 && (
-              <ChartCard title="Por profissional">
+              <ChartCard title={`Por ${labels.professional.toLowerCase()}`}>
                 <AttendanceChart data={data.breakdown} />
               </ChartCard>
             )}

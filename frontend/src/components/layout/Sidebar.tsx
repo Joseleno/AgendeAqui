@@ -1,11 +1,18 @@
 import { NavLink } from 'react-router-dom'
 import { CalendarDays } from 'lucide-react'
 import { useAuthState } from '../../hooks/useAuth'
-import { adminNav, professionalNav, clientNav } from '../../lib/navigation'
+import { useTenantContext } from '../../context/TenantContext'
+import { buildAdminNav, buildProfessionalNav, buildClientNav } from '../../lib/navigation'
 
 export function Sidebar() {
   const { isAdmin, isProfessional } = useAuthState()
-  const navItems = isAdmin ? adminNav : isProfessional ? professionalNav : clientNav
+  const { labels } = useTenantContext()
+
+  const navItems = isAdmin
+    ? buildAdminNav(labels)
+    : isProfessional
+    ? buildProfessionalNav(labels)
+    : buildClientNav(labels)
 
   return (
     <aside className="hidden md:flex md:w-60 flex-col bg-brand-950 min-h-screen">

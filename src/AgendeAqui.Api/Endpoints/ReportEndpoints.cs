@@ -1,6 +1,7 @@
 using System.Text;
 using AgendeAqui.Api.Auth;
 using AgendeAqui.Application.Reports.ExportAppointmentsCsv;
+using AgendeAqui.Application.Reports.GetTeamAppointmentsReport;
 using AgendeAqui.Application.Reports.GetAttendanceReport;
 using AgendeAqui.Application.Reports.GetDashboardOverview;
 using AgendeAqui.Application.Reports.GetMyStats;
@@ -202,6 +203,21 @@ public static class ReportEndpoints
         .WithSummary("Revenue timeline")
         .WithDescription("Returns monthly revenue and appointment counts for completed appointments. Useful for bar charts.")
         .Produces<RevenueTimelineResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/teams", async (DateOnly from, DateOnly to, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var query = new GetTeamAppointmentsReportQuery(from, to);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
+        })
+        .WithName("GetTeamAppointmentsReport")
+        .WithSummary("Team appointments report")
+        .WithDescription("Returns appointment totals and rates grouped by team. Includes unassigned professionals. Uses anti-fan-out CTE — professionals in multiple teams are counted correctly.")
+        .Produces<TeamAppointmentsReportResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 }

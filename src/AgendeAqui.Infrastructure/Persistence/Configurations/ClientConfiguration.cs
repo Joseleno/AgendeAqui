@@ -41,6 +41,10 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
                 s => PhoneNumber.Hydrate(s))
             .IsRequired();
 
+        builder.Property(c => c.Notes)
+            .HasColumnName("notes")
+            .HasMaxLength(Client.MaxNotesLength);
+
         builder.Property(c => c.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();

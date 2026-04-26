@@ -2,6 +2,7 @@ using AgendeAqui.Api.Auth;
 using AgendeAqui.Application.Common;
 using AgendeAqui.Application.Tenants.CreateTenant;
 using AgendeAqui.Application.Tenants.GetTenant;
+using AgendeAqui.Application.Tenants.GetTenantContext;
 using AgendeAqui.Application.Tenants.ListTenants;
 using AgendeAqui.Application.Tenants.UpdateTenant;
 using Mediator;
@@ -95,6 +96,23 @@ public static class TenantEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        app.MapGet("/api/v1/tenant/context", async (IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var result = await mediator.Send(new GetTenantContextQuery(), cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
+        })
+        .WithTags("Tenants")
+        .WithName("GetTenantContext")
+        .WithSummary("Get tenant context")
+        .WithDescription("Returns the current tenant's display labels and enabled features. Available to all authenticated users.")
+        .Produces<TenantContextResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated)
+        .RequireRateLimiting("tenant");
     }
 }
 

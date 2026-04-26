@@ -4,6 +4,7 @@ import { AppLayout } from './components/layout/AppLayout'
 import { RoleGuard } from './components/layout/RoleGuard'
 import { HomeRedirect } from './components/layout/HomeRedirect'
 import { ToastContainer } from './components/ui/Toast'
+import { TenantProvider } from './context/TenantContext'
 import { LoginPage } from './pages/login/LoginPage'
 import { RegisterPage } from './pages/paciente/RegisterPage'
 import { HomePage } from './pages/home/HomePage'
@@ -16,12 +17,14 @@ import { ProfissionaisPage } from './pages/gestao/profissionais/ProfissionaisPag
 import { ServicosPage } from './pages/gestao/servicos/ServicosPage'
 import { HorariosPage } from './pages/gestao/horarios/HorariosPage'
 import { AusenciasPage } from './pages/gestao/horarios/AusenciasPage'
+import { EquipesPage } from './pages/gestao/equipes/EquipesPage'
 import { RelatoriosPage } from './pages/RelatoriosPage'
 import { AtendimentosPage } from './pages/relatorios/AtendimentosPage'
 import { FaturamentoPage } from './pages/relatorios/FaturamentoPage'
 import { RankingPage } from './pages/relatorios/RankingPage'
 import { ConflitosPage } from './pages/relatorios/ConflitosPage'
 import { ExportarPage } from './pages/relatorios/ExportarPage'
+import { EquipesReportPage } from './pages/relatorios/EquipesReportPage'
 import { ConfigPage } from './pages/ConfigPage'
 import { IntegracoesPage } from './pages/config/IntegracoesPage'
 import { NotificacoesPage } from './pages/config/NotificacoesPage'
@@ -34,6 +37,7 @@ import { AgendarPage } from './pages/paciente/AgendarPage'
 import { MeusAgendamentosPage } from './pages/paciente/MeusAgendamentosPage'
 import { FinanceiroPage } from './pages/financeiro/FinanceiroPage'
 import { TeleconsultaPage } from './pages/teleconsulta/TeleconsultaPage'
+import { PlataformaPage } from './pages/plataforma/PlataformaPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,6 +51,7 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <TenantProvider>
       <BrowserRouter>
         <Routes>
           {/* Public routes (with tenant slug) */}
@@ -70,6 +75,7 @@ export default function App() {
                 <Route path="clientes/:id" element={<ClienteDetailPage />} />
                 <Route path="profissionais" element={<ProfissionaisPage />} />
                 <Route path="servicos" element={<ServicosPage />} />
+                <Route path="equipes" element={<EquipesPage />} />
                 <Route path="horarios" element={<HorariosPage />} />
                 <Route path="ausencias" element={<AusenciasPage />} />
               </Route>
@@ -78,9 +84,11 @@ export default function App() {
                 <Route path="atendimentos" element={<AtendimentosPage />} />
                 <Route path="faturamento" element={<FaturamentoPage />} />
                 <Route path="ranking" element={<RankingPage />} />
+                <Route path="equipes" element={<EquipesReportPage />} />
                 <Route path="conflitos" element={<ConflitosPage />} />
                 <Route path="exportar" element={<ExportarPage />} />
               </Route>
+              <Route path="plataforma" element={<PlataformaPage />} />
               <Route path="financeiro" element={<FinanceiroPage />} />
               <Route path="config" element={<ConfigPage />}>
                 <Route index element={<Navigate to="integracoes" replace />} />
@@ -110,6 +118,7 @@ export default function App() {
         </Routes>
         <ToastContainer />
       </BrowserRouter>
+      </TenantProvider>
     </QueryClientProvider>
   )
 }

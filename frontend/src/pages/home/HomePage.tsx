@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { subDays, format } from 'date-fns'
 import { api } from '../../lib/api-client'
 import { useDashboardOverview } from '../../hooks/useDashboard'
+import { useTenantContext } from '../../context/TenantContext'
 import { useAppointmentsByStatus, useAppointmentsTimeline, useBusiestHours, usePatientGrowth } from '../../hooks/useAdvancedReports'
 import { MetricCards } from './MetricCards'
 import { UpcomingList } from './UpcomingList'
@@ -38,6 +39,7 @@ function todayISO() {
 export function HomePage() {
   const today = todayISO()
   const thirtyDaysAgo = format(subDays(new Date(), 30), 'yyyy-MM-dd')
+  const { labels } = useTenantContext()
 
   const { data: overview, isLoading: overviewLoading } = useDashboardOverview()
 
@@ -60,7 +62,7 @@ export function HomePage() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">Visão geral dos agendamentos de hoje</p>
+        <p className="text-sm text-gray-500 mt-1">Visão geral das {labels.appointments.toLowerCase()} de hoje</p>
       </div>
       <MetricCards overview={overview} isLoading={overviewLoading} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -72,10 +74,10 @@ export function HomePage() {
       <div>
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Análise dos últimos 30 dias</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ChartCard title="Agendamentos por status" isLoading={statusLoading}>
+          <ChartCard title={`${labels.appointments} por status`} isLoading={statusLoading}>
             {statusData?.items && <StatusDonutChart data={statusData.items} />}
           </ChartCard>
-          <ChartCard title="Crescimento de pacientes" isLoading={growthLoading}>
+          <ChartCard title={`Crescimento de ${labels.clients.toLowerCase()}`} isLoading={growthLoading}>
             {growthData?.points && <PatientGrowthChart data={growthData.points} />}
           </ChartCard>
           <ChartCard title="Linha do tempo de agendamentos" isLoading={timelineLoading} className="lg:col-span-2">

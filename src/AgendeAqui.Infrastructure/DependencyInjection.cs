@@ -1,4 +1,5 @@
 using AgendeAqui.Application.Abstractions.Data;
+using AgendeAqui.Domain.Teams;
 using AgendeAqui.Application.Abstractions.Messaging;
 using AgendeAqui.Application.Abstractions.Notifications;
 using AgendeAqui.Application.Webhooks;
@@ -73,11 +74,16 @@ public static class DependencyInjection
         services.AddScoped<IInAppNotificationRepository, InAppNotificationRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
 
+        services.AddScoped<ITeamRepository, TeamRepository>();
+
         services.AddScoped<ISqlConnectionFactory>(sp =>
         {
             var tenantProvider = sp.GetRequiredService<ITenantProvider>();
             return new SqlConnectionFactory(connectionString, tenantProvider);
         });
+
+        services.AddScoped<IPlatformSqlConnectionFactory>(_ =>
+            new PlatformSqlConnectionFactory(connectionString));
 
         return services;
     }

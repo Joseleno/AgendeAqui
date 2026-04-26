@@ -724,6 +724,110 @@ namespace AgendeAqui.Infrastructure.Persistence.Migrations
                     b.ToTable("services", (string)null);
                 });
 
+            modelBuilder.Entity("AgendeAqui.Domain.Teams.Team", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<Guid?>("LeaderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("leader_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaderId");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_teams_tenant_id");
+
+                    b.HasIndex("TenantId", "IsActive")
+                        .HasDatabaseName("ix_teams_tenant_active")
+                        .HasFilter("is_active = true");
+
+                    b.ToTable("teams", (string)null);
+                });
+
+            modelBuilder.Entity("AgendeAqui.Domain.Teams.TeamMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("joined_at");
+
+                    b.Property<DateTime?>("LeftAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("left_at");
+
+                    b.Property<Guid>("ProfessionalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("professional_id");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("team_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId", "ProfessionalId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_team_members_active_unique")
+                        .HasFilter("left_at IS NULL");
+
+                    b.HasIndex("TenantId", "ProfessionalId")
+                        .HasDatabaseName("ix_team_members_tenant_professional")
+                        .HasFilter("left_at IS NULL");
+
+                    b.HasIndex("TenantId", "TeamId", "JoinedAt", "LeftAt")
+                        .HasDatabaseName("ix_team_members_tenant_team_dates");
+
+                    b.ToTable("team_members", (string)null);
+                });
+
             modelBuilder.Entity("AgendeAqui.Domain.Tenants.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -739,6 +843,16 @@ namespace AgendeAqui.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<string>("Features")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("features_enabled");
+
+                    b.Property<string>("Labels")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("labels");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1026,6 +1140,23 @@ namespace AgendeAqui.Infrastructure.Persistence.Migrations
                     b.Navigation("Breaks");
                 });
 
+            modelBuilder.Entity("AgendeAqui.Domain.Teams.Team", b =>
+                {
+                    b.HasOne("AgendeAqui.Domain.Professionals.Professional", null)
+                        .WithMany()
+                        .HasForeignKey("LeaderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("AgendeAqui.Domain.Teams.TeamMember", b =>
+                {
+                    b.HasOne("AgendeAqui.Domain.Teams.Team", null)
+                        .WithMany("Members")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("AgendeAqui.Domain.Webhooks.WebhookDelivery", b =>
                 {
                     b.HasOne("AgendeAqui.Domain.Webhooks.Webhook", null)
@@ -1033,6 +1164,11 @@ namespace AgendeAqui.Infrastructure.Persistence.Migrations
                         .HasForeignKey("WebhookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AgendeAqui.Domain.Teams.Team", b =>
+                {
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

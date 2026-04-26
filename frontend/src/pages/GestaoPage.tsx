@@ -1,14 +1,18 @@
 import { NavLink, Outlet } from 'react-router-dom'
-
-const tabs = [
-  { to: '/gestao/clientes', label: 'Clientes' },
-  { to: '/gestao/profissionais', label: 'Profissionais' },
-  { to: '/gestao/servicos', label: 'Serviços' },
-  { to: '/gestao/horarios', label: 'Horários' },
-  { to: '/gestao/ausencias', label: 'Ausências' },
-]
+import { useTenantContext } from '../context/TenantContext'
 
 export function GestaoPage() {
+  const { labels, features } = useTenantContext()
+
+  const tabs = [
+    { to: '/gestao/clientes',      label: labels.clients },
+    { to: '/gestao/profissionais', label: labels.professionals },
+    { to: '/gestao/servicos',      label: labels.services },
+    ...(features.hasTeams ? [{ to: '/gestao/equipes', label: labels.teams }] : []),
+    { to: '/gestao/horarios',      label: 'Horários' },
+    { to: '/gestao/ausencias',     label: 'Ausências' },
+  ]
+
   return (
     <div className="space-y-4">
       <nav className="flex gap-1 border-b border-gray-200 pb-px">

@@ -1,10 +1,17 @@
 import { NavLink } from 'react-router-dom'
 import { useAuthState } from '../../hooks/useAuth'
-import { adminNav, professionalNav, clientNav } from '../../lib/navigation'
+import { useTenantContext } from '../../context/TenantContext'
+import { buildAdminNav, buildProfessionalNav, buildClientNav } from '../../lib/navigation'
 
 export function BottomNav() {
   const { isAdmin, isProfessional } = useAuthState()
-  const navItems = isAdmin ? adminNav : isProfessional ? professionalNav : clientNav
+  const { labels } = useTenantContext()
+
+  const navItems = isAdmin
+    ? buildAdminNav(labels)
+    : isProfessional
+    ? buildProfessionalNav(labels)
+    : buildClientNav(labels)
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-white/95 backdrop-blur-lg border-t border-gray-200/80 z-50">

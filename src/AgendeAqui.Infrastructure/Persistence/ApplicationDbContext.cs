@@ -12,6 +12,7 @@ using AgendeAqui.Domain.Schedules;
 using ProfessionalServiceEntity = AgendeAqui.Domain.Professionals.ProfessionalService;
 using AgendeAqui.Domain.Services;
 using AgendeAqui.Domain.Tenants;
+using AgendeAqui.Domain.Teams;
 using AgendeAqui.Domain.Webhooks;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,8 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
     public DbSet<ClinicalNote> ClinicalNotes => Set<ClinicalNote>();
     public DbSet<InAppNotification> InAppNotifications => Set<InAppNotification>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<Team> Teams => Set<Team>();
+    public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,

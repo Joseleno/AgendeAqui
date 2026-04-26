@@ -6,6 +6,10 @@ namespace AgendeAqui.Api;
 
 internal static class SeedData
 {
+    private static readonly Guid BelezaTenantId    = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    private static readonly Guid MentalTenantId    = Guid.Parse("c1d2e3f4-a5b6-7890-cdef-123456789abc");
+    private static readonly Guid NetizTenantId     = Guid.Parse("e3f4a5b6-c7d8-9012-efab-345678901234");
+
     public static async Task InitializeAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
@@ -13,34 +17,34 @@ internal static class SeedData
 
         await db.Database.EnsureCreatedAsync();
 
-        // Check if seed already ran
-        if (await db.Tenants.IgnoreQueryFilters().AnyAsync())
-            return;
-
-        var tenantId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-        var now = DateTime.UtcNow;
-
-        // Use raw SQL to bypass tenant query filters and private constructors
         var conn = (NpgsqlConnection)db.Database.GetDbConnection();
         await conn.OpenAsync();
 
-        await using var cmd = conn.CreateCommand();
-        cmd.CommandText = BuildSeedSql(tenantId, now);
-        await cmd.ExecuteNonQueryAsync();
+        var now = DateTime.UtcNow;
 
-        app.Logger.LogInformation("Seed data created. Tenant ID: {TenantId}", tenantId);
-        app.Logger.LogInformation("Login: admin@beleza.com / Admin123!");
+        if (!await db.Tenants.IgnoreQueryFilters().AnyAsync(t => t.Id == BelezaTenantId))
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = BuildSeedSql(BelezaTenantId, now);
+            await cmd.ExecuteNonQueryAsync();
+            app.Logger.LogInformation("Beleza & Cia seed created. Login: admin@beleza.com / Admin123!");
+        }
 
-        // Seed second tenant: Mental Health Clinic
-        var mentalTenantId = Guid.Parse("c1d2e3f4-a5b6-7890-cdef-123456789abc");
-        await using var cmd2 = conn.CreateCommand();
-        cmd2.CommandText = BuildMentalHealthSeedSql(mentalTenantId, now);
-        await cmd2.ExecuteNonQueryAsync();
+        if (!await db.Tenants.IgnoreQueryFilters().AnyAsync(t => t.Id == MentalTenantId))
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = BuildMentalHealthSeedSql(MentalTenantId, now);
+            await cmd.ExecuteNonQueryAsync();
+            app.Logger.LogInformation("Mente Viva seed created. Login: admin@menteviva.com / Admin123!");
+        }
 
-        app.Logger.LogInformation("Mental health clinic seed created. Tenant ID: {TenantId}", mentalTenantId);
-        app.Logger.LogInformation("Login: admin@menteviva.com / Admin123!");
-        app.Logger.LogInformation("Login: dra.patricia@menteviva.com / Admin123! (Psicóloga)");
-        app.Logger.LogInformation("Login: joana.paciente@email.com / Admin123! (Paciente)");
+        if (!await db.Tenants.IgnoreQueryFilters().AnyAsync(t => t.Id == NetizTenantId))
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = BuildNetizSeedSql(NetizTenantId, now);
+            await cmd.ExecuteNonQueryAsync();
+            app.Logger.LogInformation("NETIZ seed created. Login: admin@netiz.com.br / Admin123!");
+        }
     }
 
     private static string BuildSeedSql(Guid tenantId, DateTime now)
@@ -77,10 +81,13 @@ internal static class SeedData
 
         var ts = now.ToString("yyyy-MM-dd HH:mm:ss");
 
+        var defaultLabels = """{"professional":"Profissional","professionals":"Profissionais","client":"Cliente","clients":"Clientes","appointment":"Agendamento","appointments":"Agendamentos","service":"Servico","services":"Servicos","team":"Equipe","teams":"Equipes"}""";
+        var defaultFeatures = """{"hasClinicalNotes":true,"hasTeleconsultation":true,"hasTeams":true,"hasPayments":true}""";
+
         return $"""
         -- Tenant
-        INSERT INTO tenants (id, name, slug, status, plan, created_at)
-        VALUES ('{tenantId}', 'Beleza & Cia', 'beleza-e-cia', 1, 3, '{ts}');
+        INSERT INTO tenants (id, name, slug, status, plan, labels, features_enabled, created_at)
+        VALUES ('{tenantId}', 'Beleza & Cia', 'beleza-e-cia', 1, 3, '{defaultLabels}', '{defaultFeatures}', '{ts}');
 
         -- Users (admin, professional, client)
         INSERT INTO users (id, tenant_id, email, password_hash, name, role, professional_id, client_id, created_at) VALUES
@@ -204,10 +211,13 @@ internal static class SeedData
 
         var ts = now.ToString("yyyy-MM-dd HH:mm:ss");
 
+        var defaultLabels = """{"professional":"Profissional","professionals":"Profissionais","client":"Cliente","clients":"Clientes","appointment":"Agendamento","appointments":"Agendamentos","service":"Servico","services":"Servicos","team":"Equipe","teams":"Equipes"}""";
+        var defaultFeatures = """{"hasClinicalNotes":true,"hasTeleconsultation":true,"hasTeams":true,"hasPayments":true}""";
+
         return $"""
         -- Tenant: Clinica de Saude Mental
-        INSERT INTO tenants (id, name, slug, status, plan, created_at)
-        VALUES ('{tenantId}', 'Mente Viva - Saude Mental', 'mente-viva', 1, 3, '{ts}');
+        INSERT INTO tenants (id, name, slug, status, plan, labels, features_enabled, created_at)
+        VALUES ('{tenantId}', 'Mente Viva - Saude Mental', 'mente-viva', 1, 3, '{defaultLabels}', '{defaultFeatures}', '{ts}');
 
         -- Users (admin, professional, client)
         INSERT INTO users (id, tenant_id, email, password_hash, name, role, professional_id, client_id, created_at) VALUES
@@ -330,6 +340,177 @@ internal static class SeedData
         ('{Guid.NewGuid()}', '{tenantId}', '{psico1Id}', '{svcTerapiaCasal}', '{pac5Id}', '{threeDaysAgo}', '10:00:00', '11:15:00', 'Completed', null, '{ts}'),
         ('{Guid.NewGuid()}', '{tenantId}', '{psico2Id}', '{svcConsultaPsiq}', '{pac6Id}', '{threeDaysAgo}', '09:00:00', '09:30:00', 'Completed', null, '{ts}'),
         ('{Guid.NewGuid()}', '{tenantId}', '{psico3Id}', '{svcAvaliacao}', '{pac2Id}', '{threeDaysAgo}', '08:00:00', '09:30:00', 'Completed', null, '{ts}');
+        """;
+    }
+
+    private static string BuildNetizSeedSql(Guid tenantId, DateTime now)
+    {
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!");
+
+        // Professionals — 4 field technicians
+        var tech1Id = Guid.Parse("aa110001-0000-0000-0000-000000000001"); // Equipe Norte
+        var tech2Id = Guid.Parse("aa110002-0000-0000-0000-000000000002"); // Equipe Norte
+        var tech3Id = Guid.Parse("aa110003-0000-0000-0000-000000000003"); // Equipe Sul
+        var tech4Id = Guid.Parse("aa110004-0000-0000-0000-000000000004"); // Equipe Sul (sem equipe no demo = unassigned)
+
+        // Services — 5 telecom service types
+        var svcFibra120     = Guid.Parse("bb220001-0000-0000-0000-000000000001");
+        var svcManutFibra   = Guid.Parse("bb220002-0000-0000-0000-000000000002");
+        var svcInstInternet = Guid.Parse("bb220003-0000-0000-0000-000000000003");
+        var svcRoteador     = Guid.Parse("bb220004-0000-0000-0000-000000000004");
+        var svcSuporte      = Guid.Parse("bb220005-0000-0000-0000-000000000005");
+
+        // Clients — 6 telecom subscribers
+        var cli1Id = Guid.Parse("cc330001-0000-0000-0000-000000000001");
+        var cli2Id = Guid.Parse("cc330002-0000-0000-0000-000000000002");
+        var cli3Id = Guid.Parse("cc330003-0000-0000-0000-000000000003");
+        var cli4Id = Guid.Parse("cc330004-0000-0000-0000-000000000004");
+        var cli5Id = Guid.Parse("cc330005-0000-0000-0000-000000000005");
+        var cli6Id = Guid.Parse("cc330006-0000-0000-0000-000000000006");
+
+        // Teams
+        var teamNorteId = Guid.Parse("dd440001-0000-0000-0000-000000000001");
+        var teamSulId   = Guid.Parse("dd440002-0000-0000-0000-000000000002");
+
+        // Users
+        var adminUserId = Guid.Parse("ee550001-0000-0000-0000-000000000001");
+        var tech1UserId = Guid.Parse("ee550002-0000-0000-0000-000000000002");
+
+        var todayDate = DateOnly.FromDateTime(now);
+        var today = todayDate.ToString("yyyy-MM-dd");
+        var tomorrow = todayDate.AddDays(1).ToString("yyyy-MM-dd");
+        var yesterday = todayDate.AddDays(-1).ToString("yyyy-MM-dd");
+        var twoDaysAgo = todayDate.AddDays(-2).ToString("yyyy-MM-dd");
+        var threeDaysAgo = todayDate.AddDays(-3).ToString("yyyy-MM-dd");
+        var ts = now.ToString("yyyy-MM-dd HH:mm:ss");
+
+        var netizLabels = """{"professional":"Tecnico","professionals":"Tecnicos","client":"Cliente","clients":"Clientes","appointment":"Visita","appointments":"Visitas","service":"Servico","services":"Servicos","team":"Equipe","teams":"Equipes"}""";
+        var netizFeatures = """{"hasClinicalNotes":false,"hasTeleconsultation":false,"hasTeams":true,"hasPayments":true}""";
+
+        return $"""
+        -- Tenant: NETIZ Telecomunicacoes
+        INSERT INTO tenants (id, name, slug, status, plan, labels, features_enabled, created_at)
+        VALUES ('{tenantId}', 'NETIZ Telecomunicacoes', 'netiz', 1, 3, '{netizLabels}', '{netizFeatures}', '{ts}');
+
+        -- Users
+        INSERT INTO users (id, tenant_id, email, password_hash, name, role, professional_id, client_id, created_at) VALUES
+        ('{adminUserId}', '{tenantId}', 'admin@netiz.com.br', '{passwordHash}', 'Gerente NETIZ', 'Admin', null, null, '{ts}'),
+        ('{tech1UserId}', '{tenantId}', 'joao.silva@netiz.com.br', '{passwordHash}', 'Joao Silva', 'Professional', '{tech1Id}', null, '{ts}');
+
+        -- Professionals (4 technicians)
+        INSERT INTO professionals (id, tenant_id, name, email, phone, is_active, specialty, created_at) VALUES
+        ('{tech1Id}', '{tenantId}', 'Joao Silva', 'joao.silva@netiz.com.br', '+5584991110001', true, 'Fibra Optica', '{ts}'),
+        ('{tech2Id}', '{tenantId}', 'Carlos Medeiros', 'carlos.medeiros@netiz.com.br', '+5584991110002', true, 'Fibra Optica', '{ts}'),
+        ('{tech3Id}', '{tenantId}', 'Marcos Freitas', 'marcos.freitas@netiz.com.br', '+5584991110003', true, 'Fibra Optica', '{ts}'),
+        ('{tech4Id}', '{tenantId}', 'Rafael Torres', 'rafael.torres@netiz.com.br', '+5584991110004', true, 'Fibra Optica', '{ts}');
+
+        -- Services (5 telecom service types)
+        INSERT INTO services (id, tenant_id, name, duration, price, is_active, created_at) VALUES
+        ('{svcFibra120}', '{tenantId}', 'Instalacao Fibra Optica', '02:00:00', 0.00, true, '{ts}'),
+        ('{svcManutFibra}', '{tenantId}', 'Manutencao Fibra Optica', '01:00:00', 0.00, true, '{ts}'),
+        ('{svcInstInternet}', '{tenantId}', 'Instalacao Internet Residencial', '01:30:00', 0.00, true, '{ts}'),
+        ('{svcRoteador}', '{tenantId}', 'Troca de Roteador', '00:45:00', 0.00, true, '{ts}'),
+        ('{svcSuporte}', '{tenantId}', 'Suporte Tecnico Presencial', '00:30:00', 0.00, true, '{ts}');
+
+        -- Professional-Service links (each tech handles all services)
+        INSERT INTO professional_services (id, professional_id, service_id, tenant_id, created_at) VALUES
+        ('{Guid.NewGuid()}', '{tech1Id}', '{svcFibra120}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech1Id}', '{svcManutFibra}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech1Id}', '{svcInstInternet}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech1Id}', '{svcRoteador}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech1Id}', '{svcSuporte}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech2Id}', '{svcFibra120}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech2Id}', '{svcManutFibra}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech2Id}', '{svcInstInternet}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech2Id}', '{svcRoteador}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech2Id}', '{svcSuporte}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech3Id}', '{svcFibra120}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech3Id}', '{svcManutFibra}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech3Id}', '{svcInstInternet}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech3Id}', '{svcRoteador}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech3Id}', '{svcSuporte}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech4Id}', '{svcFibra120}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech4Id}', '{svcManutFibra}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech4Id}', '{svcInstInternet}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech4Id}', '{svcRoteador}', '{tenantId}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tech4Id}', '{svcSuporte}', '{tenantId}', '{ts}');
+
+        -- Clients (6 subscribers with address notes)
+        INSERT INTO clients (id, tenant_id, name, email, phone, notes, created_at) VALUES
+        ('{cli1Id}', '{tenantId}', 'Jose Nascimento', 'jose.n@email.com', '+5584988880001', 'Rua das Flores, 123 - Lagoa Nova', '{ts}'),
+        ('{cli2Id}', '{tenantId}', 'Ana Bezerra', 'ana.b@email.com', '+5584988880002', 'Av. Hermes da Fonseca, 456 - Tirol', '{ts}'),
+        ('{cli3Id}', '{tenantId}', 'Francisco Dantas', 'fco.d@email.com', '+5584988880003', 'Rua Mipibu, 789 - Cidade Alta', '{ts}'),
+        ('{cli4Id}', '{tenantId}', 'Maria Carvalho', 'maria.c@email.com', '+5584988880004', 'Rua Mossoró, 321 - Petrópolis', '{ts}'),
+        ('{cli5Id}', '{tenantId}', 'Pedro Gurgel', 'pedro.g@email.com', '+5584988880005', 'Av. Prudente de Morais, 654 - Nova Descoberta', '{ts}'),
+        ('{cli6Id}', '{tenantId}', 'Luciana Maia', 'luciana.m@email.com', '+5584988880006', 'Rua Coronel Cascudo, 987 - Alecrim', '{ts}');
+
+        -- Schedules (Mon-Sat, 07:00-18:00, slot 30min for each tech)
+        INSERT INTO schedules (id, tenant_id, professional_id, day_of_week, start_time, end_time, slot_duration, is_active, created_at) VALUES
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', 1, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', 2, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', 3, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', 4, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', 5, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', 6, '07:00:00', '12:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', 1, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', 2, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', 3, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', 4, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', 5, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', 6, '07:00:00', '12:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', 1, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', 2, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', 3, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', 4, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', 5, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', 6, '07:00:00', '12:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech4Id}', 1, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech4Id}', 2, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech4Id}', 3, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech4Id}', 4, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech4Id}', 5, '07:00:00', '18:00:00', '00:30:00', true, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech4Id}', 6, '07:00:00', '12:00:00', '00:30:00', true, '{ts}');
+
+        -- Teams: Equipe Norte + Equipe Sul
+        INSERT INTO teams (id, tenant_id, name, description, leader_id, is_active, created_at) VALUES
+        ('{teamNorteId}', '{tenantId}', 'Equipe Norte', 'Tecnicos responsaveis pela zona norte', '{tech1Id}', true, '{ts}'),
+        ('{teamSulId}', '{tenantId}', 'Equipe Sul', 'Tecnicos responsaveis pela zona sul', '{tech3Id}', true, '{ts}');
+
+        -- Team members (tech4 is unassigned — appears only in individual reports)
+        INSERT INTO team_members (id, tenant_id, team_id, professional_id, joined_at, created_at) VALUES
+        ('{Guid.NewGuid()}', '{tenantId}', '{teamNorteId}', '{tech1Id}', '{ts}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{teamNorteId}', '{tech2Id}', '{ts}', '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{teamSulId}', '{tech3Id}', '{ts}', '{ts}');
+
+        -- Appointments (18 total — mix of statuses, teams, days)
+        INSERT INTO appointments (id, tenant_id, professional_id, service_id, client_id, date, start_time, end_time, status, notes, created_at) VALUES
+        -- Today: 6 visits
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', '{svcFibra120}', '{cli1Id}', '{today}', '07:00:00', '09:00:00', 'Confirmed', 'Instalacao nova — morador so de manha', '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', '{svcSuporte}', '{cli2Id}', '{today}', '10:00:00', '10:30:00', 'Scheduled', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', '{svcManutFibra}', '{cli3Id}', '{today}', '07:00:00', '08:00:00', 'Confirmed', 'Queda de sinal intermitente', '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', '{svcInstInternet}', '{cli4Id}', '{today}', '07:00:00', '08:30:00', 'Confirmed', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', '{svcRoteador}', '{cli5Id}', '{today}', '14:00:00', '14:45:00', 'Scheduled', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech4Id}', '{svcSuporte}', '{cli6Id}', '{today}', '08:00:00', '08:30:00', 'Confirmed', 'Tecnico sem equipe — visita avulsa', '{ts}'),
+
+        -- Tomorrow: 3 visits
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', '{svcManutFibra}', '{cli2Id}', '{tomorrow}', '07:00:00', '08:00:00', 'Scheduled', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', '{svcFibra120}', '{cli4Id}', '{tomorrow}', '09:00:00', '11:00:00', 'Scheduled', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', '{svcSuporte}', '{cli1Id}', '{tomorrow}', '10:00:00', '10:30:00', 'Scheduled', null, '{ts}'),
+
+        -- Yesterday: completed + cancelled + no-show
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', '{svcFibra120}', '{cli5Id}', '{yesterday}', '07:00:00', '09:00:00', 'Completed', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', '{svcInstInternet}', '{cli6Id}', '{yesterday}', '07:00:00', '08:30:00', 'Completed', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', '{svcManutFibra}', '{cli3Id}', '{yesterday}', '14:00:00', '15:00:00', 'Cancelled', 'Cliente nao estava em casa', '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech4Id}', '{svcRoteador}', '{cli1Id}', '{yesterday}', '09:00:00', '09:45:00', 'NoShow', null, '{ts}'),
+
+        -- 2 days ago: all completed
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', '{svcSuporte}', '{cli3Id}', '{twoDaysAgo}', '07:00:00', '07:30:00', 'Completed', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech2Id}', '{svcRoteador}', '{cli2Id}', '{twoDaysAgo}', '09:00:00', '09:45:00', 'Completed', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech3Id}', '{svcFibra120}', '{cli6Id}', '{twoDaysAgo}', '07:00:00', '09:00:00', 'Completed', null, '{ts}'),
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech4Id}', '{svcInstInternet}', '{cli4Id}', '{twoDaysAgo}', '10:00:00', '11:30:00', 'Completed', null, '{ts}'),
+
+        -- 3 days ago
+        ('{Guid.NewGuid()}', '{tenantId}', '{tech1Id}', '{svcInstInternet}', '{cli2Id}', '{threeDaysAgo}', '07:00:00', '08:30:00', 'Completed', null, '{ts}');
         """;
     }
 }

@@ -1,17 +1,21 @@
 import { NavLink, Outlet } from 'react-router-dom'
-
-const tabs = [
-  { to: '/relatorios/atendimentos', label: 'Atendimentos' },
-  { to: '/relatorios/faturamento', label: 'Faturamento' },
-  { to: '/relatorios/ranking', label: 'Ranking' },
-  { to: '/relatorios/conflitos', label: 'Conflitos' },
-  { to: '/relatorios/exportar', label: 'Exportar' },
-]
+import { useTenantContext } from '../context/TenantContext'
 
 export function RelatoriosPage() {
+  const { labels, features } = useTenantContext()
+
+  const tabs = [
+    { to: '/relatorios/atendimentos', label: labels.appointments },
+    { to: '/relatorios/faturamento',  label: 'Faturamento' },
+    { to: '/relatorios/ranking',      label: `Ranking de ${labels.professionals}` },
+    ...(features.hasTeams ? [{ to: '/relatorios/equipes', label: labels.teams }] : []),
+    { to: '/relatorios/conflitos',    label: 'Conflitos' },
+    { to: '/relatorios/exportar',     label: 'Exportar' },
+  ]
+
   return (
     <div className="space-y-4">
-      <nav className="flex gap-1 border-b border-gray-200 pb-px">
+      <nav className="flex gap-1 border-b border-gray-200 pb-px flex-wrap">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
