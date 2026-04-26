@@ -20,4 +20,8 @@ internal sealed class UserRepository(ApplicationDbContext dbContext) : IUserRepo
 
     public async Task AddAsync(User user, CancellationToken ct = default)
         => await dbContext.Set<User>().AddAsync(user, ct);
+
+    public async Task<User?> GetByRefreshTokenHashAsync(string tokenHash, CancellationToken ct = default)
+        => await dbContext.Set<User>().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.RefreshTokenHash == tokenHash, ct);
 }

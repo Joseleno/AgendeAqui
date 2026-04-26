@@ -1,4 +1,5 @@
 using AgendeAqui.Application.Auth.Login;
+using AgendeAqui.Application.Auth.RefreshToken;
 using AgendeAqui.Application.Auth.Register;
 using AgendeAqui.Domain.Abstractions;
 using AgendeAqui.Domain.Users;
@@ -50,6 +51,28 @@ public static class AuthEndpoints
         .Produces<LoginResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
 
+        group.MapPost("/refresh-token", async (
+            [FromBody] RefreshTokenRequest request,
+            IMediator mediator,
+            CancellationToken ct) =>
+        {
+            var command = new RefreshTokenCommand(request.RefreshToken);
+            var result = await mediator.Send(command, ct);
+
+            return result.IsSuccess
+                ? Results.Ok(result.Value)
+                : Results.Problem(
+                    title: result.Error.Code,
+                    detail: result.Error.Message,
+                    statusCode: StatusCodes.Status401Unauthorized);
+        })
+        .AllowAnonymous()
+        .WithName("RefreshToken")
+        .WithSummary("Refresh JWT access token")
+        .WithDescription("Exchanges a valid refresh token for a new access token and refresh token pair.")
+        .Produces<LoginResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized);
+
         group.MapPost("/register", async (
             [FromBody] RegisterRequest request,
             IMediator mediator,
@@ -86,5 +109,6 @@ public static class AuthEndpoints
     }
 
     private sealed record LoginRequest(string Email, string Password);
+    private sealed record RefreshTokenRequest(string RefreshToken);
     private sealed record RegisterRequest(string Name, string Email, string Phone, string Password);
 }

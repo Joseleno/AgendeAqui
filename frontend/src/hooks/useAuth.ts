@@ -3,12 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../lib/api-client'
 import { authStore } from '../store/auth-store'
 import { useSyncExternalStore } from 'react'
+import type { components } from '../api/schema'
 
-interface LoginResponse {
-  accessToken: string
-  refreshToken: string
-  expiresInMinutes: number
-}
+type LoginResponse = components['schemas']['LoginResponse']
 
 export function useAuthState() {
   const state = useSyncExternalStore(

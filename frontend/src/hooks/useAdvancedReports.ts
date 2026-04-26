@@ -1,56 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
+import type { components } from '../api/schema'
 
-export interface StatusCount {
-  status: string
-  count: number
-}
-
-export interface AppointmentsByStatusResponse {
-  items: StatusCount[]
-}
-
-export interface TimelinePoint {
-  period: string
-  scheduled: number
-  completed: number
-  cancelled: number
-  noShow: number
-}
-
-export interface AppointmentsTimelineResponse {
-  points: TimelinePoint[]
-}
-
-export interface HourSlot {
-  dayOfWeek: number
-  hour: number
-  count: number
-}
-
-export interface BusiestHoursResponse {
-  slots: HourSlot[]
-}
-
-export interface GrowthPoint {
-  month: string
-  newClients: number
-  totalClients: number
-}
-
-export interface PatientGrowthResponse {
-  points: GrowthPoint[]
-}
-
-export interface RevenuePoint {
-  month: string
-  revenue: number
-  appointmentCount: number
-}
-
-export interface RevenueTimelineResponse {
-  points: RevenuePoint[]
-}
+export type StatusCount = components['schemas']['StatusCount']
+export type AppointmentsByStatusResponse = components['schemas']['AppointmentsByStatusResponse']
+export type TimelinePoint = components['schemas']['TimelinePoint']
+export type AppointmentsTimelineResponse = components['schemas']['AppointmentsTimelineResponse']
+export type HourSlot = components['schemas']['HourSlot']
+export type BusiestHoursResponse = components['schemas']['BusiestHoursResponse']
+export type GrowthPoint = components['schemas']['GrowthPoint']
+export type PatientGrowthResponse = components['schemas']['PatientGrowthResponse']
+export type RevenuePoint = components['schemas']['RevenuePoint']
+export type RevenueTimelineResponse = components['schemas']['RevenueTimelineResponse']
 
 export function useAppointmentsByStatus(from: string, to: string) {
   return useQuery({

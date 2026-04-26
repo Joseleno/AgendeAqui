@@ -19,6 +19,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Role).HasColumnName("role").HasMaxLength(50).IsRequired();
         builder.Property(u => u.ProfessionalId).HasColumnName("professional_id");
         builder.Property(u => u.ClientId).HasColumnName("client_id");
+        builder.Property(u => u.RefreshTokenHash).HasColumnName("refresh_token_hash").HasMaxLength(64);
+        builder.Property(u => u.RefreshTokenExpiresAt).HasColumnName("refresh_token_expires_at");
         builder.Property(u => u.CreatedAt).HasColumnName("created_at").IsRequired();
         builder.Property(u => u.UpdatedAt).HasColumnName("updated_at");
 

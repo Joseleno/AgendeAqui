@@ -1,14 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
 import { toast } from '../components/ui/Toast'
+import type { components } from '../api/schema'
 
-export interface Webhook {
-  id: string
-  url: string
-  events: string[]
-  isActive: boolean
-  createdAt: string
-}
+export type Webhook = components['schemas']['Webhook']
 
 export function useWebhooks() {
   return useQuery({

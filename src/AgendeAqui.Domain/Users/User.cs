@@ -13,6 +13,19 @@ public sealed class User : TenantEntity
     public Guid? ProfessionalId { get; private set; }
     public Guid? ClientId { get; private set; }
 
+    public string? RefreshTokenHash { get; private set; }
+    public DateTime? RefreshTokenExpiresAt { get; private set; }
+
+    public void SetRefreshToken(string tokenHash, DateTime expiresAt)
+    {
+        RefreshTokenHash = tokenHash;
+        RefreshTokenExpiresAt = expiresAt;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public bool IsRefreshTokenValid(string tokenHash) =>
+        RefreshTokenHash == tokenHash && RefreshTokenExpiresAt > DateTime.UtcNow;
+
     public static Result<User> Create(Guid tenantId, string email, string passwordHash, string name, string role)
     {
         if (string.IsNullOrWhiteSpace(email))

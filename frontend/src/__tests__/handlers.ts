@@ -67,4 +67,53 @@ export const handlers = [
 
     return HttpResponse.json({ items: [], page: 1, pageSize: 10, totalCount: 0, totalPages: 0, hasNextPage: false, hasPreviousPage: false })
   }),
+
+  http.get('/api/v1/reports/dashboard', () => {
+    return HttpResponse.json({
+      appointmentsToday: 12,
+      appointmentsThisWeek: 47,
+      activeProfessionals: 5,
+      registeredClients: 238,
+      cancelledToday: 2,
+      noShowToday: 1,
+    })
+  }),
+
+  http.get('/api/v1/reports/appointments-by-status', () => {
+    return HttpResponse.json({ items: [{ status: 'Scheduled', count: 8 }, { status: 'Completed', count: 4 }] })
+  }),
+
+  http.get('/api/v1/reports/appointments-timeline', () => {
+    return HttpResponse.json({ points: [] })
+  }),
+
+  http.get('/api/v1/reports/busiest-hours', () => {
+    return HttpResponse.json({ slots: [] })
+  }),
+
+  http.get('/api/v1/reports/patient-growth', () => {
+    return HttpResponse.json({ points: [] })
+  }),
+
+  http.get('/api/v1/clients', () => {
+    return HttpResponse.json({
+      items: [
+        { id: 'c1', name: 'Ana Costa', email: 'ana@test.com', phone: '11999990001', createdAt: '2026-01-01T00:00:00Z' },
+        { id: 'c2', name: 'Bruno Lima', email: 'bruno@test.com', phone: '11999990002', createdAt: '2026-01-01T00:00:00Z' },
+        { id: 'c3', name: 'Carla Souza', email: 'carla@test.com', phone: '11999990003', createdAt: '2026-01-01T00:00:00Z' },
+      ],
+      page: 1,
+      pageSize: 10,
+      totalCount: 3,
+      totalPages: 1,
+    })
+  }),
+
+  http.post('/api/v1/clients', () => {
+    return HttpResponse.json({ id: 'c-new' }, { status: 201 })
+  }),
+
+  http.put('/api/v1/clients/:id', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
 ]

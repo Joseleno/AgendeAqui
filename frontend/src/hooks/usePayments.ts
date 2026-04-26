@@ -1,40 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
 import { toast } from '../components/ui/Toast'
+import type { components } from '../api/schema'
 
-export interface Payment {
-  id: string
-  appointmentId: string
-  clientName: string
-  serviceName: string
-  amount: number
-  method: string
-  status: string
-  notes: string | null
-  createdAt: string
-}
-
-export interface PagedPayments {
-  items: Payment[]
-  page: number
-  pageSize: number
-  totalCount: number
-  totalPages: number
-}
-
-export interface MethodSummary {
-  method: string
-  total: number
-  count: number
-}
-
-export interface PaymentSummary {
-  totalReceived: number
-  totalPending: number
-  totalRefunded: number
-  paymentCount: number
-  byMethod: MethodSummary[]
-}
+export type Payment = components['schemas']['Payment']
+export type PagedPayments = components['schemas']['PagedResponse_Payment']
+export type MethodSummary = components['schemas']['MethodSummary']
+export type PaymentSummary = components['schemas']['PaymentSummary']
 
 export function usePayments(page = 1, pageSize = 20, appointmentId?: string, from?: string, to?: string) {
   const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })

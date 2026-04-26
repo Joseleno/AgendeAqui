@@ -1,48 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
+import type { components } from '../api/schema'
 
-export interface CalendarAppointment {
-  id: string
-  clientName: string
-  serviceName: string
-  startTime: string
-  endTime: string
-  status: string
-}
-
-export interface CalendarAbsence {
-  id: string
-  startTime: string | null
-  endTime: string | null
-  reason: string | null
-  isFullDay: boolean
-}
-
-export interface CalendarDay {
-  date: string
-  appointments: CalendarAppointment[]
-  absences: CalendarAbsence[]
-}
-
-export interface CalendarResponse {
-  days: CalendarDay[]
-}
-
-export interface FilledSlotsResponse {
-  date: string
-  totalSlots: number
-  filledSlots: number
-  availableSlots: number
-  slots: { startTime: string; endTime: string; isFilled: boolean }[]
-}
-
-export interface ProfessionalStatsResponse {
-  total: number
-  completed: number
-  cancelled: number
-  noShow: number
-  revenue: number
-}
+export type CalendarAppointment = components['schemas']['CalendarAppointment']
+export type CalendarAbsence = components['schemas']['CalendarAbsence']
+export type CalendarDay = components['schemas']['CalendarDay']
+export type CalendarResponse = components['schemas']['CalendarResponse']
+export type FilledSlotsResponse = components['schemas']['FilledSlotsResponse']
+export type ProfessionalStatsResponse = components['schemas']['ProfessionalStatsResponse']
 
 export function useMyCalendar(dateFrom: string, dateTo: string) {
   return useQuery({

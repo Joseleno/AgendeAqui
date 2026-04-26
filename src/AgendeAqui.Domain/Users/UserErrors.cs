@@ -12,4 +12,5 @@ public static class UserErrors
     public static readonly Error AlreadyLinkedToProfessional = new("User.AlreadyLinkedToProfessional", "User is already linked to a professional.");
     public static readonly Error AlreadyLinkedToClient = new("User.AlreadyLinkedToClient", "User is already linked to a client.");
     public static readonly Error EmailAlreadyExists = new("User.EmailAlreadyExists", "A user with this email already exists.");
+    public static readonly Error InvalidRefreshToken = new("User.InvalidRefreshToken", "Refresh token is invalid or expired.");
 }

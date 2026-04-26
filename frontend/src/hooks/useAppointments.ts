@@ -2,54 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
 import { useSignalR } from './useSignalR'
 import { toast } from '../components/ui/Toast'
+import type { components } from '../api/schema'
 
-export interface Appointment {
-  id: string
-  professionalId: string
-  professionalName: string
-  serviceId: string
-  serviceName: string
-  clientId: string
-  clientName: string
-  date: string
-  startTime: string
-  endTime: string
-  status: string
-  notes: string | null
-  isTeleconsultation: boolean
-  meetingUrl: string | null
-  createdAt: string
-}
-
-export interface PagedResponse<T> {
-  items: T[]
-  page: number
-  pageSize: number
-  totalCount: number
-  totalPages: number
-  hasNextPage: boolean
-  hasPreviousPage: boolean
-}
-
-interface CreateAppointmentPayload {
-  professionalId: string
-  serviceId: string
-  clientId: string
-  date: string
-  startTime: string
-  notes?: string
-}
-
-interface AvailableSlot {
-  start: string
-  end: string
-}
-
-interface AvailabilityResponse {
-  date: string
-  professionalId: string
-  slots: AvailableSlot[]
-}
+export type Appointment = components['schemas']['Appointment']
+export type PagedResponse<T> = { items: T[]; page: number; pageSize: number; totalCount: number; totalPages: number; hasNextPage: boolean; hasPreviousPage: boolean }
+type CreateAppointmentPayload = components['schemas']['CreateAppointmentRequest']
+type AvailabilityResponse = components['schemas']['AvailabilityResponse']
 
 export function useAppointments(dateFrom: string, dateTo: string) {
   return useQuery({

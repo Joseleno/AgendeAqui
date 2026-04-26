@@ -1,60 +1,14 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
 import { toast } from '../components/ui/Toast'
+import type { components } from '../api/schema'
 
-export interface DashboardOverview {
-  appointmentsToday: number
-  appointmentsThisWeek: number
-  activeProfessionals: number
-  registeredClients: number
-  cancelledToday: number
-  noShowToday: number
-}
-
-export interface ProfessionalRanking {
-  professionalId: string
-  name: string
-  specialty: string | null
-  total: number
-  completed: number
-  cancelled: number
-  noShow: number
-  completionRate: number
-  noShowRate: number
-}
-
-export interface ScheduleConflict {
-  professionalId: string
-  professionalName: string
-  appointmentId1: string
-  appointmentId2: string
-  startTime1: string
-  endTime1: string
-  startTime2: string
-  endTime2: string
-  client1: string
-  client2: string
-}
-
-export interface ClinicAppointment {
-  id: string
-  clientName: string
-  serviceName: string
-  startTime: string
-  endTime: string
-  status: string
-}
-
-export interface ProfessionalDay {
-  professionalId: string
-  professionalName: string
-  appointments: ClinicAppointment[]
-}
-
-export interface ClinicCalendar {
-  date: string
-  professionals: ProfessionalDay[]
-}
+export type DashboardOverview = components['schemas']['DashboardOverview']
+export type ProfessionalRanking = components['schemas']['ProfessionalRanking']
+export type ScheduleConflict = components['schemas']['ScheduleConflict']
+export type ClinicAppointment = components['schemas']['ClinicAppointment']
+export type ProfessionalDay = components['schemas']['ProfessionalDay']
+export type ClinicCalendar = components['schemas']['ClinicCalendar']
 
 export function useDashboardOverview() {
   return useQuery({

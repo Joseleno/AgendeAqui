@@ -1,35 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
+import type { components } from '../api/schema'
 
-export interface ProfessionalAttendance {
-  professionalId: string
-  professionalName: string
-  total: number
-  completed: number
-  cancelled: number
-  noShow: number
-}
-
-export interface AttendanceReport {
-  totalAppointments: number
-  totalCompleted: number
-  totalCancelled: number
-  totalNoShow: number
-  breakdown: ProfessionalAttendance[]
-}
-
-export interface ServiceRevenue {
-  serviceId: string
-  serviceName: string
-  unitPrice: number
-  appointmentCount: number
-  totalRevenue: number
-}
-
-export interface RevenueReport {
-  totalRevenue: number
-  byService: ServiceRevenue[]
-}
+export type ProfessionalAttendance = components['schemas']['ProfessionalAttendance']
+export type AttendanceReport = components['schemas']['AttendanceReport']
+export type ServiceRevenue = components['schemas']['ServiceRevenue']
+export type RevenueReport = components['schemas']['RevenueReport']
 
 export function useAttendanceReport(from: string, to: string, professionalId?: string) {
   const params = new URLSearchParams({ from, to })

@@ -1,27 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
 import { toast } from '../components/ui/Toast'
+import type { components } from '../api/schema'
 
-export interface ClinicalNote {
-  id: string
-  professionalId: string
-  professionalName: string
-  clientId: string
-  appointmentId: string | null
-  title: string
-  content: string
-  isPrivate: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-export interface PagedClinicalNotes {
-  items: ClinicalNote[]
-  page: number
-  pageSize: number
-  totalCount: number
-  totalPages: number
-}
+export type ClinicalNote = components['schemas']['ClinicalNote']
+export type PagedClinicalNotes = components['schemas']['PagedResponse_ClinicalNote']
 
 export function useClinicalNotes(clientId: string, page = 1, pageSize = 20) {
   return useQuery({

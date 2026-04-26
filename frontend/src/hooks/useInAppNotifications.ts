@@ -1,23 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
+import type { components } from '../api/schema'
 
-export interface InAppNotification {
-  id: string
-  title: string
-  message: string
-  type: string
-  referenceId: string | null
-  isRead: boolean
-  createdAt: string
-}
-
-export interface PagedNotifications {
-  items: InAppNotification[]
-  page: number
-  pageSize: number
-  totalCount: number
-  totalPages: number
-}
+export type InAppNotification = components['schemas']['InAppNotification']
+export type PagedNotifications = components['schemas']['PagedResponse_InAppNotification']
 
 export function useInAppNotifications(page = 1, pageSize = 20) {
   return useQuery({

@@ -1,17 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
+import type { components } from '../api/schema'
 
-export interface Notification {
-  id: string
-  appointmentId: string
-  channel: string
-  recipient: string
-  templateName: string
-  status: string
-  sentAt: string | null
-  errorMessage: string | null
-  createdAt: string
-}
+export type Notification = components['schemas']['Notification']
 
 export function useNotifications(dateFrom: string, dateTo: string) {
   return useQuery({

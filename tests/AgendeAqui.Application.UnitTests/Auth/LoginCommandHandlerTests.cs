@@ -11,13 +11,15 @@ public class LoginCommandHandlerTests
 {
     private readonly IUserRepository _userRepository;
     private readonly IJwtTokenGenerator _tokenGenerator;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly LoginCommandHandler _handler;
 
     public LoginCommandHandlerTests()
     {
         _userRepository = Substitute.For<IUserRepository>();
         _tokenGenerator = Substitute.For<IJwtTokenGenerator>();
-        _handler = new LoginCommandHandler(_userRepository, _tokenGenerator);
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _handler = new LoginCommandHandler(_userRepository, _tokenGenerator, _unitOfWork);
     }
 
     [Fact]

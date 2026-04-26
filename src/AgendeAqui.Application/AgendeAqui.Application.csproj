@@ -14,6 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Transitive vulnerability override: Scriban pulled by Microsoft.Extensions.Caching.Hybrid -->
+    <PackageReference Include="Scriban" />
     <PackageReference Include="BCrypt.Net-Next" />
     <PackageReference Include="Dapper" />
     <PackageReference Include="FluentValidation" />

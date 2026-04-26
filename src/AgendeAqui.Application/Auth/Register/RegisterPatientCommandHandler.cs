@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using AgendeAqui.Application.Abstractions.Messaging;
 using AgendeAqui.Application.Auth.Login;
 using AgendeAqui.Domain.Abstractions;
@@ -50,12 +52,21 @@ internal sealed class RegisterPatientCommandHandler(
         user.LinkToClient(client.Id);
 
         await userRepository.AddAsync(user, ct);
-        await unitOfWork.SaveChangesAsync(ct);
 
         var accessToken = tokenGenerator.GenerateToken(
             user.Id, tenantId, user.Email, user.Role, null, client.Id);
         var refreshToken = tokenGenerator.GenerateRefreshToken();
+        var refreshTokenHash = ComputeHash(refreshToken);
+
+        user.SetRefreshToken(refreshTokenHash, DateTime.UtcNow.AddDays(30));
+        await unitOfWork.SaveChangesAsync(ct);
 
         return Result.Success(new LoginResponse(accessToken, refreshToken, tokenGenerator.ExpirationMinutes));
+    }
+
+    private static string ComputeHash(string token)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToHexStringLower(bytes);
     }
 }

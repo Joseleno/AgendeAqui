@@ -1,23 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
 import { toast } from '../components/ui/Toast'
+import type { components } from '../api/schema'
 
-export interface Professional {
-  id: string
-  name: string
-  email: string
-  phone: string
-  isActive: boolean
-  createdAt: string
-}
-
-interface PagedResponse<T> {
-  items: T[]
-  page: number
-  pageSize: number
-  totalCount: number
-  totalPages: number
-}
+export type Professional = components['schemas']['Professional']
+type PagedResponse<T> = { items: T[]; page: number; pageSize: number; totalCount: number; totalPages: number }
 
 export function useProfessionals(page: number, pageSize = 10) {
   return useQuery({

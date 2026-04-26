@@ -3,45 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../lib/api-client'
 import { authStore } from '../store/auth-store'
 import { toast } from '../components/ui/Toast'
-import type { PagedResponse } from './useAppointments'
+import type { components } from '../api/schema'
 
-interface RegisterPayload {
-  name: string
-  email: string
-  phone: string
-  password: string
-}
+type RegisterPayload = components['schemas']['RegisterRequest']
+type RegisterResponse = components['schemas']['LoginResponse']
+type PagedResponse<T> = { items: T[]; page: number; pageSize: number; totalCount: number; totalPages: number }
 
-interface RegisterResponse {
-  accessToken: string
-  refreshToken: string
-  expiresInMinutes: number
-}
-
-export interface ProfessionalSummary {
-  id: string
-  name: string
-  specialty: string | null
-  services: string[]
-}
-
-export interface ProfessionalAvailability {
-  professionalId: string
-  professionalName: string
-  specialty: string | null
-  availableSlots: number
-}
-
-export interface MyAppointment {
-  id: string
-  professionalName: string
-  serviceName: string
-  date: string
-  startTime: string
-  endTime: string
-  status: string
-  notes: string | null
-}
+export type ProfessionalSummary = components['schemas']['ProfessionalSummary']
+export type ProfessionalAvailability = components['schemas']['ProfessionalAvailability']
+export type MyAppointment = components['schemas']['MyAppointment']
 
 export function useRegisterPatient() {
   const navigate = useNavigate()

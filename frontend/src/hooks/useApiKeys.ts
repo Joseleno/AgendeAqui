@@ -1,22 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
 import { toast } from '../components/ui/Toast'
+import type { components } from '../api/schema'
 
-export interface ApiKey {
-  id: string
-  name: string
-  keyPrefix: string
-  isActive: boolean
-  expiresAt: string | null
-  createdAt: string
-}
-
-export interface CreateApiKeyResponse {
-  id: string
-  rawKey: string
-  name: string
-  expiresAt: string | null
-}
+export type ApiKey = components['schemas']['ApiKey']
+export type CreateApiKeyResponse = components['schemas']['CreateApiKeyResponse']
 
 export function useApiKeys() {
   return useQuery({

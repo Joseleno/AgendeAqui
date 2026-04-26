@@ -1,26 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api-client'
 import { toast } from '../components/ui/Toast'
+import type { components } from '../api/schema'
 
-export interface Schedule {
-  id: string
-  professionalId: string
-  professionalName: string
-  dayOfWeek: number
-  startTime: string
-  endTime: string
-  slotDurationMinutes: number
-  isActive: boolean
-  createdAt: string
-}
-
-interface PagedResponse<T> {
-  items: T[]
-  page: number
-  pageSize: number
-  totalCount: number
-  totalPages: number
-}
+export type Schedule = components['schemas']['Schedule']
+type PagedResponse<T> = { items: T[]; page: number; pageSize: number; totalCount: number; totalPages: number }
 
 export function useSchedules(page: number, professionalId?: string, pageSize = 10) {
   const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
