@@ -32,6 +32,7 @@ public static class ServiceCollectionExtensions
             .AddMediator()
             .AddObservability(configuration);
 
+        services.AddMemoryCache();
         services.AddHybridCache(options =>
         {
             options.DefaultEntryOptions = new Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions

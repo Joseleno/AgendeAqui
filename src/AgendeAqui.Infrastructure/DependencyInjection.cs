@@ -1,3 +1,4 @@
+using AgendeAqui.Application.Abstractions;
 using AgendeAqui.Application.Abstractions.Data;
 using AgendeAqui.Domain.Teams;
 using AgendeAqui.Application.Abstractions.Messaging;
@@ -84,6 +85,8 @@ public static class DependencyInjection
 
         services.AddScoped<IPlatformSqlConnectionFactory>(_ =>
             new PlatformSqlConnectionFactory(connectionString));
+
+        services.AddScoped<IPlanLimitChecker, PlanLimitChecker>();
 
         return services;
     }

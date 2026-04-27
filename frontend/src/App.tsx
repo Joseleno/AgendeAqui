@@ -38,6 +38,8 @@ import { MeusAgendamentosPage } from './pages/paciente/MeusAgendamentosPage'
 import { FinanceiroPage } from './pages/financeiro/FinanceiroPage'
 import { TeleconsultaPage } from './pages/teleconsulta/TeleconsultaPage'
 import { PlataformaPage } from './pages/plataforma/PlataformaPage'
+import { OnboardingPage } from './pages/onboarding/OnboardingPage'
+import { TemaPage } from './pages/config/TemaPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,6 +56,8 @@ export default function App() {
       <TenantProvider>
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
+          <Route path="/cadastro" element={<OnboardingPage />} />
           {/* Public routes (with tenant slug) */}
           <Route path="/:slug/login" element={<LoginPage />} />
           <Route path="/:slug/register" element={<RegisterPage />} />
@@ -95,6 +99,7 @@ export default function App() {
                 <Route path="integracoes" element={<IntegracoesPage />} />
                 <Route path="notificacoes" element={<NotificacoesPage />} />
                 <Route path="conta" element={<ContaPage />} />
+                <Route path="tema" element={<TemaPage />} />
               </Route>
             </Route>
 

@@ -24,6 +24,11 @@ internal sealed class TenantRepository : ITenantRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Slug == slug, ct);
 
+    public async Task<Tenant?> GetByCustomDomainAsync(string domain, CancellationToken ct = default) =>
+        await _context.Tenants
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.CustomDomain == domain, ct);
+
     public async Task AddAsync(Tenant entity, CancellationToken ct = default) =>
         await _context.Tenants.AddAsync(entity, ct);
 

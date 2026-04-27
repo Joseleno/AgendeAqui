@@ -5,6 +5,7 @@ using AgendeAqui.Application.Tenants.GetTenant;
 using AgendeAqui.Application.Tenants.GetTenantContext;
 using AgendeAqui.Application.Tenants.ListTenants;
 using AgendeAqui.Application.Tenants.UpdateTenant;
+using AgendeAqui.Application.Tenants.UpdateTenantTheme;
 using Mediator;
 
 namespace AgendeAqui.Api.Endpoints;
@@ -108,10 +109,29 @@ public static class TenantEndpoints
         .WithTags("Tenants")
         .WithName("GetTenantContext")
         .WithSummary("Get tenant context")
-        .WithDescription("Returns the current tenant's display labels and enabled features. Available to all authenticated users.")
+        .WithDescription("Returns the current tenant's labels, features, theme, plan, and trial info.")
         .Produces<TenantContextResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .RequireAuthorization(AuthorizationPolicies.RequireAuthenticated)
+        .RequireRateLimiting("tenant");
+
+        // Theme management — admin only within a tenant
+        app.MapPut("/api/v1/tenant/theme", async (UpdateTenantThemeRequest request, IMediator mediator, CancellationToken cancellationToken) =>
+        {
+            var command = new UpdateTenantThemeCommand(request.PrimaryColor, request.LogoUrl, request.FaviconUrl);
+            var result = await mediator.Send(command, cancellationToken);
+
+            return result.IsSuccess
+                ? Results.NoContent()
+                : Results.Problem(detail: result.Error.Message, statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code);
+        })
+        .WithTags("Tenants")
+        .WithName("UpdateTenantTheme")
+        .WithSummary("Update tenant theme")
+        .WithDescription("Updates the visual theme (primary color, logo, favicon) for the current tenant.")
+        .Produces(StatusCodes.Status204NoContent)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(AuthorizationPolicies.RequireAdmin)
         .RequireRateLimiting("tenant");
     }
 }
@@ -119,3 +139,5 @@ public static class TenantEndpoints
 public sealed record CreateTenantRequest(string Name, string Slug, string Plan);
 
 public sealed record UpdateTenantRequest(string Name, string Plan);
+
+public sealed record UpdateTenantThemeRequest(string PrimaryColor, string? LogoUrl, string? FaviconUrl);

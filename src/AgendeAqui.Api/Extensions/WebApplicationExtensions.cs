@@ -46,6 +46,7 @@ public static class WebApplicationExtensions
         });
         app.MapMetrics();
         app.MapAuthEndpoints();
+        app.MapOnboardingEndpoints();
         app.MapLgpdEndpoints();
         app.MapTenantEndpoints();
         app.MapProfessionalEndpoints();

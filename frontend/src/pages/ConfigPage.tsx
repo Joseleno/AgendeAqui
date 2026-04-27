@@ -4,6 +4,7 @@ const tabs = [
   { to: '/config/integracoes', label: 'Integracoes' },
   { to: '/config/notificacoes', label: 'Notificacoes' },
   { to: '/config/conta', label: 'Conta' },
+  { to: '/config/tema', label: 'Tema' },
 ]
 
 export function ConfigPage() {

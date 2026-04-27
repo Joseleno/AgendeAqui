@@ -19,7 +19,11 @@ internal sealed class GetTenantContextQueryHandler(
 
         return Result.Success(new TenantContextResponse(
             TenantName: tenant.Name,
+            Plan: tenant.Plan.ToString(),
+            IsOnTrial: tenant.IsOnTrial,
+            TrialEndsAt: tenant.TrialEndsAt,
             Labels: tenant.Labels,
-            Features: tenant.Features));
+            Features: tenant.Features,
+            Theme: tenant.Theme));
     }
 }

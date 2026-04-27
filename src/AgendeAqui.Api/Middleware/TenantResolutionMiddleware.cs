@@ -1,12 +1,14 @@
 using AgendeAqui.Domain.Abstractions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace AgendeAqui.Api.Middleware;
 
-public sealed class TenantResolutionMiddleware(RequestDelegate next)
+public sealed class TenantResolutionMiddleware(RequestDelegate next, IMemoryCache cache)
 {
     private const string TenantIdHeader = "X-Tenant-Id";
+    private static readonly TimeSpan DomainCacheTtl = TimeSpan.FromMinutes(5);
 
     private static readonly HashSet<string> ExcludedPaths =
     [
@@ -14,10 +16,11 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
         "/openapi",
         "/metrics",
         "/api/v1/auth/login",
-        "/api/v1/auth/tenant"
+        "/api/v1/auth/tenant",
+        "/api/v1/onboarding"
     ];
 
-    public async Task InvokeAsync(HttpContext context, ITenantProvider tenantProvider)
+    public async Task InvokeAsync(HttpContext context, ITenantProvider tenantProvider, ITenantRepository tenantRepository)
     {
         foreach (var excluded in ExcludedPaths)
         {
@@ -52,7 +55,29 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
             return;
         }
 
-        // Fallback: X-Tenant-Id header (for unauthenticated routes only)
+        // Second fallback: host-based resolution (custom domain)
+        // Cached (5 min TTL) to avoid a DB hit on every unauthenticated request.
+        // Domain changes take up to 5 minutes to propagate — acceptable for operator-driven ops.
+        var host = context.Request.Host.Host;
+        if (!string.IsNullOrWhiteSpace(host))
+        {
+            var cacheKey = $"domain:{host}";
+            if (!cache.TryGetValue(cacheKey, out Guid? cachedTenantId))
+            {
+                var tenantByDomain = await tenantRepository.GetByCustomDomainAsync(host, context.RequestAborted);
+                cachedTenantId = tenantByDomain?.Id;
+                cache.Set(cacheKey, cachedTenantId, DomainCacheTtl);
+            }
+
+            if (cachedTenantId is not null)
+            {
+                tenantProvider.SetTenantId(cachedTenantId.Value);
+                await next(context);
+                return;
+            }
+        }
+
+        // Third fallback: X-Tenant-Id header (for unauthenticated routes only)
         if (!context.Request.Headers.TryGetValue(TenantIdHeader, out var tenantIdHeader)
             || !Guid.TryParse(tenantIdHeader, out var tenantId))
         {

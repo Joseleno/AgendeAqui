@@ -840,6 +840,11 @@ namespace AgendeAqui.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("connection_string");
 
+                    b.Property<string>("CustomDomain")
+                        .HasMaxLength(253)
+                        .HasColumnType("character varying(253)")
+                        .HasColumnName("custom_domain");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -874,11 +879,25 @@ namespace AgendeAqui.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
+                    b.Property<string>("Theme")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("theme");
+
+                    b.Property<DateTime?>("TrialEndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("trial_ends_at");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomDomain")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tenants_custom_domain")
+                        .HasFilter("custom_domain IS NOT NULL");
 
                     b.HasIndex("Slug")
                         .IsUnique()

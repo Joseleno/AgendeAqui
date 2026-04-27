@@ -27,7 +27,7 @@ try
     if (app.Environment.IsDevelopment())
         await SeedData.InitializeAsync(app);
 
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -35,8 +35,8 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }
 
 // Make Program accessible for WebApplicationFactory in integration tests
-public partial class Program { }
+public static partial class Program { }

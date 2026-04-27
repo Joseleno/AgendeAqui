@@ -32,6 +32,13 @@ internal sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
             .HasColumnName("connection_string")
             .HasMaxLength(500);
 
+        builder.Property(t => t.CustomDomain)
+            .HasColumnName("custom_domain")
+            .HasMaxLength(253);
+
+        builder.Property(t => t.TrialEndsAt)
+            .HasColumnName("trial_ends_at");
+
         builder.Property(t => t.Status)
             .HasColumnName("status")
             .HasConversion<int>()
@@ -65,8 +72,21 @@ internal sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
                 s => JsonSerializer.Deserialize<TenantFeatures>(s, JsonOptions) ?? TenantFeatures.Default())
             .IsRequired();
 
+        builder.Property(t => t.Theme)
+            .HasColumnName("theme")
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, JsonOptions),
+                s => JsonSerializer.Deserialize<TenantTheme>(s, JsonOptions) ?? TenantTheme.Default())
+            .IsRequired();
+
         builder.HasIndex(t => t.Slug)
             .IsUnique()
             .HasDatabaseName("ix_tenants_slug");
+
+        builder.HasIndex(t => t.CustomDomain)
+            .IsUnique()
+            .HasFilter("custom_domain IS NOT NULL")
+            .HasDatabaseName("ix_tenants_custom_domain");
     }
 }

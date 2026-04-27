@@ -23,10 +23,20 @@ export interface TenantFeatures {
   hasPayments: boolean
 }
 
+export interface TenantTheme {
+  primaryColor: string
+  logoUrl?: string | null
+  faviconUrl?: string | null
+}
+
 interface TenantContextResponse {
   tenantName: string
+  plan: string
+  isOnTrial: boolean
+  trialEndsAt?: string | null
   labels: TenantLabels
   features: TenantFeatures
+  theme: TenantTheme
 }
 
 export const DEFAULT_LABELS: TenantLabels = {
@@ -49,17 +59,42 @@ export const DEFAULT_FEATURES: TenantFeatures = {
   hasPayments: true,
 }
 
+export const DEFAULT_THEME: TenantTheme = {
+  primaryColor: '#6366f1',
+  logoUrl: null,
+  faviconUrl: null,
+}
+
 interface TenantContextValue {
   labels: TenantLabels
   features: TenantFeatures
+  theme: TenantTheme
   tenantName: string | null
+  plan: string | null
+  isOnTrial: boolean
+  trialEndsAt: Date | null
 }
 
 const TenantContext = createContext<TenantContextValue>({
   labels: DEFAULT_LABELS,
   features: DEFAULT_FEATURES,
+  theme: DEFAULT_THEME,
   tenantName: null,
+  plan: null,
+  isOnTrial: false,
+  trialEndsAt: null,
 })
+
+function applyTheme(theme: TenantTheme) {
+  const root = document.documentElement
+  // Convert hex #rrggbb to CSS custom properties for Tailwind brand-* shades
+  root.style.setProperty('--color-brand', theme.primaryColor)
+
+  if (theme.faviconUrl) {
+    const link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+    if (link) link.href = theme.faviconUrl
+  }
+}
 
 export function TenantProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(authStore.isAuthenticated())
@@ -78,12 +113,20 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     staleTime: 5 * 60 * 1000,
   })
 
+  useEffect(() => {
+    applyTheme(data?.theme ?? DEFAULT_THEME)
+  }, [data?.theme])
+
   return (
     <TenantContext.Provider
       value={{
         labels: data?.labels ?? DEFAULT_LABELS,
         features: data?.features ?? DEFAULT_FEATURES,
+        theme: data?.theme ?? DEFAULT_THEME,
         tenantName: data?.tenantName ?? null,
+        plan: data?.plan ?? null,
+        isOnTrial: data?.isOnTrial ?? false,
+        trialEndsAt: data?.trialEndsAt ? new Date(data.trialEndsAt) : null,
       }}
     >
       {children}

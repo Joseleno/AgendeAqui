@@ -7,10 +7,17 @@ public sealed class Tenant : Entity
     public string Name { get; private set; } = default!;
     public string Slug { get; private set; } = default!;
     public string? ConnectionString { get; private set; }
+    public string? CustomDomain { get; private set; }
     public TenantStatus Status { get; private set; }
     public TenantPlan Plan { get; private set; }
     public TenantLabels Labels { get; private set; } = TenantLabels.Default();
     public TenantFeatures Features { get; private set; } = TenantFeatures.Default();
+    public TenantTheme Theme { get; private set; } = TenantTheme.Default();
+    public DateTime? TrialEndsAt { get; private set; }
+
+    public bool IsOnTrial => TrialEndsAt.HasValue && TrialEndsAt.Value > DateTime.UtcNow;
+    public bool IsTrialExpired => TrialEndsAt.HasValue && TrialEndsAt.Value <= DateTime.UtcNow;
+    public PlanLimits Limits => PlanLimits.For(Plan);
 
     private Tenant() { }
 
@@ -28,6 +35,21 @@ public sealed class Tenant : Entity
         };
     }
 
+    public static Tenant CreateWithTrial(string name, string slug, int trialDays = 14)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(slug);
+
+        return new Tenant
+        {
+            Name = name,
+            Slug = slug.ToLowerInvariant(),
+            Status = TenantStatus.Active,
+            Plan = TenantPlan.Free,
+            TrialEndsAt = DateTime.UtcNow.AddDays(trialDays)
+        };
+    }
+
     public void Deactivate()
     {
         Status = TenantStatus.Inactive;
@@ -40,9 +62,18 @@ public sealed class Tenant : Entity
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void Suspend()
+    {
+        Status = TenantStatus.Suspended;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void ChangePlan(TenantPlan plan)
     {
         Plan = plan;
+        // Clear trial when upgrading to a paid plan
+        if (plan != TenantPlan.Free)
+            TrialEndsAt = null;
         UpdatedAt = DateTime.UtcNow;
     }
 
@@ -62,6 +93,18 @@ public sealed class Tenant : Entity
     public void UpdateFeatures(TenantFeatures features)
     {
         Features = features;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateTheme(TenantTheme theme)
+    {
+        Theme = theme;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetCustomDomain(string? domain)
+    {
+        CustomDomain = domain?.ToLowerInvariant().Trim();
         UpdatedAt = DateTime.UtcNow;
     }
 }
